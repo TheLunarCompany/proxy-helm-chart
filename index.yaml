@@ -2,7 +2,7 @@ apiVersion: v1
 entries:
   lunar-proxy:
   - apiVersion: v2
-    appVersion: v0.8.25
+    appVersion: v0.8.26
     created: "2024-01-10T12:47:37.884342755Z"
     description: A Helm chart for Kubernetes
     digest: 933b2b8c605f9536e310cdf3045209c8ceb28ad18f7aefcc7f3420b39742f060
