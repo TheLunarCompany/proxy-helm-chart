@@ -2,6 +2,126 @@ apiVersion: v1
 entries:
   lunar-proxy:
   - apiVersion: v2
+    appVersion: v0.8.29
+    created: "2024-01-29T09:39:12.456020137Z"
+    description: A Helm chart for Kubernetes
+    digest: 672568816b032ad2891eeeb9e609e5b163752056fa0453c189eebafdfbc0edf2
+    name: lunar-proxy
+    type: application
+    urls:
+    - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/lunar-proxy-v0.8.29/lunar-proxy-v0.8.29.tgz
+    version: v0.8.29
+  - apiVersion: v2
+    appVersion: v0.8.28
+    created: "2024-01-18T11:52:36.43929493Z"
+    description: A Helm chart for Kubernetes
+    digest: 09dcbe5750b6a217d9a23b7650bff1c3edca0bb7c8b2323343b59ec08acf28c3
+    name: lunar-proxy
+    type: application
+    urls:
+    - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/lunar-proxy-v0.8.28/lunar-proxy-v0.8.28.tgz
+    version: v0.8.28
+  - apiVersion: v2
+    appVersion: v0.8.27
+    created: "2024-01-14T09:19:32.439258962Z"
+    description: A Helm chart for Kubernetes
+    digest: f185dd5a9084cac68ebb2eefaac733b108af4e5e2fd270aeac1faf3ab8918594
+    name: lunar-proxy
+    type: application
+    urls:
+    - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/lunar-proxy-v0.8.27/lunar-proxy-v0.8.27.tgz
+    version: v0.8.27
+  - apiVersion: v2
+    appVersion: v0.8.26
+    created: "2024-01-10T12:47:37.884342755Z"
+    description: A Helm chart for Kubernetes
+    digest: 933b2b8c605f9536e310cdf3045209c8ceb28ad18f7aefcc7f3420b39742f060
+    name: lunar-proxy
+    type: application
+    urls:
+    - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/lunar-proxy-v0.8.26/lunar-proxy-v0.8.26.tgz
+    version: v0.8.26
+  - apiVersion: v2
+    appVersion: v0.8.25
+    created: "2024-01-10T12:30:58.395196721Z"
+    description: A Helm chart for Kubernetes
+    digest: d978914253011e94845793d5e7d8e1a774db711dce28b5fe4e91df8d3cb00d76
+    name: lunar-proxy
+    type: application
+    urls:
+    - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/lunar-proxy-v0.8.25/lunar-proxy-v0.8.25.tgz
+    version: v0.8.25
+  - apiVersion: v2
+    appVersion: v0.8.24
+    created: "2024-01-02T11:18:25.186032712Z"
+    description: A Helm chart for Kubernetes
+    digest: 30dc7662752e49662bc4257484c6bc535cc6519a8ae6cf1e63ad61bee5bfdd9f
+    name: lunar-proxy
+    type: application
+    urls:
+    - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/lunar-proxy-v0.8.24/lunar-proxy-v0.8.24.tgz
+    version: v0.8.24
+  - apiVersion: v2
+    appVersion: v0.8.23
+    created: "2023-12-25T10:06:43.150075672Z"
+    description: A Helm chart for Kubernetes
+    digest: 702ea5d44376510bdd6b03bdb99191979c91baf63fe52c0976261cbe60942f17
+    name: lunar-proxy
+    type: application
+    urls:
+    - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/lunar-proxy-v0.8.23/lunar-proxy-v0.8.23.tgz
+    version: v0.8.23
+  - apiVersion: v2
+    appVersion: v0.8.22
+    created: "2023-12-24T12:58:12.107352107Z"
+    description: A Helm chart for Kubernetes
+    digest: f0feaf14090c99e9619aed47e6dc05c953b94f8d0312f6df7cc5f6718bb3901c
+    name: lunar-proxy
+    type: application
+    urls:
+    - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/lunar-proxy-v0.8.22/lunar-proxy-v0.8.22.tgz
+    version: v0.8.22
+  - apiVersion: v2
+    appVersion: v0.8.21
+    created: "2023-12-21T14:43:39.024482614Z"
+    description: A Helm chart for Kubernetes
+    digest: def201478f6bad5d3ca583a80c5cecb0e548d8c4898c8590bab8bfa91727a899
+    name: lunar-proxy
+    type: application
+    urls:
+    - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/lunar-proxy-v0.8.21/lunar-proxy-v0.8.21.tgz
+    version: v0.8.21
+  - apiVersion: v2
+    appVersion: v0.8.19
+    created: "2023-12-19T19:22:39.197372016Z"
+    description: A Helm chart for Kubernetes
+    digest: d31ccb9d9eb58c34e4600506f019d6e42f9ecc6105a75ad115ab7e9fdcfa8c7f
+    name: lunar-proxy
+    type: application
+    urls:
+    - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/lunar-proxy-v0.8.20/lunar-proxy-v0.8.20.tgz
+    version: v0.8.20
+  - apiVersion: v2
+    appVersion: v0.8.19
+    created: "2023-12-19T18:39:35.252071951Z"
+    description: A Helm chart for Kubernetes
+    digest: ce1a6225240c4d42b2a619253bda79235a9bfd16b925dfd59fbc90592b12d92e
+    name: lunar-proxy
+    type: application
+    urls:
+    - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/lunar-proxy-v0.8.19/lunar-proxy-v0.8.19.tgz
+    version: v0.8.19
+  - apiVersion: v2
+    appVersion: v0.8.18
+    created: "2023-12-04T19:21:11.363167194Z"
+    description: A Helm chart for Kubernetes
+    digest: f366f74cf23331a7789b5950c4271f8b0e20f8803af9df72eab2144d496ea23e
+    name: lunar-proxy
+    type: application
+    urls:
+    - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/lunar-proxy-v0.8.18/lunar-proxy-v0.8.18.tgz
+    version: v0.8.18
+  - apiVersion: v2
     appVersion: v0.8.17
     created: "2023-12-03T13:25:33.667435428Z"
     description: A Helm chart for Kubernetes
@@ -91,4 +211,4 @@ entries:
     urls:
     - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/lunar-proxy-v0.8.7/lunar-proxy-v0.8.7.tgz
     version: v0.8.7
-generated: "2023-12-03T13:25:33.667475302Z"
+generated: "2024-01-29T09:39:12.456183032Z"

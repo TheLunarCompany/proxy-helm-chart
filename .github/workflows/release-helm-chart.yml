@@ -1,12 +1,11 @@
 name: Helm Chart Release
 on:
-    workflow_dispatch:
-        inputs:
-          version:
-            description: "Version to deploy"
-            required: false
-            default: "latest"
-            type: string
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to deploy"
+        required: true
+        type: string
 
 jobs:
   helm-chart:

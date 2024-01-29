@@ -62,6 +62,10 @@ spec:
               value: {{ toString .Values.telemetryEnabled | quote }}
             - name: REDIS_USE_CLUSTER
               value: {{ toString .Values.redisUseCluster | quote }}
+            - name: LUNAR_TELEMETRY
+              value: {{ toString .Values.telemetryEnabled | quote }}
+            - name: REDIS_USE_CLUSTER
+              value: {{ toString .Values.redisUseCluster | quote }}
           {{- if .Values.env }}
             - name: ENV
               value: {{ .Values.env }}
