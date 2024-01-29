@@ -15,13 +15,20 @@
           "type": "string"
         }
       },
-      "required": ["repository"],
+      "required": [
+        "repository"
+      ],
       "additionalProperties": false
     },
     "imagePullSecrets": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
       }
     },
     "serviceAccount": {
@@ -37,7 +44,9 @@
           "type": "string"
         }
       },
-      "required": ["create"],
+      "required": [
+        "create"
+      ],
       "additionalProperties": true
     },
     "livenessProbe": {
@@ -81,7 +90,10 @@
       "type": "object"
     },
     "env": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "telemetryEnabled": {
       "type": "boolean"
@@ -90,13 +102,22 @@
       "type": "string"
     },
     "tenantName": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "awsAccessKeyId": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "awsSecretAccessKey": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "lunarManaged": {
       "type": "boolean"
@@ -118,9 +139,15 @@
         },
         "adminPort": {
           "type": "integer"
+        },
+        "annotations": {
+          "type": "object"
         }
       },
-      "required": ["type", "port"],
+      "required": [
+        "type",
+        "port"
+      ],
       "additionalProperties": false
     },
     "resources": {
@@ -171,7 +198,10 @@
                     "type": "string"
                   }
                 },
-                "required": ["path", "pathType"]
+                "required": [
+                  "path",
+                  "pathType"
+                ]
               }
             }
           }
@@ -247,7 +277,9 @@
           }
         }
       },
-      "required": ["enabled"]
+      "required": [
+        "enabled"
+      ]
     },
     "policies": {
       "type": "object",

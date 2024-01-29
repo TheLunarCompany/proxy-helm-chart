@@ -19,8 +19,12 @@ podAnnotations: {}
 env: null
 logLevel: "error"
 tenantName: null
+redisUrl: null
+lunarAPIKey: null
+lunarHubURL: null
+redisUseCluster: false
 awsAccessKeyId: null
-telemetryEnabled: false
+telemetryEnabled: true
 awsSecretAccessKey: null
 lunarManaged: false
 
