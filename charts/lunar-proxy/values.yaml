@@ -22,6 +22,7 @@ lunarAPIKeySecretName: null # Set the API key from a secret (key must be named l
 env: null
 logLevel: "error"
 tenantName: null
+lunarStreamsEnabled: false
 redisUrl: null
 lunarHubURL: null
 redisUseCluster: false
@@ -68,12 +69,12 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: "lunar-proxy"
 
-resources:
+containerResources:
   {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # lines, adjust them as necessary, and remove the curly braces after 'containerResources:'.
   # limits:
   #   cpu: 100m
   #   memory: 128Mi
@@ -152,3 +153,119 @@ policies:
     file:
       file_dir: "/var/log/lunar-proxy"
       file_name: "output.log"
+
+# flows:
+#   rate_limit_flow.yaml: |
+#     name: BasicRateLimitSample
+#
+#     filters:
+#       url: "*"
+#
+#     processors:
+#       BasicRateLimiter:
+#         processor: BasicRateLimiter
+#         parameters:
+#           - key: allowed_request_count
+#             value: 10
+#           - key: window_size_in_seconds
+#             value: 5
+#
+#       GenerateResponse:
+#         processor: GenerateResponse
+#
+#       GenerateResponseTooManyRequests:
+#         processor: GenerateResponse
+#         parameters:
+#           - key: status
+#             value: 429
+#           - key: body
+#             value: Too many requests
+#           - key: Content-Type
+#             value: text/plain
+#
+#     flow:
+#       request:
+#         - from:
+#             stream:
+#               name: globalStream
+#               at: start
+#           to:
+#             processor:
+#               name: BasicRateLimiter
+#
+#         - from:
+#             processor:
+#               name: BasicRateLimiter
+#               condition: below_limit
+#           to:
+#             stream:
+#               name: globalStream
+#               at: end
+#
+#         - from:
+#             processor:
+#               name: BasicRateLimiter
+#               condition: above_limit
+#           to:
+#             processor: 
+#               name: GenerateResponseTooManyRequests
+#
+#       response:
+#         - from:
+#             processor:
+#               name: GenerateResponseTooManyRequests
+#           to:
+#             stream:
+#               name: globalStream
+#               at: end
+#
+#         - from:
+#             stream:
+#               name: globalStream
+#               at: start
+#           to:
+#             processor: 
+#               name: GenerateResponse
+
+#         - from:
+#             processor:
+#               name: GenerateResponse
+#           to:
+#             stream:
+#               name: globalStream
+#               at: end
+
+# resources:
+#   rate_limit_quota.yaml: |
+#     quota:
+#       id: MyLimitResource
+#       filter:
+#         url: httpbin.org/*
+#       strategy:
+#         fixed_window:
+#           max: 10
+#           interval: 10
+#           interval_unit: second
+#           group_by_header: MyTokenHeader # Optional
+#           monthly_renewal: # Optional
+#             day: 1 # Day of the month 1-31
+#             hour: 11 # Hour of the day 0-23
+#             minute: 0 # Minute of the hour 0-59
+#             second: 0 # Second of the minute 0-59
+#             timezone: UTC # Timezone of the renewal
+#
+#     internal_limits:
+#       - id: MyLimitResourceProd
+#         parent_id: MyLimitResource
+#
+#         filter:
+#           url: httpbin.org/get
+#           method: 
+#             - GET
+#         strategy:
+#           fixed_window:
+#             max: 1
+#             interval: 10
+#             interval_unit: second
+#             spillover: # Optional
+#               max: 10
