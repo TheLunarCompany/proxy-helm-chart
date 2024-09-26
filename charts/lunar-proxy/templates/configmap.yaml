@@ -1,4 +1,4 @@
-{{- if and .Values.policies (not .Values.lunarStreamsEnabled) }}
+{{- if not .Values.lunarStreamsEnabled }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -17,7 +17,8 @@ data:
     {{- toYaml .Values.policies | nindent 4 }}
 
 immutable: false
-{{- else if and .Values.flows (not .Values.lunarStreamsEnabled) }}
+{{- end -}}
+{{- if .Values.lunarStreamsEnabled }}
 ---
 apiVersion: v1
 kind: ConfigMap

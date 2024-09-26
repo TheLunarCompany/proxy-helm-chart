@@ -102,7 +102,7 @@ spec:
           {{- end }}
           {{- if .Values.lunarStreamsEnabled }}
             - name: LUNAR_STREAMS_ENABLED
-              value: {{ .Values.lunarStreamsEnabled }}
+              value: {{ toString .Values.lunarStreamsEnabled | quote }}
           {{- end }}
           volumeMounts:
           {{- if .Values.lunarStreamsEnabled }}
