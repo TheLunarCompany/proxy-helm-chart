@@ -154,6 +154,7 @@ policies:
       file_dir: "/var/log/lunar-proxy"
       file_name: "output.log"
 
+# ==== Example of flows and resources: ====
 # flows:
 #   rate_limit_flow.yaml: |
 #     name: RateLimitFlow
