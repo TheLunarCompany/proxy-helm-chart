@@ -156,23 +156,21 @@ policies:
 
 # flows:
 #   rate_limit_flow.yaml: |
-#     name: BasicRateLimitSample
-#
-#     filters:
-#       url: "*"
-#
+#     name: RateLimitFlow
+
+#     filter:
+#       url: httpbin.org/*
+
 #     processors:
-#       BasicRateLimiter:
-#         processor: BasicRateLimiter
+#       Limiter:
+#         processor: Limiter
 #         parameters:
-#           - key: allowed_request_count
-#             value: 10
-#           - key: window_size_in_seconds
-#             value: 5
-#
+#           - key: quota_id
+#             value: MyLimitResource
+
 #       GenerateResponse:
 #         processor: GenerateResponse
-#
+
 #       GenerateResponseTooManyRequests:
 #         processor: GenerateResponse
 #         parameters:
@@ -182,7 +180,7 @@ policies:
 #             value: Too many requests
 #           - key: Content-Type
 #             value: text/plain
-#
+
 #     flow:
 #       request:
 #         - from:
@@ -191,25 +189,25 @@ policies:
 #               at: start
 #           to:
 #             processor:
-#               name: BasicRateLimiter
-#
+#               name: Limiter
+
 #         - from:
 #             processor:
-#               name: BasicRateLimiter
+#               name: Limiter
 #               condition: below_limit
 #           to:
 #             stream:
 #               name: globalStream
 #               at: end
-#
+
 #         - from:
 #             processor:
-#               name: BasicRateLimiter
+#               name: Limiter
 #               condition: above_limit
 #           to:
 #             processor: 
 #               name: GenerateResponseTooManyRequests
-#
+
 #       response:
 #         - from:
 #             processor:
@@ -217,8 +215,8 @@ policies:
 #           to:
 #             stream:
 #               name: globalStream
-#               at: end
-#
+#               at: start
+
 #         - from:
 #             stream:
 #               name: globalStream
@@ -243,29 +241,6 @@ policies:
 #         url: httpbin.org/*
 #       strategy:
 #         fixed_window:
-#           max: 10
-#           interval: 10
+#           max: 2
+#           interval: 20
 #           interval_unit: second
-#           group_by_header: MyTokenHeader # Optional
-#           monthly_renewal: # Optional
-#             day: 1 # Day of the month 1-31
-#             hour: 11 # Hour of the day 0-23
-#             minute: 0 # Minute of the hour 0-59
-#             second: 0 # Second of the minute 0-59
-#             timezone: UTC # Timezone of the renewal
-#
-#     internal_limits:
-#       - id: MyLimitResourceProd
-#         parent_id: MyLimitResource
-#
-#         filter:
-#           url: httpbin.org/get
-#           method: 
-#             - GET
-#         strategy:
-#           fixed_window:
-#             max: 1
-#             interval: 10
-#             interval_unit: second
-#             spillover: # Optional
-#               max: 10
