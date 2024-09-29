@@ -69,7 +69,7 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: "lunar-proxy"
 
-containerResources:
+resources:
   {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
@@ -154,7 +154,7 @@ policies:
       file_dir: "/var/log/lunar-proxy"
       file_name: "output.log"
 
-# ==== Example of flows and resources: ====
+# ==== Example of flows and quotas: ====
 # flows:
 #   rate_limit_flow.yaml: |
 #     name: RateLimitFlow
@@ -234,7 +234,7 @@ policies:
 #               name: globalStream
 #               at: end
 
-# resources:
+# quotas:
 #   rate_limit_quota.yaml: |
 #     quota:
 #       id: MyLimitResource

@@ -50,7 +50,7 @@ spec:
               path: {{include "lunar-proxy.healthcheck.path" .}}
               port: {{include "lunar-proxy.healthcheck.port" .}}
           resources:
-            {{- toYaml .Values.containerResources | nindent 12 }}
+            {{- toYaml .Values.resources | nindent 12 }}
           env:
             - name: LOG_LEVEL
               value: {{ .Values.logLevel }}
@@ -108,8 +108,8 @@ spec:
           {{- if .Values.lunarStreamsEnabled }}
             - mountPath: /etc/lunar-proxy/flows
               name: flows
-            - mountPath: /etc/lunar-proxy/resources
-              name: resources
+            - mountPath: /etc/lunar-proxy/quotas
+              name: quotas
           {{- else }}
             - mountPath: /etc/lunar-proxy
               name: policies
@@ -132,8 +132,8 @@ spec:
             name: flows
           name: flows
         - configMap:
-            name: resources
-          name: resources
+            name: quotas
+          name: quotas
       {{- else }}
         - configMap:
             items:
