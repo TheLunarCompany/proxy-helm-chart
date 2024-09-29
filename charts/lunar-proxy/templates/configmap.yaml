@@ -40,7 +40,7 @@ immutable: false
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: resources
+  name: quotas
   namespace: {{ default .Release.Namespace }}
   labels:
     app: "{{ include "lunar-proxy.fullname" . }}"
@@ -48,7 +48,7 @@ metadata:
     heritage: {{ .Release.Service | quote }}
     release: {{ .Release.Name | quote }}
 data:
-{{- range $key, $value := .Values.resources }}
+{{- range $key, $value := .Values.quotas }}
   {{ $key }}: |
     {{ $value | nindent 4 }}
 {{- end }}
