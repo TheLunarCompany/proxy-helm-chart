@@ -100,28 +100,28 @@ ingress:
           pathType: Prefix
           backend:
             service:
-              name: lunar-proxy-test
+              name: lunar-proxy-example
               port:
                 number: 8081
         - path: /healthcheck
           pathType: Prefix
           backend:
             service:
-              name: lunar-proxy-test
+              name: lunar-proxy-example
               port:
                 number: 8040
         - path: /
           pathType: Prefix
           backend:
             service:
-              name: lunar-proxy-test
+              name: lunar-proxy-example
               port:
                 number: 8000
         - path: /metrics
           pathType: Prefix
           backend:
             service:
-              name: lunar-proxy-test
+              name: lunar-proxy-example
               port:
                 number: 3000
 
