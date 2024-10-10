@@ -96,6 +96,13 @@ ingress:
   hosts:
     - host: lunar-proxy-example.local
       paths:
+        - path: /load_flows
+          pathType: Prefix
+          backend:
+            service:
+              name: lunar-proxy-example
+              port:
+                number: 8081
         - path: /apply_policies
           pathType: Prefix
           backend:
