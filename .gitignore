@@ -1,1 +1,4 @@
 .history/
+charts/lunar-proxy/policies.yaml
+charts/lunar-proxy/flows
+charts/lunar-proxy/quotas

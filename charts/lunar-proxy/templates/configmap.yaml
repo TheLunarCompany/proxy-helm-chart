@@ -13,10 +13,10 @@ metadata:
 data:
   policies.yaml: |
     {{- if .Files.Get "policies.yaml" }}
-      {{ .Files.Get "policies.yaml" | nindent 4 }}
+      {{ .Files.Get "policies.yaml" | nindent 6 }}
     {{- else }}
       ---
-      {{ toYaml .Values.policies | nindent 4 }}
+      {{ toYaml .Values.policies | nindent 6 }}
     {{- end }}
 
 immutable: false
@@ -34,18 +34,16 @@ metadata:
     heritage: {{ .Release.Service | quote }}
     release: {{ .Release.Name | quote }}
 data:
-  {{- $flowsPath := .Values.flowsPath }}
-  {{- $yamlFiles := .Files.Glob (printf "%s/*.yaml" $flowsPath) }}
-  {{- $ymlFiles := .Files.Glob (printf "%s/*.yml" $flowsPath) }}
-  {{- $files := append $yamlFiles $ymlFiles }}
+  {{- $flowsPath := .Values.configPaths.flows }}
+  {{- $files := .Files.Glob (printf "%s/*.yaml" $flowsPath) }}
 
   {{- if $files }}
-    {{- range $file := $files }}
-    {{ base $file.Path }}: |
-      {{ .Files.Get $file.Path | nindent 4 }}
+    {{- range $file, $content := $files }}
+    {{ base $file }}: |
+      {{ $content | toString | trim | nindent 6 }}
     {{- end }}
   {{- else }}
-    # Fallback to the original values.yaml-based values if no .yaml/.yml files found
+    # Fallback to the original values.yaml-based values if no .yaml files found
     {{- range $key, $value := .Values.flows }}
       {{ $key }}: |
         {{ $value | nindent 4 }}
@@ -66,18 +64,16 @@ metadata:
     heritage: {{ .Release.Service | quote }}
     release: {{ .Release.Name | quote }}
 data:
-  {{- $flowsPath := .Values.flowsPath }}
-  {{- $yamlFiles := .Files.Glob (printf "%s/*.yaml" $flowsPath) }}
-  {{- $ymlFiles := .Files.Glob (printf "%s/*.yml" $flowsPath) }}
-  {{- $files := append $yamlFiles $ymlFiles }}
+  {{- $flowsPath := .Values.configPaths.quotas }}
+  {{- $files := .Files.Glob (printf "%s/*.yaml" $flowsPath) }}
 
   {{- if $files }}
-    {{- range $file := $files }}
-    {{ base $file.Path }}: |
-      {{ .Files.Get $file.Path | nindent 4 }}
+    {{- range $file, $content := $files }}
+    {{ base $file }}: |
+      {{ $content | toString | trim | nindent 6 }}
     {{- end }}
   {{- else }}
-    # Fallback to the original values.yaml-based values if no .yaml/.yml files found
+    # Fallback to the original values.yaml-based values if no .yaml files found
     {{- range $key, $value := .Values.quotas }}
       {{ $key }}: |
         {{ $value | nindent 4 }}

@@ -187,9 +187,9 @@ policies:
       file_dir: "/var/log/lunar-proxy"
       file_name: "output.log"
 
-configDir:
-  flows: "/flows"
-  quotas: "/quotas"
+configPaths:
+  flows: "flows"
+  quotas: "quotas"
   
 # ==== Example of flows and quotas: ====
 # flows:
