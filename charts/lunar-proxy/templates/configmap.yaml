@@ -12,9 +12,12 @@ metadata:
     release: {{ .Release.Name | quote }}
 data:
   policies.yaml: |
-
-    ---
-    {{- toYaml .Values.policies | nindent 4 }}
+    {{- if .Files.Get "policies.yaml" }}
+      {{ .Files.Get "policies.yaml" | nindent 4 }}
+    {{- else }}
+      ---
+      {{ toYaml .Values.policies | nindent 4 }}
+    {{- end }}
 
 immutable: false
 {{- end -}}
@@ -31,10 +34,25 @@ metadata:
     heritage: {{ .Release.Service | quote }}
     release: {{ .Release.Name | quote }}
 data:
-{{- range $key, $value := .Values.flows }}
-  {{ $key }}: |
-    {{ $value | nindent 4 }}
-{{- end }}
+  {{- $flowsPath := .Values.flowsPath }}
+  {{- $yamlFiles := .Files.Glob (printf "%s/*.yaml" $flowsPath) }}
+  {{- $ymlFiles := .Files.Glob (printf "%s/*.yml" $flowsPath) }}
+  {{- $files := append $yamlFiles $ymlFiles }}
+
+  {{- if $files }}
+    {{- range $file := $files }}
+    {{ base $file.Path }}: |
+      {{ .Files.Get $file.Path | nindent 4 }}
+    {{- end }}
+  {{- else }}
+    # Fallback to the original values.yaml-based values if no .yaml/.yml files found
+    {{- range $key, $value := .Values.flows }}
+      {{ $key }}: |
+        {{ $value | nindent 4 }}
+    {{- end }}
+  {{- end }}
+
+
 immutable: false
 ---
 apiVersion: v1
@@ -48,9 +66,22 @@ metadata:
     heritage: {{ .Release.Service | quote }}
     release: {{ .Release.Name | quote }}
 data:
-{{- range $key, $value := .Values.quotas }}
-  {{ $key }}: |
-    {{ $value | nindent 4 }}
-{{- end }}
+  {{- $flowsPath := .Values.flowsPath }}
+  {{- $yamlFiles := .Files.Glob (printf "%s/*.yaml" $flowsPath) }}
+  {{- $ymlFiles := .Files.Glob (printf "%s/*.yml" $flowsPath) }}
+  {{- $files := append $yamlFiles $ymlFiles }}
+
+  {{- if $files }}
+    {{- range $file := $files }}
+    {{ base $file.Path }}: |
+      {{ .Files.Get $file.Path | nindent 4 }}
+    {{- end }}
+  {{- else }}
+    # Fallback to the original values.yaml-based values if no .yaml/.yml files found
+    {{- range $key, $value := .Values.quotas }}
+      {{ $key }}: |
+        {{ $value | nindent 4 }}
+    {{- end }}    
+  {{- end }}
 immutable: false
 {{- end -}}

@@ -187,6 +187,10 @@ policies:
       file_dir: "/var/log/lunar-proxy"
       file_name: "output.log"
 
+configDir:
+  flows: "/flows"
+  quotas: "/quotas"
+  
 # ==== Example of flows and quotas: ====
 # flows:
 #   rate_limit_flow.yaml: |
