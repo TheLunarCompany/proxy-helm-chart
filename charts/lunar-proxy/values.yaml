@@ -179,6 +179,11 @@ serviceMonitor:
 
   targetLabels: []
 
+configMapNames:
+  policies: ""
+  flows: ""
+  quotas: ""
+
 policies:
   global: {}
   endpoints: []

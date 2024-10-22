@@ -11,11 +11,14 @@ metadata:
     heritage: {{ .Release.Service | quote }}
     release: {{ .Release.Name | quote }}
 data:
+  {{- if .Values.configMapNames.policies }}
+  # No need to define data here; it will be provided via the external ConfigMap
+  {{- else }}
   policies.yaml: |
 
     ---
     {{- toYaml .Values.policies | nindent 4 }}
-
+  {{- end}}
 immutable: false
 {{- end -}}
 {{- if .Values.lunarStreamsEnabled }}
@@ -31,9 +34,13 @@ metadata:
     heritage: {{ .Release.Service | quote }}
     release: {{ .Release.Name | quote }}
 data:
+{{- if .Values.configMapNames.flows }}
+  # No need to define data here; it will be provided via the external ConfigMap
+{{- else }}
 {{- range $key, $value := .Values.flows }}
   {{ $key }}: |
     {{ $value | nindent 4 }}
+{{- end }}
 {{- end }}
 immutable: false
 ---
@@ -48,9 +55,13 @@ metadata:
     heritage: {{ .Release.Service | quote }}
     release: {{ .Release.Name | quote }}
 data:
+{{- if .Values.configMapNames.quotas }}
+  # No need to define data here; it will be provided via the external ConfigMap
+{{- else }}
 {{- range $key, $value := .Values.quotas }}
   {{ $key }}: |
     {{ $value | nindent 4 }}
 {{- end }}
+{{- end }}
 immutable: false
-{{- end -}}
+{{- end }}

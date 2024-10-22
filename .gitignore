@@ -1,1 +1,5 @@
 .history/
+/charts/lunar-proxy/override-values.yaml
+/charts/lunar-proxy/flows
+/charts/lunar-proxy/quotas
+/charts/lunar-proxy/policies.yaml
