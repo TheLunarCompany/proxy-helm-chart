@@ -23,13 +23,18 @@ env: null
 logLevel: "error"
 tenantName: null
 lunarStreamsEnabled: false
-redisUrl: null
+
 lunarHubURL: null
-redisUseCluster: false
+
 awsAccessKeyId: null
 telemetryEnabled: true
 awsSecretAccessKey: null
 lunarManaged: false
+
+# Redis configuration
+redisUrl: null
+redisUseCluster: false
+redisPrefix: "lunar"
 
 lunarFlushSeconds: 10
 
@@ -191,7 +196,6 @@ policies:
     file:
       file_dir: "/var/log/lunar-proxy"
       file_name: "output.log"
-
 # ==== Example of flows and quotas: ====
 # flows:
 #   rate_limit_flow.yaml: |
@@ -244,7 +248,7 @@ policies:
 #               name: Limiter
 #               condition: above_limit
 #           to:
-#             processor: 
+#             processor:
 #               name: GenerateResponseTooManyRequests
 
 #       response:
@@ -261,7 +265,7 @@ policies:
 #               name: globalStream
 #               at: start
 #           to:
-#             processor: 
+#             processor:
 #               name: GenerateResponse
 
 #         - from:
