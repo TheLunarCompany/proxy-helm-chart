@@ -22,7 +22,7 @@ lunarAPIKeySecretName: null # Set the API key from a secret (key must be named l
 env: null
 logLevel: "error"
 tenantName: null
-lunarStreamsEnabled: false
+lunarStreamsEnabled: true
 
 lunarHubURL: null
 
