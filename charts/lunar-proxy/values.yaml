@@ -14,7 +14,20 @@ fullnameOverride: ""
 
 replicaCount: 1
 
-podAnnotations: {}
+podAnnotations:
+  ad.datadoghq.com/lunar-proxy.checks: |
+    {
+      "openmetrics": {
+        "init_config": {},
+        "instances": [
+          {
+            "openmetrics_endpoint": "http://%%host%%:3000/metrics",
+            "namespace": "eliav-test",
+            "metrics": [".*"]
+          }
+        ]
+      }
+    }      
 
 lunarAPIKey: null # Set the API key directly
 lunarAPIKeySecretName: null # Set the API key from a secret (key must be named lunarAPIKey)
