@@ -22,7 +22,7 @@ podAnnotations:
         "instances": [
           {
             "openmetrics_endpoint": "http://%%host%%:3000/metrics",
-            "namespace": "eliav-test",
+            "namespace": "tal-test",
             "metrics": [".*"]
           }
         ]

@@ -54,3 +54,21 @@ data:
 {{- end }}
 immutable: false
 {{- end -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metrics.yaml
+  namespace: {{ default .Release.Namespace }}
+  labels:
+    app: "{{ include "lunar-proxy.fullname" . }}"
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+data:
+  metrics.yaml: |
+
+    ---
+    {{- toYaml .Values.metrics | nindent 4 }}
+
+immutable: false
