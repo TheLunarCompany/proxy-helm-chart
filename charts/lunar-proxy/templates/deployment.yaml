@@ -82,6 +82,10 @@ spec:
             - name: LUNAR_MANAGED
               value: {{ .Values.lunarManaged }}
           {{- end }}
+          {{- if .Values.redisPrefix }}
+            - name: REDIS_PREFIX
+              value: {{ .Values.redisPrefix }}
+          {{- end }}
           {{- if .Values.redisUrl }}
             - name: REDIS_URL
               value: {{ .Values.redisUrl }}
@@ -130,19 +134,41 @@ spec:
       {{- end }}
       volumes:
       {{- if .Values.lunarStreamsEnabled }}
+      {{- if .Values.configMapNames.flows }}
+        - configMap:
+            name: {{ .Values.configMapNames.flows }}
+          name: flows      
+      {{- else }}
         - configMap:
             name: flows
           name: flows
+      {{- end }}
+      {{- if .Values.configMapNames.quotas }}
+        - configMap:
+            name: {{ .Values.configMapNames.quotas }}
+          name: quotas      
+      {{- else }}
         - configMap:
             name: quotas
           name: quotas
+      {{- end }}
+      {{- if .Values.configMapNames.metrics }}
+        - configMap:
+            name: {{ .Values.configMapNames.metrics }}
+          name: metrics      
+      {{- else }}
+        - configMap:
+            name: metrics
+          name: metrics
+      {{- end }}
+      {{- else }} # i.e. lunarStreamsEnabled is false
+      {{- if .Values.configMapNames.policies }}
         - configMap:
             items:
-              - key: metrics.yaml
-                path: metrics.yaml
-            name: policies.yaml
-          name: metrics
-
+              - key: policies.yaml
+                path: policies.yaml
+            name: {{ .Values.configMapNames.policies }}
+          name: policies      
       {{- else }}
         - configMap:
             items:
@@ -150,4 +176,5 @@ spec:
                 path: policies.yaml
             name: policies.yaml
           name: policies
+      {{- end  }}
       {{- end }}
