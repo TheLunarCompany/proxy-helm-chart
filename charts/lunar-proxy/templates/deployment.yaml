@@ -13,10 +13,25 @@ spec:
       {{- include "lunar-proxy.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
+        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
+        {{- if .Values.metrics.datadog.enabled }}
+        ad.datadoghq.com/lunar-proxy.checks: |
+          {
+            "openmetrics": {
+              "init_config": {},
+              "instances": [
+                {
+                  "openmetrics_endpoint": "http://%%host%%:{{ .Values.serviceMonitor.port }}/metrics",
+                  "namespace": "{{ .Values.metrics.datadog.namespace }}",
+                  "metrics": {{ toJson .Values.metrics.datadog.includedMetrics }}
+                }
+              ]
+            }
+          }
+        {{- end }}
       labels:
         {{- include "lunar-proxy.selectorLabels" . | nindent 8 }}
     spec:
