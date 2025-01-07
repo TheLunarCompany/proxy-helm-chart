@@ -16,6 +16,14 @@ replicaCount: 1
 
 podAnnotations: {}
 
+metrics:
+  datadog:
+    enabled: false  # Users can set this to true to enable Datadog metrics collection
+    namespace: "lunar_proxy"  # Default namespace for metrics; users can override as needed
+    includedMetrics: # List of metrics to collect; default is all metrics
+      - ".*" 
+
+
 lunarAPIKey: null # Set the API key directly
 lunarAPIKeySecretName: null # Set the API key from a secret (key must be named lunarAPIKey)
 
