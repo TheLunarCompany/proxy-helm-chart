@@ -113,6 +113,9 @@
     "telemetryEnabled": {
       "type": "boolean"
     },
+    "telemetryLogLevel": {
+      "type": "string"
+    },
     "logLevel": {
       "type": "string"
     },
@@ -130,9 +133,6 @@
     },
     "lunarFlushSeconds": {
       "type": "integer"
-    },
-    "redisPrefix": {
-      "type": "string"
     },
     "service": {
       "type": "object",
@@ -306,14 +306,88 @@
       "type": "object",
       "additionalProperties": true
     },
-    "spoe": {
+    "timeouts": {
       "type": "object",
       "properties": {
-        "processingTimeoutSec": {
+        "spoe": {
+          "type": "object",
+          "properties": {
+            "processingTimeoutSec": {
+              "type": "integer"
+            },
+            "helloTimeoutMillis": {
+              "type": "integer"
+            }
+          }
+        },
+        "proxy": {
+          "type": "object",
+          "properties": {
+            "connectTimeoutSec": {
+              "type": "integer"
+            },
+            "clientTimeoutSec": {
+              "type": "integer"
+            },
+            "serverTimeoutSec": {
+              "type": "integer"
+            }
+          }
+        },
+        "retryRequestTimeoutSec": {
           "type": "integer"
         }
       }
+    },
+    "redis": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "useCluster": {
+          "type": "boolean"
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "useCaCert": {
+          "type": "boolean"
+        },
+        "caCertPath": {
+          "type": "string"
+        },
+        "useClientCert": {
+          "type": "boolean"
+        },
+        "clientCertPath": {
+          "type": "string"
+        },
+        "clientKeyPath": {
+          "type": "string"
+        }
+      }
     }
+  },
+  "gateway": {
+    "type": "object",
+    "properties": {
+      "maxConn": {
+        "type": "integer"
+      },
+      "bufferSize": {
+        "type": "integer"
+      },
+      "accessLogOutput": {
+        "type": "string"
+      },
+      "doctorReportIntervalMinutes": {
+        "type": "integer"
+      }
+    }
+  },
+  "tlsPassthrough": {
+    "type": "boolean"
   },
   "additionalProperties": true
 }
