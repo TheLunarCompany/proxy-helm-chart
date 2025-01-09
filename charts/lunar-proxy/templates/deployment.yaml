@@ -129,18 +129,26 @@ spec:
           {{- end }}
           volumeMounts:
           {{- if .Values.lunarStreamsEnabled }}
+            {{- if .Values.configMapNames.root }}
             - mountPath: /etc/lunar-proxy
               name: root
+            {{- end }}
             - mountPath: /etc/lunar-proxy/flows
               name: flows
             - mountPath: /etc/lunar-proxy/quotas
               name: quotas
+            {{- if .Values.configMapNames.pathParams }}
             - mountPath: /etc/lunar-proxy/path_params
               name: path-params
-            {{- if .Values.secretNames.certs }}
-            - mountPath: /etc/lunar-proxy/certs
-              name: certs
-            {{- end }}  
+            {{- end }}
+            {{- if .Values.secretNames.tlsCerts }}
+            - mountPath: /etc/lunar-proxy/certs/tls
+              name: tls-certs
+            {{- end }}
+            {{- if .Values.secretNames.mtlsCerts }}
+            - mountPath: /etc/lunar-proxy/certs/mtls
+              name: mtls-certs
+            {{- end }}            
           {{- else }}
             - mountPath: /etc/lunar-proxy
               name: policies
@@ -182,26 +190,23 @@ spec:
         - configMap:
             name: {{ .Values.configMapNames.pathParams }}
           name: path-params      
-      {{- else }}
-        - configMap:
-            name: path-params
-          name: path-params
       {{- end }}
 
       {{- if .Values.configMapNames.root }}
         - configMap:
             name: {{ .Values.configMapNames.root }}
           name: root
-      {{- else }}
-        - configMap:
-            name: root
-          name: root
       {{- end }}
 
-      {{- if .Values.secretNames.certs }}
+      {{- if .Values.secretNames.tlsCerts }}
         - secret:
-            secretName: {{ .Values.secretNames.certs }}
-          name: certs
+            secretName: {{ .Values.secretNames.tlsCerts }}
+          name: tls-certs
+      {{- end }}
+      {{- if .Values.secretNames.mtlsCerts }}
+        - secret:
+            secretName: {{ .Values.secretNames.mtlsCerts }}
+          name: mtls-certs
       {{- end }}
 
       {{- else }} # i.e. lunarStreamsEnabled is false

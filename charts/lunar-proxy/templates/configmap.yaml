@@ -68,37 +68,5 @@ data:
 {{- end }}
 immutable: false
 ---
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: root
-  namespace: {{ default .Release.Namespace }}
-  labels:
-    app: "{{ include "lunar-proxy.fullname" . }}"
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-    heritage: {{ .Release.Service | quote }}
-    release: {{ .Release.Name | quote }}
-data:
-  {{- if .Values.configMapNames.root }}
-  # No need to define data here; it will be provided via the external ConfigMap
-  {{- end}}
-immutable: false
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: path-params
-  namespace: {{ default .Release.Namespace }}
-  labels:
-    app: "{{ include "lunar-proxy.fullname" . }}"
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-    heritage: {{ .Release.Service | quote }}
-    release: {{ .Release.Name | quote }}
-data:
-  {{- if .Values.configMapNames.pathParams }}
-  # No need to define data here; it will be provided via the external ConfigMap
-  {{- end}}
-immutable: false
-
 
 {{- end }} # Flows support end
