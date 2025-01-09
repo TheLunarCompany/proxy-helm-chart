@@ -81,6 +81,10 @@ spec:
             - name: ENV
               value: {{ .Values.env }}
           {{- end }}
+          {{- if .Values.spoe.processingTimeoutSec }}
+            - name: LUNAR_SPOE_PROCESSING_TIMEOUT_SEC
+              value: {{ toString .Values.spoe.processingTimeoutSec | quote }}
+          {{- end }}          
           {{- if .Values.tenantName }}
             - name: TENANT_NAME
               value: {{ .Values.tenantName }}
@@ -126,15 +130,13 @@ spec:
           volumeMounts:
           {{- if .Values.lunarStreamsEnabled }}
             - mountPath: /etc/lunar-proxy
-              name: metrics
-            - mountPath: /etc/lunar-proxy
-              name: gatewayConfig              
+              name: root
             - mountPath: /etc/lunar-proxy/flows
               name: flows
             - mountPath: /etc/lunar-proxy/quotas
               name: quotas
             - mountPath: /etc/lunar-proxy/path_params
-              name: pathParams
+              name: path-params
           {{- else }}
             - mountPath: /etc/lunar-proxy
               name: policies
@@ -175,31 +177,22 @@ spec:
       {{- if .Values.configMapNames.pathParams }}
         - configMap:
             name: {{ .Values.configMapNames.pathParams }}
-          name: pathParams      
+          name: path-params      
       {{- else }}
         - configMap:
-            name: pathParams
-          name: pathParams
+            name: path-params
+          name: path-params
       {{- end }}
 
-      {{- if .Values.configMapNames.metrics }}
+      {{- if .Values.configMapNames.root }}
         - configMap:
-            name: {{ .Values.configMapNames.metrics }}
-          name: metrics      
+            name: {{ .Values.configMapNames.root }}
+          name: root
       {{- else }}
         - configMap:
-            name: metrics
-          name: metrics
+            name: root
+          name: root
       {{- end }}
-      {{- if .Values.configMapNames.gatewayConfig }}
-        - configMap:
-            name: {{ .Values.configMapNames.gatewayConfig }}
-          name: gatewayConfig
-      {{- else }}
-        - configMap:
-            name: gatewayConfig
-          name: gatewayConfig
-      {{- end }}      
       {{- else }} # i.e. lunarStreamsEnabled is false
       {{- if .Values.configMapNames.policies }}
         - configMap:

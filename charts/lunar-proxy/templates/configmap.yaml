@@ -71,7 +71,7 @@ immutable: false
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: metrics
+  name: root
   namespace: {{ default .Release.Namespace }}
   labels:
     app: "{{ include "lunar-proxy.fullname" . }}"
@@ -79,7 +79,7 @@ metadata:
     heritage: {{ .Release.Service | quote }}
     release: {{ .Release.Name | quote }}
 data:
-  {{- if .Values.configMapNames.metrics }}
+  {{- if .Values.configMapNames.root }}
   # No need to define data here; it will be provided via the external ConfigMap
   {{- end}}
 immutable: false
@@ -87,23 +87,7 @@ immutable: false
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: gatewayConfig
-  namespace: {{ default .Release.Namespace }}
-  labels:
-    app: "{{ include "lunar-proxy.fullname" . }}"
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-    heritage: {{ .Release.Service | quote }}
-    release: {{ .Release.Name | quote }}
-data:
-  {{- if .Values.configMapNames.gatewayConfig }}
-  # No need to define data here; it will be provided via the external ConfigMap
-  {{- end}}
-immutable: false
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: pathParams
+  name: path-params
   namespace: {{ default .Release.Namespace }}
   labels:
     app: "{{ include "lunar-proxy.fullname" . }}"

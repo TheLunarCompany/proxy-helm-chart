@@ -294,10 +294,7 @@
         "pathParams": {
           "type": "string"
         },
-        "gatewayConfig": {
-          "type": "string"
-        },
-        "metrics": {
+        "root": {
           "type": "string"
         },
         "policies": {
@@ -308,6 +305,14 @@
     "policies": {
       "type": "object",
       "additionalProperties": true
+    },
+    "spoe": {
+      "type": "object",
+      "properties": {
+        "processingTimeoutSec": {
+          "type": "integer"
+        }
+      }
     }
   },
   "additionalProperties": true
