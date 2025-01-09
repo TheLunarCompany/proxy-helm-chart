@@ -75,8 +75,6 @@ spec:
               value: {{ toString .Values.lunarFlushSeconds | quote }}
             - name: LUNAR_TELEMETRY
               value: {{ toString .Values.telemetryEnabled | quote }}
-            - name: REDIS_USE_CLUSTER
-              value: {{ toString .Values.redisUseCluster | quote }}
           {{- if .Values.env }}
             - name: ENV
               value: {{ .Values.env }}
@@ -96,14 +94,6 @@ spec:
           {{- if .Values.lunarManaged }}
             - name: LUNAR_MANAGED
               value: {{ .Values.lunarManaged }}
-          {{- end }}
-          {{- if .Values.redisPrefix }}
-            - name: REDIS_PREFIX
-              value: {{ .Values.redisPrefix }}
-          {{- end }}
-          {{- if .Values.redisUrl }}
-            - name: REDIS_URL
-              value: {{ .Values.redisUrl }}
           {{- end }}
           {{- if .Values.lunarHubURL }}
             - name: LUNAR_HUB_URL
@@ -261,7 +251,7 @@ spec:
           name: flows      
       {{- else }}
         - configMap:
-            name: flows
+            name: lunar-gateway-flows
           name: flows
       {{- end }}
       {{- if .Values.configMapNames.quotas }}
@@ -270,19 +260,27 @@ spec:
           name: quotas      
       {{- else }}
         - configMap:
-            name: quotas
+            name: lunar-gateway-quotas
           name: quotas
       {{- end }}
 
       {{- if .Values.configMapNames.pathParams }}
         - configMap:
             name: {{ .Values.configMapNames.pathParams }}
-          name: path-params      
+          name: path-params
+      {{- else }}
+        - configMap:
+            name: lunar-gateway-path-params
+          name: path-params         
       {{- end }}
 
       {{- if .Values.configMapNames.root }}
         - configMap:
             name: {{ .Values.configMapNames.root }}
+          name: root
+      {{- else }}
+        - configMap:
+            name: lunar-gateway-root
           name: root
       {{- end }}
 

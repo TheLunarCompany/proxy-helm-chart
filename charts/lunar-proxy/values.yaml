@@ -200,10 +200,8 @@ serviceMonitor:
 
   targetLabels: []
 
-configMapNames:
-  policies: ""
-  flows: ""
-  quotas: ""
+configMapNames: {}
+configFiles: {}
 
 policies:
   global: {}
