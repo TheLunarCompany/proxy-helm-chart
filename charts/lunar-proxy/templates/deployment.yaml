@@ -137,6 +137,10 @@ spec:
               name: quotas
             - mountPath: /etc/lunar-proxy/path_params
               name: path-params
+            {{- if .Values.secretNames.certs }}
+            - mountPath: /etc/lunar-proxy/certs
+              name: certs
+            {{- end }}  
           {{- else }}
             - mountPath: /etc/lunar-proxy
               name: policies
@@ -193,6 +197,13 @@ spec:
             name: root
           name: root
       {{- end }}
+
+      {{- if .Values.secretNames.certs }}
+        - secret:
+            secretName: {{ .Values.secretNames.certs }}
+          name: certs
+      {{- end }}
+
       {{- else }} # i.e. lunarStreamsEnabled is false
       {{- if .Values.configMapNames.policies }}
         - configMap:
