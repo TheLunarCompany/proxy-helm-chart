@@ -291,6 +291,15 @@
         "quotas": {
           "type": "string"
         },
+        "pathParams": {
+          "type": "string"
+        },
+        "gatewayConfig": {
+          "type": "string"
+        },
+        "metrics": {
+          "type": "string"
+        },
         "policies": {
           "type": "string"
         }

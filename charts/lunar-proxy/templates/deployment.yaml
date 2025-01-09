@@ -127,10 +127,14 @@ spec:
           {{- if .Values.lunarStreamsEnabled }}
             - mountPath: /etc/lunar-proxy
               name: metrics
+            - mountPath: /etc/lunar-proxy
+              name: gatewayConfig              
             - mountPath: /etc/lunar-proxy/flows
               name: flows
             - mountPath: /etc/lunar-proxy/quotas
               name: quotas
+            - mountPath: /etc/lunar-proxy/path_params
+              name: pathParams
           {{- else }}
             - mountPath: /etc/lunar-proxy
               name: policies
@@ -167,6 +171,17 @@ spec:
             name: quotas
           name: quotas
       {{- end }}
+
+      {{- if .Values.configMapNames.pathParams }}
+        - configMap:
+            name: {{ .Values.configMapNames.pathParams }}
+          name: pathParams      
+      {{- else }}
+        - configMap:
+            name: pathParams
+          name: pathParams
+      {{- end }}
+
       {{- if .Values.configMapNames.metrics }}
         - configMap:
             name: {{ .Values.configMapNames.metrics }}
@@ -176,6 +191,15 @@ spec:
             name: metrics
           name: metrics
       {{- end }}
+      {{- if .Values.configMapNames.gatewayConfig }}
+        - configMap:
+            name: {{ .Values.configMapNames.gatewayConfig }}
+          name: gatewayConfig
+      {{- else }}
+        - configMap:
+            name: gatewayConfig
+          name: gatewayConfig
+      {{- end }}      
       {{- else }} # i.e. lunarStreamsEnabled is false
       {{- if .Values.configMapNames.policies }}
         - configMap:

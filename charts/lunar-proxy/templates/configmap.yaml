@@ -1,3 +1,4 @@
+# Policies support
 {{- if not .Values.lunarStreamsEnabled }}
 ---
 apiVersion: v1
@@ -21,6 +22,8 @@ data:
   {{- end}}
 immutable: false
 {{- end -}}
+
+# Flows support start
 {{- if .Values.lunarStreamsEnabled }}
 ---
 apiVersion: v1
@@ -68,7 +71,7 @@ immutable: false
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: metrics.yaml
+  name: metrics
   namespace: {{ default .Release.Namespace }}
   labels:
     app: "{{ include "lunar-proxy.fullname" . }}"
@@ -78,12 +81,40 @@ metadata:
 data:
   {{- if .Values.configMapNames.metrics }}
   # No need to define data here; it will be provided via the external ConfigMap
-  {{- else }}
-  metrics.yaml: |
-
-    ---
-    {{- toYaml .Values.metrics | nindent 4 }}
+  {{- end}}
+immutable: false
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gatewayConfig
+  namespace: {{ default .Release.Namespace }}
+  labels:
+    app: "{{ include "lunar-proxy.fullname" . }}"
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+data:
+  {{- if .Values.configMapNames.gatewayConfig }}
+  # No need to define data here; it will be provided via the external ConfigMap
+  {{- end}}
+immutable: false
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pathParams
+  namespace: {{ default .Release.Namespace }}
+  labels:
+    app: "{{ include "lunar-proxy.fullname" . }}"
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+data:
+  {{- if .Values.configMapNames.pathParams }}
+  # No need to define data here; it will be provided via the external ConfigMap
   {{- end}}
 immutable: false
 
-{{- end }}
+
+{{- end }} # Flows support end
