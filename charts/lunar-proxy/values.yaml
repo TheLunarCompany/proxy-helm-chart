@@ -40,9 +40,17 @@ awsSecretAccessKey: null
 lunarManaged: false
 
 # Redis configuration
-redisUrl: null
-redisUseCluster: false
-redisPrefix: "lunar"
+redis:
+  prefix: "lunar"
+# redisUrl: null
+# redisUseCluster: false
+# redisPrefix: "lunar"
+
+timeouts:
+  spoe: {}
+  proxy: {}
+
+gateway: {}
 
 lunarFlushSeconds: 10
 

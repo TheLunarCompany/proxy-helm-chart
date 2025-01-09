@@ -202,7 +202,7 @@ spec:
           {{- end }}
           {{- if .Values.gateway.accessLogOutput }}
             - name: LUNAR_ACCESS_LOGS_OUTPUT
-              value: {{ Values.gateway.accessLogOutput }}
+              value: {{ .Values.gateway.accessLogOutput }}
           {{- end }}
           {{- if .Values.gateway.doctorReportIntervalMinutes }}
             - name: DOCTOR_REPORT_INTERVAL_MINUTES
