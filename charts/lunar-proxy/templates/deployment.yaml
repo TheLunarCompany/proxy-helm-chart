@@ -75,8 +75,6 @@ spec:
               value: {{ toString .Values.lunarFlushSeconds | quote }}
             - name: LUNAR_TELEMETRY
               value: {{ toString .Values.telemetryEnabled | quote }}
-            - name: REDIS_USE_CLUSTER
-              value: {{ toString .Values.redisUseCluster | quote }}
           {{- if .Values.env }}
             - name: ENV
               value: {{ .Values.env }}
@@ -97,14 +95,6 @@ spec:
             - name: LUNAR_MANAGED
               value: {{ .Values.lunarManaged }}
           {{- end }}
-          {{- if .Values.redisPrefix }}
-            - name: REDIS_PREFIX
-              value: {{ .Values.redisPrefix }}
-          {{- end }}
-          {{- if .Values.redisUrl }}
-            - name: REDIS_URL
-              value: {{ .Values.redisUrl }}
-          {{- end }}
           {{- if .Values.lunarHubURL }}
             - name: LUNAR_HUB_URL
               value: {{ .Values.lunarHubURL }}
@@ -123,14 +113,116 @@ spec:
             - name: LUNAR_STREAMS_ENABLED
               value: {{ toString .Values.lunarStreamsEnabled | quote }}
           {{- end }}
+
+          {{- if .Values.telemetryLogLevel }}
+              - name: LUNAR_TELEMETRY_LOG_LEVEL
+              value: {{ .Values.telemetryLogLevel }}
+          {{- end}}          
+
+          # Timeouts
+          {{- if .Values.timeouts.spoe.processingTimeoutSec }}
+            - name: LUNAR_SPOE_PROCESSING_TIMEOUT_SEC
+              value: {{ toString .Values.timeouts.spoe.processingTimeoutSec | quote }}
+          {{- end }}
+          {{- if .Values.timeouts.spoe.helloTimeoutMillis }}
+            - name: LUNAR_SPOE_HELLO_TIMEOUT_MS
+              value: {{ toString .Values.timeouts.spoe.helloTimeoutMillis | quote }}
+          {{- end }}
+
+          {{- if .Values.timeouts.proxy.connectTimeoutSec }}
+            - name: LUNAR_CONNECT_TIMEOUT_SEC
+              value: {{ toString .Values.timeouts.proxy.connectTimeoutSec | quote }}
+          {{- end }}
+          {{- if .Values.timeouts.proxy.clientTimeoutSec }}
+            - name: LUNAR_CLIENT_TIMEOUT_SEC
+              value: {{ toString .Values.timeouts.proxy.clientTimeoutSec | quote }}
+          {{- end }}
+          {{- if .Values.timeouts.proxy.serverTimeoutSec }}
+            - name: LUNAR_SERVER_TIMEOUT_SEC
+              value: {{ toString .Values.timeouts.proxy.serverTimeoutSec | quote }}
+          {{- end }}
+          {{- if .Values.timeouts.retryRequestTimeoutSec }}
+            - name: LUNAR_RETRY_REQUEST_TIMEOUT_SEC
+              value: {{ toString .Values.timeouts.retryRequestTimeoutSec | quote }}
+          {{- end }}
+
+          # Redis
+          {{- if .Values.redis.url }}
+            - name: REDIS_URL
+              value: {{ .Values.redis.url }}
+          {{- end }}
+          {{- if .Values.redis.useCluster }}
+            - name: REDIS_USE_CLUSTER
+              value: {{ toString .Values.redis.useCluster | quote }}
+          {{- end }}          
+          {{- if .Values.redis.prefix }}
+            - name: REDIS_PREFIX
+              value: {{ .Values.redis.prefix }}
+          {{- end }}                    
+          
+          {{- if .Values.redis.useCaCert }}
+            - name: REDIS_USE_CA_CERT
+              value: {{ toString .Values.redis.useCaCert | quote }}
+          {{- end }}              
+          {{- if .Values.redis.caCertPath }}
+            - name: REDIS_CA_CERT_PATH
+              value: {{ .Values.redis.caCertPath }}
+          {{- end }}              
+          {{- if .Values.redis.useClientCert }}
+            - name: REDIS_USE_CLIENT_CERT
+              value: {{ toString .Values.redis.useClientCert | quote }}
+          {{- end }}
+          {{- if .Values.redis.clientCertPath }}
+            - name: REDIS_CLIENT_CERT_PATH
+              value: {{ .Values.redis.clientCertPath }}
+          {{- end }}              
+          {{- if .Values.redis.clientKeyPath }}
+            - name: REDIS_CLIENT_KEY_PATH
+              value: {{ .Values.redis.clientKeyPath }}
+          {{- end }}
+
+          # Gateway 
+          {{- if .Values.gateway.maxConn }}
+            - name: LUNAR_MAXCONN
+              value: {{ toString .Values.gateway.maxConn | quote }}
+          {{- end }}
+          {{- if .Values.gateway.bufferSize }}
+            - name: GATEWAY_BUFFER_SIZE
+              value: {{ toString .Values.gateway.bufferSize | quote }}
+          {{- end }}
+          {{- if .Values.gateway.accessLogOutput }}
+            - name: LUNAR_ACCESS_LOGS_OUTPUT
+              value: {{ .Values.gateway.accessLogOutput }}
+          {{- end }}
+          {{- if .Values.gateway.doctorReportIntervalMinutes }}
+            - name: DOCTOR_REPORT_INTERVAL_MINUTES
+              value: {{ toString .Values.gateway.doctorReportIntervalMinutes | quote }}
+          {{- end }}
+
+          {{- if .Values.tlsPassthrough }}
+            - name: TLS_PASSTHROUGH_ON
+              value: {{ toString .Values.tlsPassthrough | quote }}
+          {{- end }}                                        
+
+
           volumeMounts:
           {{- if .Values.lunarStreamsEnabled }}
             - mountPath: /etc/lunar-proxy
-              name: metrics
+              name: root
             - mountPath: /etc/lunar-proxy/flows
               name: flows
             - mountPath: /etc/lunar-proxy/quotas
               name: quotas
+            - mountPath: /etc/lunar-proxy/path_params
+              name: path-params
+            {{- if .Values.secretNames.tlsCerts }}
+            - mountPath: /etc/lunar-proxy/certs/tls
+              name: tls-certs
+            {{- end }}
+            {{- if .Values.secretNames.mtlsCerts }}
+            - mountPath: /etc/lunar-proxy/certs/mtls
+              name: mtls-certs
+            {{- end }}            
           {{- else }}
             - mountPath: /etc/lunar-proxy
               name: policies
@@ -155,7 +247,7 @@ spec:
           name: flows      
       {{- else }}
         - configMap:
-            name: flows
+            name: lunar-gateway-flows
           name: flows
       {{- end }}
       {{- if .Values.configMapNames.quotas }}
@@ -164,18 +256,41 @@ spec:
           name: quotas      
       {{- else }}
         - configMap:
-            name: quotas
+            name: lunar-gateway-quotas
           name: quotas
       {{- end }}
-      {{- if .Values.configMapNames.metrics }}
+
+      {{- if .Values.configMapNames.pathParams }}
         - configMap:
-            name: {{ .Values.configMapNames.metrics }}
-          name: metrics      
+            name: {{ .Values.configMapNames.pathParams }}
+          name: path-params
       {{- else }}
         - configMap:
-            name: metrics
-          name: metrics
+            name: lunar-gateway-path-params
+          name: path-params         
       {{- end }}
+
+      {{- if .Values.configMapNames.root }}
+        - configMap:
+            name: {{ .Values.configMapNames.root }}
+          name: root
+      {{- else }}
+        - configMap:
+            name: lunar-gateway-root
+          name: root
+      {{- end }}
+
+      {{- if .Values.secretNames.tlsCerts }}
+        - secret:
+            secretName: {{ .Values.secretNames.tlsCerts }}
+          name: tls-certs
+      {{- end }}
+      {{- if .Values.secretNames.mtlsCerts }}
+        - secret:
+            secretName: {{ .Values.secretNames.mtlsCerts }}
+          name: mtls-certs
+      {{- end }}
+
       {{- else }} # i.e. lunarStreamsEnabled is false
       {{- if .Values.configMapNames.policies }}
         - configMap:

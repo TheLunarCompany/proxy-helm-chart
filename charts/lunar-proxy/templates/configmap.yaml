@@ -1,9 +1,11 @@
+# Policies support
 {{- if not .Values.lunarStreamsEnabled }}
+{{- if .Values.configMapNames.policies }}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: policies.yaml
+  name: lunar-gateway-policies
   namespace: {{ default .Release.Namespace }}
   labels:
     app: "{{ include "lunar-proxy.fullname" . }}"
@@ -11,22 +13,22 @@ metadata:
     heritage: {{ .Release.Service | quote }}
     release: {{ .Release.Name | quote }}
 data:
-  {{- if .Values.configMapNames.policies }}
-  # No need to define data here; it will be provided via the external ConfigMap
-  {{- else }}
   policies.yaml: |
 
     ---
-    {{- toYaml .Values.policies | nindent 4 }}
-  {{- end}}
+    {{- toYaml .Values.configFiles.policies | nindent 4 }}
 immutable: false
+{{- end }}
 {{- end -}}
+
+# Flows support start
 {{- if .Values.lunarStreamsEnabled }}
+{{- if not .Values.configMapNames.flows }}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: flows
+  name: lunar-gateway-flows
   namespace: {{ default .Release.Namespace }}
   labels:
     app: "{{ include "lunar-proxy.fullname" . }}"
@@ -34,20 +36,19 @@ metadata:
     heritage: {{ .Release.Service | quote }}
     release: {{ .Release.Name | quote }}
 data:
-{{- if .Values.configMapNames.flows }}
-  # No need to define data here; it will be provided via the external ConfigMap
-{{- else }}
-{{- range $key, $value := .Values.flows }}
+{{- range $key, $value := .Values.configFiles.flows }}
   {{ $key }}: |
     {{ $value | nindent 4 }}
 {{- end }}
-{{- end }}
 immutable: false
+{{- end }}
+
+{{- if not .Values.configMapNames.quotas }}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: quotas
+  name: lunar-gateway-quotas
   namespace: {{ default .Release.Namespace }}
   labels:
     app: "{{ include "lunar-proxy.fullname" . }}"
@@ -55,20 +56,20 @@ metadata:
     heritage: {{ .Release.Service | quote }}
     release: {{ .Release.Name | quote }}
 data:
-{{- if .Values.configMapNames.quotas }}
   # No need to define data here; it will be provided via the external ConfigMap
-{{- else }}
-{{- range $key, $value := .Values.quotas }}
+{{- range $key, $value := .Values.configFiles.quotas }}
   {{ $key }}: |
     {{ $value | nindent 4 }}
 {{- end }}
-{{- end }}
 immutable: false
+{{- end }}
+
+{{- if not .Values.configMapNames.pathParams }}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: metrics.yaml
+  name: lunar-gateway-path-params
   namespace: {{ default .Release.Namespace }}
   labels:
     app: "{{ include "lunar-proxy.fullname" . }}"
@@ -76,14 +77,32 @@ metadata:
     heritage: {{ .Release.Service | quote }}
     release: {{ .Release.Name | quote }}
 data:
-  {{- if .Values.configMapNames.metrics }}
-  # No need to define data here; it will be provided via the external ConfigMap
-  {{- else }}
-  metrics.yaml: |
-
-    ---
-    {{- toYaml .Values.metrics | nindent 4 }}
-  {{- end}}
-immutable: false
-
+{{- range $key, $value := .Values.configFiles.pathParams }}
+  {{ $key }}: |
+    {{ $value | nindent 4 }}
 {{- end }}
+immutable: false
+{{- end }}
+
+{{- if not .Values.configMapNames.root }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lunar-gateway-root
+  namespace: {{ default .Release.Namespace }}
+  labels:
+    app: "{{ include "lunar-proxy.fullname" . }}"
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+data:
+{{- range $key, $value := .Values.configFiles.root }}
+  {{ $key }}: |
+    {{ $value | nindent 4 }}
+{{- end }}
+immutable: false
+{{- end }} 
+
+# Flows support end
+{{- end }} 

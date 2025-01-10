@@ -3,4 +3,6 @@
 /charts/lunar-proxy/flows
 /charts/lunar-proxy/quotas
 /charts/lunar-proxy/root
+/charts/lunar-proxy/certs
+/charts/lunar-proxy/path_params
 /charts/lunar-proxy/policies.yaml
