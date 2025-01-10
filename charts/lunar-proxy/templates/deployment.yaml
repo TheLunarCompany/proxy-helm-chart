@@ -207,18 +207,14 @@ spec:
 
           volumeMounts:
           {{- if .Values.lunarStreamsEnabled }}
-            {{- if .Values.configMapNames.root }}
             - mountPath: /etc/lunar-proxy
               name: root
-            {{- end }}
             - mountPath: /etc/lunar-proxy/flows
               name: flows
             - mountPath: /etc/lunar-proxy/quotas
               name: quotas
-            {{- if .Values.configMapNames.pathParams }}
             - mountPath: /etc/lunar-proxy/path_params
               name: path-params
-            {{- end }}
             {{- if .Values.secretNames.tlsCerts }}
             - mountPath: /etc/lunar-proxy/certs/tls
               name: tls-certs
