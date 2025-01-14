@@ -1,0 +1,26 @@
+name: Helm Chart CI
+
+on:
+    pull_request:
+        paths:
+            - charts/**
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+      - name: Install Helm unittest plugin
+        run: helm plugin install https://github.com/quintush/helm-unittest
+
+      - name: Update Helm dependencies
+        run: helm dependency update ./charts/lunar-proxy
+
+      - name: Run Helm unittest
+        run: helm unittest ./charts/lunar-proxy
