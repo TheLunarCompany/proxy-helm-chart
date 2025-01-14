@@ -6,6 +6,12 @@ on:
         description: "Version to deploy"
         required: true
         type: string
+      chart-version:
+        description: "Chart version to package (optional, defaults to 'version')"
+        required: false
+        type: string
+  
+  
 
 jobs:
   helm-chart:
@@ -24,12 +30,23 @@ jobs:
 
       - name: Install Helm
         uses: azure/setup-helm@v3
+      
+      - name: Set Chart Version
+        id: set-chart-version
+        run: |
+          if [ -z "${{ inputs.chart-version }}" ]; then
+            echo "Using version input as chart-version."
+            echo "chart_version=${{ inputs.version }}" >> $GITHUB_ENV
+          else
+            echo "Using provided chart-version input."
+            echo "chart_version=${{ inputs.chart-version }}" >> $GITHUB_ENV
+          fi
 
       - name: Package
         run: |
           rm -rf .cr-release-packages
           mkdir -p .cr-release-packages
-          helm package "charts/lunar-proxy" --version v${{ inputs.version }} --app-version v${{ inputs.version }} --destination=.cr-release-packages
+          helm package "charts/lunar-proxy" --version v${{ env.chart_version }} --app-version v${{ inputs.version }} --destination=.cr-release-packages
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.5.0
