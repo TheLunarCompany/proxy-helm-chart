@@ -79,7 +79,7 @@ Define image repository
     {{- if .Values.pro }}
       us-central1-docker.pkg.dev/prj-common-442813/lunar-proxy-pro/lunar-proxy-pro
     {{- else }}
-      lunarapi/lunar-proxy-abc
+      lunarapi/lunar-proxy
     {{- end }}
   {{- end }}
 {{- end }}
