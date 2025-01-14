@@ -200,6 +200,7 @@ serviceMonitor:
   targetLabels: []
 
 configMapNames: {}
+secretNames: {}
 configFiles: {}
 
 policies:
