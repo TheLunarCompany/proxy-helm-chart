@@ -1,0 +1,33 @@
+suite: Test image configuration
+
+tests:
+  - it: should use the pro image from GCP when pro is enabled
+    template: templates/deployment.yaml
+    set:
+      pro: true
+      image:
+        tag: "v2.0.0"
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: "us-central1-docker.pkg.dev/prj-common-442813/lunar-proxy-pro/lunar-proxy-pro:v2.0.0"
+
+  - it: should use the public dockerhub image when pro is disabled
+    template: templates/deployment.yaml
+    set:
+      pro: false
+      image:
+        tag: "v1.0.0"
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: "lunarapi/lunar-proxy:v1.0.0"
+
+  - it: should use default app version if image tag is not set
+    template: templates/deployment.yaml
+    set:
+      pro: false
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: "lunarapi/lunar-proxy:v0.8.25" # Hardcoded value from values.yaml. In reality `helm package` command in the CI pipeline would replace this with the actual appVersion

@@ -68,3 +68,18 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Define image repository
+*/}}
+{{- define "image.repository" -}}
+  {{- if .Values.image.repository }}
+    {{ .Values.image.repository }}
+  {{- else }}
+    {{- if .Values.pro }}
+      us-central1-docker.pkg.dev/prj-common-442813/lunar-proxy-pro/lunar-proxy-pro
+    {{- else }}
+      lunarapi/lunar-proxy
+    {{- end }}
+  {{- end }}
+{{- end }}

@@ -1,0 +1,21 @@
+name: Helm Lint CI
+
+on:
+    pull_request:
+        paths:
+            - charts/**
+
+jobs:
+  lint-lunar-proxy-chart:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+      - name: Run Helm Lint
+        run: helm lint ./charts/lunar-proxy

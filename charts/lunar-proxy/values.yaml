@@ -3,7 +3,6 @@
 # Declare variables to be passed into your templates.
 
 image:
-  repository: lunarapi/lunar-proxy
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -201,6 +200,7 @@ serviceMonitor:
   targetLabels: []
 
 configMapNames: {}
+secretNames: {}
 configFiles: {}
 
 policies:
