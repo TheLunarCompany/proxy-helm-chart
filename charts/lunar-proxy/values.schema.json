@@ -304,6 +304,17 @@
         }
       }
     },
+    "secretNames": {
+      "type": "object",
+      "properties": {
+        "tlsCerts": {
+          "type": "string"
+        },
+        "mtlsCerts": {
+          "type": "string"
+        }
+      }
+    },
     "policies": {
       "type": "object",
       "additionalProperties": true
