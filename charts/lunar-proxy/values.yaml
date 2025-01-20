@@ -27,7 +27,7 @@ lunarAPIKey: null # Set the API key directly
 lunarAPIKeySecretName: null # Set the API key from a secret (key must be named lunarAPIKey)
 
 env: null
-logLevel: "error"
+logLevel: "warn"
 tenantName: null
 lunarStreamsEnabled: true
 
@@ -41,9 +41,8 @@ lunarManaged: false
 # Redis configuration
 redis:
   prefix: "lunar"
-# redisUrl: null
-# redisUseCluster: false
-# redisPrefix: "lunar"
+  url: null
+  useCluster: false
 
 timeouts:
   spoe: {}
