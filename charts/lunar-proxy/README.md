@@ -21,6 +21,9 @@ For example, chart version 0.10.19 will install Lunar Gateway version 0.10.19.
 When there is a need to fix only the Helm chart, a postfix will be added.
 For example, chart version 0.10.20-fix2 would still correspond to 0.10.20.
 
+## Working With Values
+This chart allows for plenty of customization options in order to cater for various needs. Please see the **Values Schema** in our [ArtifactHub](https://artifacthub.io/packages/helm/lunar/lunar-proxy) page to explore these options and learn about them. See also [Gateway Environment Variables](https://docs.lunar.dev/lunar-dev-in-production/core-settings/environment-variables/gateway-environment-variables) from our documentation in order to learn more about matching environment variables.
+
 ## Usage in ArgoCD
 Consider the following example as a recipe for using this Helm chart via ArgoCD:
 ```yaml
