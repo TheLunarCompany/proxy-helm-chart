@@ -18,4 +18,4 @@ jobs:
           curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
       - name: Run Helm Lint
-        run: helm lint ./charts/lunar-proxy
+        run: helm lint ./charts/lunar-proxy --set tenantName=foo
