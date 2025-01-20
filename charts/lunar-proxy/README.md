@@ -5,13 +5,13 @@ This Helm chart will install Lunar Gateway on your Kubernetes cluster.
 
 In order to install it, only a minimal configuration is required:
 ```bash
-helm install lunar-proxy lunar/lunar-proxy --version 0.10.20-fix2 --set tenantName=<organization-name> --set lunarAPIKey=<api-key>
+helm install lunar-proxy lunar/lunar-proxy --version 0.10.21 --set tenantName=<organization-name> --set lunarAPIKey=<api-key>
 ```
 The API key can be obtained by opening an account on [app.lunar.dev](app.lunar.dev).
 
 Alternatively, you may work with a separate `values` file to handle values override just like any other Helm chart:
 ```bash
-helm install lunar-proxy lunar/lunar-proxy --version 0.10.20-fix2 -f ./values-override.yaml
+helm install lunar-proxy lunar/lunar-proxy --version 0.10.21 -f ./values-override.yaml
 ```
 
 ## Versioning
@@ -19,7 +19,7 @@ Like Lunar Gateway, this Helm chart follows [SemVer](https://semver.org/) princi
 Each chart version correspond directly to a Lunar Gateway version.
 For example, chart version 0.10.19 will install Lunar Gateway version 0.10.19.
 When there is a need to fix only the Helm chart, a postfix will be added.
-For example, chart version 0.10.20-fix2 still corresponds to 0.10.20
+For example, chart version 0.10.20-fix2 would still correspond to 0.10.20.
 
 ## Usage in ArgoCD
 Consider the following example as a recipe for using this Helm chart via ArgoCD:
@@ -37,7 +37,7 @@ spec:
   project: default
   source:
     repoURL: https://thelunarcompany.github.io/proxy-helm-chart/
-    targetRevision: '0.10.20-fix2'
+    targetRevision: '0.10.21'
     chart: lunar-proxy
     helm:
       values: |
