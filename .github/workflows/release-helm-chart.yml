@@ -2,11 +2,11 @@ name: Helm Chart Release
 on:
   workflow_dispatch:
     inputs:
-      version:
+      version: # Effectively, the version of Lunar Gateway's Docker image tag
         description: "Version to deploy"
         required: true
         type: string
-      chart-version:
+      chart-version: # Effectively, the version of the Helm chart. Overrides can be made for fixes in the chart with the suffix `-fix<number>`
         description: "Chart version to package (optional, defaults to 'version')"
         required: false
         type: string
@@ -31,6 +31,21 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v3
       
+      - name: Filter out pre-release versions
+        run: |
+          if [[ "${{ inputs.version }}" == *-* ]]; then
+          echo "Suffix detected in version: ${inputs.version}."
+            if [[ ! "${{ inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+-fix[0-9]*$ ]]; then
+              echo "Filtering out chart version: ${inputs.version}."
+              exit 0
+            else
+              echo "Fix version detected: ${inputs.version}."
+            fi
+          else
+            echo "Stable version detected: ${inputs.version}."
+          fi
+
+
       - name: Set Chart Version
         id: set-chart-version
         run: |
