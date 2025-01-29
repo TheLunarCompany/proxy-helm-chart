@@ -34,15 +34,15 @@ jobs:
       - name: Filter out pre-release versions
         run: |
           if [[ "${{ inputs.version }}" == *-* ]]; then
-          echo "Suffix detected in version: ${inputs.version}."
+          echo "Suffix detected in version: ${{ inputs.version }}."
             if [[ ! "${{ inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+-fix[0-9]*$ ]]; then
-              echo "Filtering out chart version: ${inputs.version}."
+              echo "Filtering out chart version: ${{ inputs.version }}."
               exit 0
             else
-              echo "Fix version detected: ${inputs.version}."
+              echo "Fix version detected: ${{ inputs.version }}."
             fi
           else
-            echo "Stable version detected: ${inputs.version}."
+            echo "Stable version detected: ${{ inputs.version }}."
           fi
 
 
