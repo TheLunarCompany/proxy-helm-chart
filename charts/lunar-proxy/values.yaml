@@ -26,22 +26,18 @@ metrics:
 lunarAPIKey: null # Set the API key directly
 lunarAPIKeySecretName: null # Set the API key from a secret (key must be named lunarAPIKey)
 
-env: null
 logLevel: "warn"
 tenantName: null
 lunarStreamsEnabled: true
 
 lunarHubURL: null
 
-awsAccessKeyId: null
 telemetryEnabled: true
-awsSecretAccessKey: null
 lunarManaged: false
 
 # Redis configuration
 redis:
   prefix: "lunar"
-  url: null
   useCluster: false
 
 timeouts:
