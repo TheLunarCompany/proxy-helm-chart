@@ -1,6 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "required": ["tenantName"],
+  "additionalProperties": true,
   "properties": {
     "pro": {
       "type": "boolean",
@@ -41,260 +43,260 @@
           "default": "lunar-proxy"
         },
         "additionalProperties": true
-      },
-      "livenessProbe": {
-        "type": "object",
-        "description": "Kubernetes compatible",
-        "properties": {
-          "initialDelaySeconds": {
-            "type": "integer",
-            "default": 15
-          },
-          "periodSeconds": {
-            "type": "integer",
-            "default": 5
-          }
+      }
+    },
+    "livenessProbe": {
+      "type": "object",
+      "description": "Kubernetes compatible",
+      "properties": {
+        "initialDelaySeconds": {
+          "type": "integer",
+          "default": 15
+        },
+        "periodSeconds": {
+          "type": "integer",
+          "default": 5
         }
-      },
-      "readinessProbe": {
-        "type": "object",
-        "description": "Kubernetes compatible",
-        "properties": {
-          "initialDelaySeconds": {
-            "type": "integer",
-            "default": 5
-          },
-          "periodSeconds": {
-            "type": "integer",
-            "default": 2
-          }
+      }
+    },
+    "readinessProbe": {
+      "type": "object",
+      "description": "Kubernetes compatible",
+      "properties": {
+        "initialDelaySeconds": {
+          "type": "integer",
+          "default": 5
+        },
+        "periodSeconds": {
+          "type": "integer",
+          "default": 2
         }
-      },
-      "replicaCount": {
-        "type": "integer",
-        "description": "Kubernetes compatible",
-        "default": 1
-      },
-      "podAnnotations": {
-        "description": "Kubernetes compatible",
-        "type": "object"
-      },
-      "metrics": {
-        "type": "object",
-        "properties": {
-          "datadog": {
-            "type": "object",
-            "description": "Configure metric export to Datadog",
-            "properties": {
-              "enabled": {
-                "type": "boolean",
-                "description": "Enable Datadog metric export",
-                "default": false
-              },
-              "namespace": {
-                "type": "string",
-                "description": "The namespace to use for the Datadog metrics, will be used as prefix for all exported metrics",
-                "default": "lunar_proxy"
-              },
-              "includedMetrics": {
-                "type": "array",
-                "description": "An array of metric names to include in the export. Defaults to all metrics",
-                "default": [".*"],
-                "items": {
-                  "type": "string"
-                }
+      }
+    },
+    "replicaCount": {
+      "type": "integer",
+      "description": "Kubernetes compatible",
+      "default": 1
+    },
+    "podAnnotations": {
+      "description": "Kubernetes compatible",
+      "type": "object"
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "datadog": {
+          "type": "object",
+          "description": "Configure metric export to Datadog",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable Datadog metric export",
+              "default": false
+            },
+            "namespace": {
+              "type": "string",
+              "description": "The namespace to use for the Datadog metrics, will be used as prefix for all exported metrics",
+              "default": "lunar_proxy"
+            },
+            "includedMetrics": {
+              "type": "array",
+              "description": "An array of metric names to include in the export. Defaults to all metrics",
+              "default": [".*"],
+              "items": {
+                "type": "string"
               }
             }
           }
         }
+      }
+    },
+    "env": {
+      "type": "string",
+      "description": "The environment Lunar Gateway runs in. Sets the `ENV` environment variable",
+      "default": null
+    },
+    "telemetryEnabled": {
+      "type": "boolean",
+      "description": "Enable telemetry reporting. Sets the `LUNAR_TELEMETRY` environment variable",
+      "default": true
+    },
+    "telemetryLogLevel": {
+      "type": "string",
+      "description": "The log level for telemetry reporting. Sets the `LUNAR_TELEMETRY_LOG_LEVEL` environment variable",
+      "default": "info"
+    },
+    "logLevel": {
+      "type": "string",
+      "description": "The log level for the Lunar Gateway. Sets the `LOG_LEVEL` environment variable",
+      "default": "warn"
+    },
+    "tenantName": {
+      "type": "string",
+      "description": "The name of the tenant, usually the organization name, perhaps with the environment as suffix. Sets the `TENANT_NAME` environment variable"
+    },
+    "awsAccessKeyId": {
+      "type": "string",
+      "description": "AWS access key ID. Sets the `AWS_ACCESS_KEY_ID` environment variable"
+    },
+    "awsSecretAccessKey": {
+      "type": "string",
+      "description": "AWS secret access key. Sets the `AWS_SECRET_ACCESS_KEY` environment variable"
+    },
+    "service": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Sets the service type for the Kubernetes service"
+        },
+        "port": {
+          "type": "integer",
+          "description": "Sets Lunar Gateway main port for traffic"
+        },
+        "healthCheckPort": {
+          "type": "integer",
+          "default": 8040,
+          "description": "Sets Lunar Gateway healthcheck port"
+        },
+        "adminPort": {
+          "type": "integer",
+          "default": 8081,
+          "description": "Sets Lunar Gateway admin port"
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Allows for setting annotations on the Kubernetes service"
+        }
       },
-      "env": {
-        "type": "string",
-        "description": "The environment Lunar Gateway runs in. Sets the `ENV` environment variable",
-        "default": null
-      },
-      "telemetryEnabled": {
-        "type": "boolean",
-        "description": "Enable telemetry reporting. Sets the `LUNAR_TELEMETRY` environment variable",
-        "default": true
-      },
-      "telemetryLogLevel": {
-        "type": "string",
-        "description": "The log level for telemetry reporting. Sets the `LUNAR_TELEMETRY_LOG_LEVEL` environment variable",
-        "default": "info"
-      },
-      "logLevel": {
-        "type": "string",
-        "description": "The log level for the Lunar Gateway. Sets the `LOG_LEVEL` environment variable",
-        "default": "warn"
-      },
-      "tenantName": {
-        "type": "string",
-        "description": "The name of the tenant, usually the organization name, perhaps with the environment as suffix. Sets the `TENANT_NAME` environment variable"
-      },
-      "awsAccessKeyId": {
-        "type": "string",
-        "description": "AWS access key ID. Sets the `AWS_ACCESS_KEY_ID` environment variable"
-      },
-      "awsSecretAccessKey": {
-        "type": "string",
-        "description": "AWS secret access key. Sets the `AWS_SECRET_ACCESS_KEY` environment variable"
-      },
-      "service": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "description": "Sets the service type for the Kubernetes service"
-          },
-          "port": {
-            "type": "integer",
-            "description": "Sets Lunar Gateway main port for traffic"
-          },
-          "healthCheckPort": {
-            "type": "integer",
-            "default": 8040,
-            "description": "Sets Lunar Gateway healthcheck port"
-          },
-          "adminPort": {
-            "type": "integer",
-            "default": 8081,
-            "description": "Sets Lunar Gateway admin port"
-          },
-          "annotations": {
-            "type": "object",
-            "description": "Allows for setting annotations on the Kubernetes service"
+      "required": ["type", "port"],
+      "additionalProperties": false
+    },
+    "resources": {
+      "type": "object",
+      "description": "Kubernetes requests and limits"
+    },
+    "configMapNames": {
+      "type": "object",
+      "description": "ConfigMap names correlating to configuration to be used by Lunar Proxy. See https://docs.lunar.dev/flows-configurations/#folder-structure for folder structure used by Lunar Gateway. Alternatively, the `.configFiles` field can be used to provide the configurations inline",
+      "properties": {
+        "flows": {
+          "type": "string",
+          "description": "ConfigMap name containing Lunar Proxy Flows. Mounts to `/etc/lunar-proxy/flows`"
+        },
+        "quotas": {
+          "type": "string",
+          "description": "ConfigMap name containing Lunar Proxy Quotas, Mounts to `/etc/lunar-proxy/quotas`"
+        },
+        "pathParams": {
+          "type": "string",
+          "description": "ConfigMap name containing Lunar Proxy Path Params. Mounts to `/etc/lunar-proxy/path_params`"
+        },
+        "root": {
+          "type": "string",
+          "description": "ConfigMap name containing Lunar Proxy root config folder - through which `gateway_config.yaml` and `metrics.yaml` can be supplied. Mounts to `/etc/lunar-proxy` without overriding other configurations in subfolders"
+        },
+        "policies": {
+          "type": "string",
+          "description": "ConfigMap name containing Lunar Proxy policies.yaml file. Only relevant if `lunarStreamsEnabled` is set to `false`"
+        }
+      }
+    },
+    "secretNames": {
+      "type": "object",
+      "description": "Secret names correlating to secrets to be used by Lunar Proxy",
+      "properties": {
+        "tlsCerts": {
+          "type": "string",
+          "description": "Secret name containing TLS certificates for Lunar Proxy. Mounts to `/etc/lunar-proxy/certs/tls`"
+        },
+        "mtlsCerts": {
+          "type": "string",
+          "description": "Secret name containing mTLS certificates for Lunar Proxy. Mounts to `/etc/lunar-proxy/certs/mtls`"
+        }
+      }
+    },
+    "policies": {
+      "type": "object",
+      "description": "Inline content for policies.yaml. Only relevant if `lunarStreamsEnabled` is set to `false`",
+      "additionalProperties": true
+    },
+    "timeouts": {
+      "type": "object",
+      "description": "Timeouts for various components in Lunar Proxy",
+      "properties": {
+        "spoe": {
+          "type": "object",
+          "properties": {
+            "processingTimeoutSec": {
+              "type": "integer",
+              "description": "Sets the `LUNAR_SPOE_PROCESSING_TIMEOUT_SEC` environment variable"
+            },
+            "helloTimeoutMillis": {
+              "type": "integer",
+              "description": "Sets the `LUNAR_SPOE_HELLO_TIMEOUT_MS` environment variable"
+            }
           }
         },
-        "required": ["type", "port"],
-        "additionalProperties": false
-      },
-      "resources": {
-        "type": "object",
-        "description": "Kubernetes requests and limits"
-      },
-      "configMapNames": {
-        "type": "object",
-        "description": "ConfigMap names correlating to configuration to be used by Lunar Proxy. See https://docs.lunar.dev/flows-configurations/#folder-structure for folder structure used by Lunar Gateway. Alternatively, the `.configFiles` field can be used to provide the configurations inline",
-        "properties": {
-          "flows": {
-            "type": "string",
-            "description": "ConfigMap name containing Lunar Proxy Flows. Mounts to `/etc/lunar-proxy/flows`"
-          },
-          "quotas": {
-            "type": "string",
-            "description": "ConfigMap name containing Lunar Proxy Quotas, Mounts to `/etc/lunar-proxy/quotas`"
-          },
-          "pathParams": {
-            "type": "string",
-            "description": "ConfigMap name containing Lunar Proxy Path Params. Mounts to `/etc/lunar-proxy/path_params`"
-          },
-          "root": {
-            "type": "string",
-            "description": "ConfigMap name containing Lunar Proxy root config folder - through which `gateway_config.yaml` and `metrics.yaml` can be supplied. Mounts to `/etc/lunar-proxy` without overriding other configurations in subfolders"
-          },
-          "policies": {
-            "type": "string",
-            "description": "ConfigMap name containing Lunar Proxy policies.yaml file. Only relevant if `lunarStreamsEnabled` is set to `false`"
-          }
-        }
-      },
-      "secretNames": {
-        "type": "object",
-        "description": "Secret names correlating to secrets to be used by Lunar Proxy",
-        "properties": {
-          "tlsCerts": {
-            "type": "string",
-            "description": "Secret name containing TLS certificates for Lunar Proxy. Mounts to `/etc/lunar-proxy/certs/tls`"
-          },
-          "mtlsCerts": {
-            "type": "string",
-            "description": "Secret name containing mTLS certificates for Lunar Proxy. Mounts to `/etc/lunar-proxy/certs/mtls`"
-          }
-        }
-      },
-      "policies": {
-        "type": "object",
-        "description": "Inline content for policies.yaml. Only relevant if `lunarStreamsEnabled` is set to `false`",
-        "additionalProperties": true
-      },
-      "timeouts": {
-        "type": "object",
-        "description": "Timeouts for various components in Lunar Proxy",
-        "properties": {
-          "spoe": {
-            "type": "object",
-            "properties": {
-              "processingTimeoutSec": {
-                "type": "integer",
-                "description": "Sets the `LUNAR_SPOE_PROCESSING_TIMEOUT_SEC` environment variable"
-              },
-              "helloTimeoutMillis": {
-                "type": "integer",
-                "description": "Sets the `LUNAR_SPOE_HELLO_TIMEOUT_MS` environment variable"
-              }
+        "proxy": {
+          "type": "object",
+          "properties": {
+            "connectTimeoutSec": {
+              "type": "integer",
+              "description": "Sets the `LUNAR_CONNECT_TIMEOUT_SEC` environment variable"
+            },
+            "clientTimeoutSec": {
+              "type": "integer",
+              "description": "Sets the `LUNAR_CLIENT_TIMEOUT_SEC` environment variable"
+            },
+            "serverTimeoutSec": {
+              "type": "integer",
+              "description": "Sets the `LUNAR_SERVER_TIMEOUT_SEC` environment variable"
             }
-          },
-          "proxy": {
-            "type": "object",
-            "properties": {
-              "connectTimeoutSec": {
-                "type": "integer",
-                "description": "Sets the `LUNAR_CONNECT_TIMEOUT_SEC` environment variable"
-              },
-              "clientTimeoutSec": {
-                "type": "integer",
-                "description": "Sets the `LUNAR_CLIENT_TIMEOUT_SEC` environment variable"
-              },
-              "serverTimeoutSec": {
-                "type": "integer",
-                "description": "Sets the `LUNAR_SERVER_TIMEOUT_SEC` environment variable"
-              }
-            }
-          },
-          "retryRequestTimeoutSec": {
-            "type": "integer",
-            "description": "Sets the `LUNAR_RETRY_REQUEST_TIMEOUT_SEC` environment variable"
           }
+        },
+        "retryRequestTimeoutSec": {
+          "type": "integer",
+          "description": "Sets the `LUNAR_RETRY_REQUEST_TIMEOUT_SEC` environment variable"
         }
-      },
-      "redis": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string",
-            "description": "The URL to the Redis instance. Needs to include schema and port. For TLS support, use `rediss://` as schema. This field is mandatory if `pro` is set to `true`",
-            "default": null,
-            "examples": ["redis://your-instance:6379"]
-          },
-          "useCluster": {
-            "type": "boolean",
-            "description": "Whether to connect to Redis as a cluster. Sets the `REDIS_USE_CLUSTER` environment variable"
-          },
-          "prefix": {
-            "type": "string",
-            "description": "A prefix to use for keys in Redis. Sets the `REDIS_PREFIX` environment variable"
-          },
-          "useCaCert": {
-            "type": "boolean",
-            "description": "Whether to use a CA certificate for Redis. Sets the `REDIS_USE_CA_CERT` environment variable"
-          },
-          "caCertPath": {
-            "type": "string",
-            "description": "The path to the CA certificate for Redis. Sets the `REDIS_CA_CERT_PATH` environment variable"
-          },
-          "useClientCert": {
-            "type": "boolean",
-            "description": "Whether to use a client certificate for Redis. Sets the `REDIS_USE_CLIENT_CERT` environment variable"
-          },
-          "clientCertPath": {
-            "type": "string",
-            "description": "The path to the client certificate for Redis. Sets the `REDIS_CLIENT_CERT_PATH` environment variable"
-          },
-          "clientKeyPath": {
-            "type": "string",
-            "description": "The path to the client key for Redis. Sets the `REDIS_CLIENT_KEY_PATH` environment variable"
-          }
+      }
+    },
+    "redis": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "The URL to the Redis instance. Needs to include schema and port. For TLS support, use `rediss://` as schema. This field is mandatory if `pro` is set to `true`",
+          "default": null,
+          "examples": ["redis://your-instance:6379"]
+        },
+        "useCluster": {
+          "type": "boolean",
+          "description": "Whether to connect to Redis as a cluster. Sets the `REDIS_USE_CLUSTER` environment variable"
+        },
+        "prefix": {
+          "type": "string",
+          "description": "A prefix to use for keys in Redis. Sets the `REDIS_PREFIX` environment variable"
+        },
+        "useCaCert": {
+          "type": "boolean",
+          "description": "Whether to use a CA certificate for Redis. Sets the `REDIS_USE_CA_CERT` environment variable"
+        },
+        "caCertPath": {
+          "type": "string",
+          "description": "The path to the CA certificate for Redis. Sets the `REDIS_CA_CERT_PATH` environment variable"
+        },
+        "useClientCert": {
+          "type": "boolean",
+          "description": "Whether to use a client certificate for Redis. Sets the `REDIS_USE_CLIENT_CERT` environment variable"
+        },
+        "clientCertPath": {
+          "type": "string",
+          "description": "The path to the client certificate for Redis. Sets the `REDIS_CLIENT_CERT_PATH` environment variable"
+        },
+        "clientKeyPath": {
+          "type": "string",
+          "description": "The path to the client key for Redis. Sets the `REDIS_CLIENT_KEY_PATH` environment variable"
         }
       }
     },
@@ -324,8 +326,6 @@
     "tlsPassthrough": {
       "type": "boolean",
       "description": "Enable TLS passthrough for Lunar Proxy. Sets the `TLS_PASSTHROUGH_ON` environment variable"
-    },
-    "additionalProperties": true
-  },
-  "required": ["tenantName"]
+    }
+  }
 }

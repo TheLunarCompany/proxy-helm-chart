@@ -5,6 +5,7 @@ tests:
     template: templates/deployment.yaml
     set:
       pro: true
+      tenantName: "Acme Inc."
       image:
         tag: "v2.0.0"
     asserts:
@@ -16,6 +17,7 @@ tests:
     template: templates/deployment.yaml
     set:
       pro: false
+      tenantName: "Acme Inc."
       image:
         tag: "v1.0.0"
     asserts:
@@ -27,6 +29,7 @@ tests:
     template: templates/deployment.yaml
     set:
       pro: false
+      tenantName: "Acme Inc."
     asserts:
       - equal:
           path: spec.template.spec.containers[0].image
