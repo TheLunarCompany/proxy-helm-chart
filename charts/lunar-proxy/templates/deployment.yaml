@@ -145,7 +145,15 @@ spec:
             - name: LUNAR_RETRY_REQUEST_TIMEOUT_SEC
               value: {{ toString .Values.timeouts.retryRequestTimeoutSec | quote }}
           {{- end }}
-
+          # Lunar Cluster
+          {{- if .Values.lunarCluster.lunarClusterStaleThresholdPeriodInSec }}
+            - name: LUNAR_CLUSTER_STALE_THRESHOLD_PERIOD_IN_SEC
+              value: {{ toString .Values.lunarCluster.lunarClusterStaleThresholdPeriodInSec | quote }}
+          {{- end }}
+          {{- if .Values.lunarCluster.lunarClusterLivenessUpdatedPeriodInSec }}
+            - name: LUNAR_CLUSTER_LIVENESS_UPDATED_PERIOD_IN_SEC
+              value: {{ toString .Values.lunarCluster.lunarClusterLivenessUpdatedPeriodInSec | quote }}
+          {{- end }}
           # Redis
           {{- if .Values.redis.url }}
             - name: REDIS_URL
