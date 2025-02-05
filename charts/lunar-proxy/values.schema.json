@@ -1,7 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["tenantName"],
+  "required": [
+    "tenantName"
+  ],
   "additionalProperties": true,
   "properties": {
     "pro": {
@@ -102,7 +104,9 @@
             "includedMetrics": {
               "type": "array",
               "description": "An array of metric names to include in the export. Defaults to all metrics",
-              "default": [".*"],
+              "default": [
+                ".*"
+              ],
               "items": {
                 "type": "string"
               }
@@ -169,7 +173,10 @@
           "description": "Allows for setting annotations on the Kubernetes service"
         }
       },
-      "required": ["type", "port"],
+      "required": [
+        "type",
+        "port"
+      ],
       "additionalProperties": false
     },
     "resources": {
@@ -261,71 +268,87 @@
         }
       }
     },
-    "redis": {
+    "lunarCluster": {
       "type": "object",
       "properties": {
-        "url": {
-          "type": "string",
-          "description": "The URL to the Redis instance. Needs to include schema and port. For TLS support, use `rediss://` as schema. This field is mandatory if `pro` is set to `true`",
-          "default": null,
-          "examples": ["redis://your-instance:6379"]
+        "staleThresholdPeriodInSec": {
+          "type": "integer",
+          "description": "The period in seconds after which a cluster is considered stale. Sets the `LUNAR_CLUSTER_STALE_THRESHOLD_PERIOD_IN_SEC` environment variable"
         },
-        "useCluster": {
-          "type": "boolean",
-          "description": "Whether to connect to Redis as a cluster. Sets the `REDIS_USE_CLUSTER` environment variable"
-        },
-        "prefix": {
-          "type": "string",
-          "description": "A prefix to use for keys in Redis. Sets the `REDIS_PREFIX` environment variable"
-        },
-        "useCaCert": {
-          "type": "boolean",
-          "description": "Whether to use a CA certificate for Redis. Sets the `REDIS_USE_CA_CERT` environment variable"
-        },
-        "caCertPath": {
-          "type": "string",
-          "description": "The path to the CA certificate for Redis. Sets the `REDIS_CA_CERT_PATH` environment variable"
-        },
-        "useClientCert": {
-          "type": "boolean",
-          "description": "Whether to use a client certificate for Redis. Sets the `REDIS_USE_CLIENT_CERT` environment variable"
-        },
-        "clientCertPath": {
-          "type": "string",
-          "description": "The path to the client certificate for Redis. Sets the `REDIS_CLIENT_CERT_PATH` environment variable"
-        },
-        "clientKeyPath": {
-          "type": "string",
-          "description": "The path to the client key for Redis. Sets the `REDIS_CLIENT_KEY_PATH` environment variable"
+        "livenessUpdatedPeriodInSec": {
+          "type": "integer",
+          "description": "The period in seconds after which the liveness of a cluster is updated. Sets the `LUNAR_CLUSTER_LIVENESS_UPDATED_PERIOD_IN_SEC` environment variable"
         }
-      }
-    },
-    "gateway": {
-      "type": "object",
-      "properties": {
-        "maxConn": {
-          "type": "integer",
-          "description": "The maximum number of connections Lunar Gateway can handle. Sets the `LUNAR_MAXCONN` environment variable"
-        },
-        "bufferSize": {
-          "type": "integer",
-          "description": "The buffer size for Lunar Proxy. Sets the `GATEWAY_BUFFER_SIZE` environment variable"
-        },
-        "accessLogOutput": {
-          "type": "string",
-          "description": "Sets output for the Lunar Gateway's access log. Sets the `LUNAR_ACCESS_LOGS_OUTPUT` environment variable",
-          "enum": ["stdout"],
-          "default": null
-        },
-        "doctorReportIntervalMinutes": {
-          "type": "integer",
-          "description": "The interval in minutes for the doctor report. Sets the `DOCTOR_REPORT_INTERVAL_MINUTES` environment variable"
+      },
+      "redis": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The URL to the Redis instance. Needs to include schema and port. For TLS support, use `rediss://` as schema. This field is mandatory if `pro` is set to `true`",
+            "default": null,
+            "examples": [
+              "redis://your-instance:6379"
+            ]
+          },
+          "useCluster": {
+            "type": "boolean",
+            "description": "Whether to connect to Redis as a cluster. Sets the `REDIS_USE_CLUSTER` environment variable"
+          },
+          "prefix": {
+            "type": "string",
+            "description": "A prefix to use for keys in Redis. Sets the `REDIS_PREFIX` environment variable"
+          },
+          "useCaCert": {
+            "type": "boolean",
+            "description": "Whether to use a CA certificate for Redis. Sets the `REDIS_USE_CA_CERT` environment variable"
+          },
+          "caCertPath": {
+            "type": "string",
+            "description": "The path to the CA certificate for Redis. Sets the `REDIS_CA_CERT_PATH` environment variable"
+          },
+          "useClientCert": {
+            "type": "boolean",
+            "description": "Whether to use a client certificate for Redis. Sets the `REDIS_USE_CLIENT_CERT` environment variable"
+          },
+          "clientCertPath": {
+            "type": "string",
+            "description": "The path to the client certificate for Redis. Sets the `REDIS_CLIENT_CERT_PATH` environment variable"
+          },
+          "clientKeyPath": {
+            "type": "string",
+            "description": "The path to the client key for Redis. Sets the `REDIS_CLIENT_KEY_PATH` environment variable"
+          }
         }
+      },
+      "gateway": {
+        "type": "object",
+        "properties": {
+          "maxConn": {
+            "type": "integer",
+            "description": "The maximum number of connections Lunar Gateway can handle. Sets the `LUNAR_MAXCONN` environment variable"
+          },
+          "bufferSize": {
+            "type": "integer",
+            "description": "The buffer size for Lunar Proxy. Sets the `GATEWAY_BUFFER_SIZE` environment variable"
+          },
+          "accessLogOutput": {
+            "type": "string",
+            "description": "Sets output for the Lunar Gateway's access log. Sets the `LUNAR_ACCESS_LOGS_OUTPUT` environment variable",
+            "enum": [
+              "stdout"
+            ],
+            "default": null
+          },
+          "doctorReportIntervalMinutes": {
+            "type": "integer",
+            "description": "The interval in minutes for the doctor report. Sets the `DOCTOR_REPORT_INTERVAL_MINUTES` environment variable"
+          }
+        }
+      },
+      "tlsPassthrough": {
+        "type": "boolean",
+        "description": "Enable TLS passthrough for Lunar Proxy. Sets the `TLS_PASSTHROUGH_ON` environment variable"
       }
-    },
-    "tlsPassthrough": {
-      "type": "boolean",
-      "description": "Enable TLS passthrough for Lunar Proxy. Sets the `TLS_PASSTHROUGH_ON` environment variable"
     }
   }
-}

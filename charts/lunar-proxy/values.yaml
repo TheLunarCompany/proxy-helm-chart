@@ -36,8 +36,8 @@ lunarManaged: false
 
 # Lunar Cluster configuration
 lunarCluster:
-  lunarClusterStaleThresholdPeriodInSec: 120
-  lunarClusterLivenessUpdatedPeriodInSec: 20
+  staleThresholdPeriodInSec: 120
+  livenessUpdatedPeriodInSec: 20
 
 # Redis configuration
 redis:
