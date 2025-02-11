@@ -194,6 +194,7 @@ serviceMonitor:
 
   targetLabels: []
 
+configSource: 'configMap' # 'configMap' or 'pvc'
 configMapNames: {}
 secretNames: {}
 configFiles: {}
