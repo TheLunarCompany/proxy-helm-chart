@@ -1,0 +1,14 @@
+{{- if eq .Values.configSource "pvc" }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "lunar-proxy.fullname" . }}
+spec:
+#   storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+{{- end }}

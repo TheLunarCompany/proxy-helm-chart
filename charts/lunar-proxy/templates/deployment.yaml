@@ -8,6 +8,12 @@ metadata:
     {{- include "lunar-proxy.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  {{- if eq .Values.configSource "pvc" }}
+  # TODO: This is needed because PersistentVolumeClaim cannot be mounted
+  # twice, as would naturally happen with RollingUpdate (default)
+  strategy:
+    type: Recreate
+  {{- end }}
   selector:
     matchLabels:
       {{- include "lunar-proxy.selectorLabels" . | nindent 6 }}
@@ -207,6 +213,7 @@ spec:
 
           volumeMounts:
           {{- if .Values.lunarStreamsEnabled }}
+          {{- if eq .Values.configSource "configMap" }}
             - mountPath: /etc/lunar-proxy
               name: root
             - mountPath: /etc/lunar-proxy/flows
@@ -222,8 +229,12 @@ spec:
             {{- if .Values.secretNames.mtlsCerts }}
             - mountPath: /etc/lunar-proxy/certs/mtls
               name: mtls-certs
-            {{- end }}            
-          {{- else }}
+            {{- end }}
+            {{- else }} # it's not a configMap source - it's pvc
+            - mountPath: "/etc/lunar-proxy"
+              name: lunar-proxy-config-pvc
+            {{- end }}
+          {{- else }} # Lunar streams not enabled
             - mountPath: /etc/lunar-proxy
               name: policies
           {{- end }}
@@ -241,6 +252,12 @@ spec:
       {{- end }}
       volumes:
       {{- if .Values.lunarStreamsEnabled }}
+      {{- if eq .Values.configSource "pvc" }}
+        - name: lunar-proxy-config-pvc
+          persistentVolumeClaim:
+            claimName: {{ include "lunar-proxy.fullname" . }}
+      {{- end }}
+
       {{- if .Values.configMapNames.flows }}
         - configMap:
             name: {{ .Values.configMapNames.flows }}

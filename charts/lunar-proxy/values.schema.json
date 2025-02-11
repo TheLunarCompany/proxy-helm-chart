@@ -176,6 +176,11 @@
       "type": "object",
       "description": "Kubernetes requests and limits"
     },
+    "configSource": {
+      "type": "string",
+      "enum": ["configMap", "vpc"],
+      "description": "The type of source for the configuration for Lunar Gateway."
+    },
     "configMapNames": {
       "type": "object",
       "description": "ConfigMap names correlating to configuration to be used by Lunar Proxy. See https://docs.lunar.dev/flows-configurations/#folder-structure for folder structure used by Lunar Gateway. Alternatively, the `.configFiles` field can be used to provide the configurations inline",
