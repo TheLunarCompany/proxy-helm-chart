@@ -185,7 +185,7 @@
     },
     "configSource": {
       "type": "string",
-      "enum": ["configMap", "vpc"],
+      "enum": ["configMap", "pvc"],
       "description": "The type of source for the configuration for Lunar Gateway."
     },
     "configMapNames": {
