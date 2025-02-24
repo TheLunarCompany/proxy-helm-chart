@@ -57,6 +57,24 @@ jobs:
             echo "chart_version=${{ inputs.chart-version }}" >> $GITHUB_ENV
           fi
 
+      # Render the README from the template using envsubst
+      - name: Render README from template
+        run: |
+          # Ensure the environment variable is exported so that envsubst can pick it up
+          export CHART_VERSION="${{ env.chart_version }}"
+          envsubst < charts/lunar-proxy/README.tpl.md > charts/lunar-proxy/README.md
+
+      # Commit the updated README.md if there are any changes
+      - name: Commit updated README
+        run: |
+          git add charts/lunar-proxy/README.md
+          if ! git diff --cached --quiet; then
+            git commit -m "Update README with chart version v${{ env.chart_version }}"
+            git push
+          else
+            echo "No changes in charts/lunar-proxy/README.md to commit."
+          fi
+
       - name: Package
         run: |
           rm -rf .cr-release-packages
