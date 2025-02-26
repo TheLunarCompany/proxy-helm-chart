@@ -105,6 +105,14 @@ spec:
             - name: LUNAR_HUB_URL
               value: {{ .Values.lunarHubURL }}
           {{- end }}
+          {{- if .Values.lunarMetricsReportInterval }}
+            - name: HUB_METRICS_REPORT_INTERVAL
+              value: {{ .Values.lunarMetricsReportInterval }}
+          {{- end }}
+          {{- if .Values.lunarReportInterval }}
+            - name: HUB_REPORT_INTERVAL
+              value: {{ .Values.lunarReportInterval }}
+          {{- end }}
           {{- if .Values.lunarAPIKey }}
             - name: LUNAR_API_KEY
               value: {{ .Values.lunarAPIKey }}
@@ -315,7 +323,7 @@ spec:
             secretName: {{ .Values.secretNames.mtlsCerts }}
           name: mtls-certs
       {{- end }}
-
+        
       {{- else }} # i.e. lunarStreamsEnabled is false
       {{- if .Values.configMapNames.policies }}
         - configMap:

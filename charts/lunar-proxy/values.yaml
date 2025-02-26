@@ -30,6 +30,8 @@ tenantName: null
 lunarStreamsEnabled: true
 
 lunarHubURL: null
+lunarReportInterval: 15
+lunarMetricsReportInterval: 3600
 
 telemetryEnabled: true
 lunarManaged: false
@@ -198,7 +200,7 @@ serviceMonitor:
 
   targetLabels: []
 
-configSource: 'configMap' # 'configMap' or 'pvc'
+configSource: "configMap" # 'configMap' or 'pvc'
 configMapNames: {}
 secretNames: {}
 configFiles: {}
