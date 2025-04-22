@@ -1,9 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": [
-    "tenantName"
-  ],
+  "required": ["tenantName"],
   "additionalProperties": true,
   "properties": {
     "pro": {
@@ -104,9 +102,7 @@
             "includedMetrics": {
               "type": "array",
               "description": "An array of metric names to include in the export. Defaults to all metrics",
-              "default": [
-                ".*"
-              ],
+              "default": [".*"],
               "items": {
                 "type": "string"
               }
@@ -168,15 +164,17 @@
           "default": 8081,
           "description": "Sets Lunar Gateway admin port"
         },
+        "asyncPort": {
+          "type": "integer",
+          "default": 8010,
+          "description": "Sets Lunar Gateway async port"
+        },
         "annotations": {
           "type": "object",
           "description": "Allows for setting annotations on the Kubernetes service"
         }
       },
-      "required": [
-        "type",
-        "port"
-      ],
+      "required": ["type", "port"],
       "additionalProperties": false
     },
     "resources": {
@@ -292,9 +290,7 @@
             "type": "string",
             "description": "The URL to the Redis instance. Needs to include schema and port. For TLS support, use `rediss://` as schema. This field is mandatory if `pro` is set to `true`",
             "default": null,
-            "examples": [
-              "redis://your-instance:6379"
-            ]
+            "examples": ["redis://your-instance:6379"]
           },
           "useCluster": {
             "type": "boolean",
@@ -340,9 +336,7 @@
           "accessLogOutput": {
             "type": "string",
             "description": "Sets output for the Lunar Gateway's access log. Sets the `LUNAR_ACCESS_LOGS_OUTPUT` environment variable",
-            "enum": [
-              "stdout"
-            ],
+            "enum": ["stdout"],
             "default": null
           },
           "doctorReportIntervalMinutes": {
