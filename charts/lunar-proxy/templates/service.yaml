@@ -28,4 +28,8 @@ spec:
       targetPort: 8081
       protocol: TCP
       name: admin
+    - port: {{ .Values.service.asyncPort }}
+      targetPort: 8010
+      protocol: TCP
+      name: async 
   selector: {{- include "lunar-proxy.selectorLabels" . | nindent 4 }}
