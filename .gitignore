@@ -1,4 +1,6 @@
 .history/
+
+# gateway
 /charts/lunar-proxy/override-values.yaml
 /charts/lunar-proxy/flows
 /charts/lunar-proxy/quotas
@@ -6,3 +8,6 @@
 /charts/lunar-proxy/certs
 /charts/lunar-proxy/path_params
 /charts/lunar-proxy/policies.yaml
+
+# mcpx
+/charts/lunar-mcpx/override-values.yaml

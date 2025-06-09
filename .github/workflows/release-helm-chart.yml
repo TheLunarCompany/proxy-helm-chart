@@ -2,6 +2,13 @@ name: Helm Chart Release
 on:
   workflow_dispatch:
     inputs:
+      chart-name:
+        description: "Chart name to release (e.g., lunar-proxy or lunar-mcpx)"
+        required: true
+        type: choice
+        options:
+          - lunar-proxy
+          - lunar-mcpx
       version: # Effectively, the version of Lunar Gateway's Docker image tag
         description: "Version to deploy"
         required: true
@@ -10,8 +17,6 @@ on:
         description: "Chart version to package (optional, defaults to 'version')"
         required: false
         type: string
-  
-  
 
 jobs:
   helm-chart:
@@ -30,7 +35,7 @@ jobs:
 
       - name: Install Helm
         uses: azure/setup-helm@v3
-      
+
       - name: Filter out pre-release versions
         run: |
           if [[ "${{ inputs.version }}" == *-* ]]; then
@@ -44,7 +49,6 @@ jobs:
           else
             echo "Stable version detected: ${{ inputs.version }}."
           fi
-
 
       - name: Set Chart Version
         id: set-chart-version
@@ -62,24 +66,24 @@ jobs:
         run: |
           # Ensure the environment variable is exported so that envsubst can pick it up
           export CHART_VERSION="${{ env.chart_version }}"
-          envsubst < charts/lunar-proxy/README.tpl.md > charts/lunar-proxy/README.md
+          envsubst < charts/${{ inputs.chart-name }}/README.tpl.md > charts/${{ inputs.chart-name }}/README.md
 
       # Commit the updated README.md if there are any changes
       - name: Commit updated README
         run: |
-          git add charts/lunar-proxy/README.md
+          git add charts/${{ inputs.chart-name }}/README.md
           if ! git diff --cached --quiet; then
-            git commit -m "Update README with chart version v${{ env.chart_version }}"
+            git commit -m "Update ${{ inputs.chart-name }} README with chart version v${{ env.chart_version }}"
             git push
           else
-            echo "No changes in charts/lunar-proxy/README.md to commit."
+            echo "No changes in charts/${{ inputs.chart-name }}/README.md to commit."
           fi
 
       - name: Package
         run: |
           rm -rf .cr-release-packages
           mkdir -p .cr-release-packages
-          helm package "charts/lunar-proxy" --version v${{ env.chart_version }} --app-version v${{ inputs.version }} --destination=.cr-release-packages
+          helm package "charts/${{ inputs.chart-name }}" --version v${{ env.chart_version }} --app-version v${{ inputs.version }} --destination=.cr-release-packages
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.5.0

@@ -1,0 +1,35 @@
+replicaCount: 1
+
+image:
+  repository: us-central1-docker.pkg.dev/prj-common-442813/mcpx/mcpx
+  tag: ""
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 9000
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 264Mi
+  requests:
+    cpu: 250m
+    memory: 128Mi
+
+config:
+  mcpJson: |
+    {
+      "mcpServers": {
+        "time": {
+          "command": "uvx",
+          "args": ["mcp-server-time", "--local-timezone=America/New_York"]
+        }
+      }
+    }
+
+  appYaml: |
+    auth:
+      enabled: false
+    permissions:
+      base: "allow"

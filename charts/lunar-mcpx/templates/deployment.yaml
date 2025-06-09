@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lunar-mcpx.fullname" . }}
+  labels:
+    app: {{ include "lunar-mcpx.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "lunar-mcpx.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "lunar-mcpx.fullname" . }}
+    spec:
+      containers:
+        - name: mcpx
+          image: "{{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 9000
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: mcp-config-vol
+              mountPath: /config
+              readOnly: true
+          env:
+          {{- if .Values.secretRef }}
+            {{- range .Values.secretRef.keys }}
+            - name: {{ . }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Values.secretRef.name }}
+                  key: {{ . }}
+            {{- end }}
+          {{- end }}
+      volumes:
+        - name: mcp-config-vol
+          configMap:
+            name: {{ include "lunar-mcpx.fullname" . }}-config
