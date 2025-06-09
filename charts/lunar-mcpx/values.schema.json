@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "replicaCount": {
+      "type": "integer",
+      "description": "Number of replicas to run",
+      "default": 1
+    },
+    "config": {
+      "type": "object",
+      "description": "Inline application configuration files",
+      "properties": {
+        "mcpJson": {
+          "type": "string",
+          "description": "Content of mcp.json"
+        },
+        "appYaml": {
+          "type": "string",
+          "description": "content of app.yaml"
+        }
+      }
+    },
+    "secretRef": {
+      "type": "object",
+      "description": "Reference to a Kubernetes Secret that provides credentials and tokens",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the Kubernetes Secret"
+        },
+        "keys": {
+          "type": "array",
+          "description": "List of secret keys to mount as environment variables",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["name"]
+    }
+  },
+  "required": ["replicaCount"]
+}
