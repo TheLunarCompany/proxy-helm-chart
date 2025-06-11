@@ -33,9 +33,3 @@ config:
       enabled: false
     permissions:
       base: "allow"
-
-secretRef:
-  name: my-mcpx-secret
-  keys:
-    - API_KEY                 # Used when `auth.enabled` is set to true
-    - SOME_3RD_PARTY_API_KEY  # Any secret required by a target MCP server as env var
