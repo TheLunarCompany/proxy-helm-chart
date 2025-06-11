@@ -1,0 +1,8 @@
+apiVersion: v2
+name: lunar-mcpx
+description: Helm chart for Lunar MCPX
+
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+icon: https://storage.googleapis.com/lunar-webapp-assets/favicon/apple-touch-icon.png
