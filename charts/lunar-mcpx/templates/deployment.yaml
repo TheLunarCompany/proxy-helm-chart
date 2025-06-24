@@ -20,6 +20,31 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: 9000
+
+          {{- with .Values.healthcheck }}
+          {{- if .readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .path }}
+              port: http
+            initialDelaySeconds: {{ .readinessProbe.initialDelaySeconds }}
+            periodSeconds:      {{ .readinessProbe.periodSeconds }}
+            timeoutSeconds:     {{ .readinessProbe.timeoutSeconds }}
+            failureThreshold:   {{ .readinessProbe.failureThreshold }}
+            successThreshold:   {{ .readinessProbe.successThreshold }}
+          {{- end }}
+
+          {{- if .livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .path }}
+              port: http
+            initialDelaySeconds: {{ .livenessProbe.initialDelaySeconds }}
+            periodSeconds:      {{ .livenessProbe.periodSeconds }}
+            timeoutSeconds:     {{ .livenessProbe.timeoutSeconds }}
+            failureThreshold:   {{ .livenessProbe.failureThreshold }}
+          {{- end }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:

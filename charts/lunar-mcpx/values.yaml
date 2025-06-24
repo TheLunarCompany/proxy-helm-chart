@@ -17,6 +17,24 @@ resources:
     cpu: 250m
     memory: 128Mi
 
+healthcheck:
+  path: /healthcheck
+
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+
 config:
   mcpJson: |
     {
