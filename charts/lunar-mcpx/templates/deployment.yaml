@@ -66,14 +66,19 @@ spec:
             - name: APP_CONFIG_PATH
               value: /etc/lunar-mcpx/app.yaml
             - name: LOG_LEVEL
-              value: {{ .Values.logLevel | default "info" }}
+              value: {{ .Values.logLevel }}
             - name: ENABLE_METRICS
               value: {{ .Values.metrics.enabled | quote }}
             - name: SERVE_METRICS_PORT
               value: {{ .Values.metrics.port | quote }}
             - name: DIND_ENABLED
               value: {{ .Values.dockerInDocker.enabled | quote }}
-            
+            - name: ENABLE_CONTROL_PLANE_STREAMING
+              value: {{ .Values.controlPlane.streaming.enabled | quote }}
+            - name: ENABLE_CONTROL_PLANE_REST
+              value: {{ .Values.controlPlane.rest.enabled | quote }}
+            - name: CONTROL_PLANE_HOST
+              value: {{ .Values.controlPlane.host }}
           
 
       volumes:

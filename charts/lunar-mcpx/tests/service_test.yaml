@@ -1,0 +1,19 @@
+suite: Service exposure
+tests:
+  - it: should expose HTTP and metrics on the right ports and type
+    template: templates/service.yaml
+    asserts:
+      - equal:
+          path: spec.type
+          value: LoadBalancer
+      - contains:
+          path: spec.ports
+          content:
+            name: http
+            port: 9000
+            targetPort: 9000
+      - contains:
+          path: spec.ports
+          content:
+            name: metrics
+            port: 3000
