@@ -1,12 +1,15 @@
 name: Helm Chart CI
 
 on:
-    pull_request:
-        paths:
-            - charts/**
+  pull_request:
+    paths:
+      - charts/**
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        chart: [lunar-proxy, lunar-mcpx]
 
     steps:
       - name: Check out repository
@@ -20,7 +23,7 @@ jobs:
         run: helm plugin install https://github.com/quintush/helm-unittest
 
       - name: Update Helm dependencies
-        run: helm dependency update ./charts/lunar-proxy
+        run: helm dependency update ./charts/${{ matrix.chart }}
 
       - name: Run Helm unittest
-        run: helm unittest ./charts/lunar-proxy
+        run: helm unittest ./charts/${{ matrix.chart }}

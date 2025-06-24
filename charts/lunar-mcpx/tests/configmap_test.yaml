@@ -1,0 +1,9 @@
+suite: ConfigMap contents
+tests:
+  - it: should render both config files
+    template: templates/configmap.yaml
+    asserts:
+      - isNotEmpty:
+          path: data["mcp.json"]
+      - isNotEmpty:
+          path: data["app.yaml"]

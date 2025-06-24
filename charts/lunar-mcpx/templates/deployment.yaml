@@ -20,11 +20,36 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: 9000
+
+          {{- with .Values.healthcheck }}
+          {{- if .readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .path }}
+              port: 9000
+            initialDelaySeconds: {{ .readinessProbe.initialDelaySeconds }}
+            periodSeconds:      {{ .readinessProbe.periodSeconds }}
+            timeoutSeconds:     {{ .readinessProbe.timeoutSeconds }}
+            failureThreshold:   {{ .readinessProbe.failureThreshold }}
+            successThreshold:   {{ .readinessProbe.successThreshold }}
+          {{- end }}
+
+          {{- if .livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .path }}
+              port: 9000
+            initialDelaySeconds: {{ .livenessProbe.initialDelaySeconds }}
+            periodSeconds:      {{ .livenessProbe.periodSeconds }}
+            timeoutSeconds:     {{ .livenessProbe.timeoutSeconds }}
+            failureThreshold:   {{ .livenessProbe.failureThreshold }}
+          {{- end }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: mcp-config-vol
-              mountPath: /config
+              mountPath: /etc/lunar-mcpx
               readOnly: true
           env:
           {{- if .Values.secretRef }}
@@ -36,6 +61,26 @@ spec:
                   key: {{ . }}
             {{- end }}
           {{- end }}
+            - name: SERVERS_CONFIG_PATH
+              value: /etc/lunar-mcpx/mcp.json
+            - name: APP_CONFIG_PATH
+              value: /etc/lunar-mcpx/app.yaml
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel }}
+            - name: ENABLE_METRICS
+              value: {{ .Values.metrics.enabled | quote }}
+            - name: SERVE_METRICS_PORT
+              value: {{ .Values.metrics.port | quote }}
+            - name: DIND_ENABLED
+              value: {{ .Values.dockerInDocker.enabled | quote }}
+            - name: ENABLE_CONTROL_PLANE_STREAMING
+              value: {{ .Values.controlPlane.streaming.enabled | quote }}
+            - name: ENABLE_CONTROL_PLANE_REST
+              value: {{ .Values.controlPlane.rest.enabled | quote }}
+            - name: CONTROL_PLANE_HOST
+              value: {{ .Values.controlPlane.host }}
+          
+
       volumes:
         - name: mcp-config-vol
           configMap:

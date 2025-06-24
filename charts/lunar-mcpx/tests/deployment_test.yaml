@@ -1,0 +1,40 @@
+suite: Deployment
+
+tests:
+  - it: should use the right image
+    template: templates/deployment.yaml
+    set:
+      image:
+        tag: "0.1.4"
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: "us-central1-docker.pkg.dev/prj-common-442813/mcpx/mcpx:0.1.4"
+  - it: should wire metrics env vars
+    template: templates/deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: ENABLE_METRICS
+            value: "true"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: SERVE_METRICS_PORT
+            value: "3000"
+  - it: should probe /healthcheck on port 9000
+    template: templates/deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+          value: /healthcheck
+      - equal:
+          path: spec.template.spec.containers[0].livenessProbe.httpGet.path
+          value: /healthcheck
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.port
+          value: 9000
+      - equal:
+          path: spec.template.spec.containers[0].livenessProbe.httpGet.port
+          value: 9000

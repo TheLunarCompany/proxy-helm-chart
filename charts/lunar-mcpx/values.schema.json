@@ -7,6 +7,41 @@
       "description": "Number of replicas to run",
       "default": 1
     },
+    "logLevel": {
+      "type": "string",
+      "description": "Log level for the app",
+      "default": "info",
+      "enum": ["error", "warn", "info", "http", "verbose", "debug", "silly"]
+    },
+    "metrics": {
+      "type": "object",
+      "description": "Metrics configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable metrics collection and endpoint",
+          "default": true
+        },
+        "port": {
+          "type": "integer",
+          "description": "Port for metrics endpoint",
+          "default": 3000
+        }
+      },
+      "required": ["enabled", "port"]
+    },
+    "dockerInDocker": {
+      "type": "object",
+      "description": "Configuration for Docker-in-Docker support",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable Docker-in-Docker support",
+          "default": false
+        }
+      },
+      "required": ["enabled"]
+    },
     "config": {
       "type": "object",
       "description": "Inline application configuration files",
