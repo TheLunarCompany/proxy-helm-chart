@@ -4,11 +4,23 @@ metadata:
   name: {{ include "lunar-mcpx.fullname" . }}
   labels:
     app: {{ include "lunar-mcpx.fullname" . }}
+  {{- if .Values.metrics.enabled }}
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.metrics.port }}"
+  {{- end }}
 spec:
   type: {{ .Values.service.type }}
   selector:
     app: {{ include "lunar-mcpx.fullname" . }}
   ports:
+    # main port
     - name: http
       port: {{ .Values.service.port }}
       targetPort: 9000
+    
+    # metrics port
+    {{- if .Values.metrics.enabled }}
+    - name: metrics
+      port: {{ .Values.metrics.port }}
+    {{- end }}

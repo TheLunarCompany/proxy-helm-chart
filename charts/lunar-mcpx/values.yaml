@@ -35,6 +35,15 @@ healthcheck:
     timeoutSeconds: 1
     failureThreshold: 3
 
+logLevel: info
+
+metrics:
+  enabled: true
+  port: 3000
+
+dockerInDocker:
+  enabled: false
+
 config:
   mcpJson: |
     {
@@ -51,3 +60,5 @@ config:
       enabled: false
     permissions:
       base: "allow"
+    toolExtensions:
+      services: {}
