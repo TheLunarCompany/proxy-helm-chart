@@ -20,6 +20,7 @@ resources:
 healthcheck:
   path: /healthcheck
 
+  # healthcheck.readinessProbe is used to configure the readiness probe for the mcpx deployment.
   readinessProbe:
     enabled: true
     initialDelaySeconds: 5
@@ -28,6 +29,7 @@ healthcheck:
     failureThreshold: 3
     successThreshold: 1
 
+  # healthcheck.livenessProbe is used to configure the liveness probe for the mcpx deployment.
   livenessProbe:
     enabled: true
     initialDelaySeconds: 10
@@ -35,23 +37,21 @@ healthcheck:
     timeoutSeconds: 1
     failureThreshold: 3
 
+# logLevel is the log level for the mcpx deployment.
 logLevel: info
 
 metrics:
+  # metrics.enabled is used to enable or disable the metrics server & metrics collections.
   enabled: true
+  # metrics.port is the port on which the metrics server will listen.
   port: 3000
 
 dockerInDocker:
+  # dockerInDocker.enabled is used to enable or disable the Docker-in-Docker feature, which allows the mcpx deployment to run Docker containers inside the mcpx container.
   enabled: false
 
-controlPlane:
-  host: ""
-  streaming:
-    enabled: false
-  rest:
-    enabled: false
-
 config:
+  # config.mcpJson supplies content to the `mcp.json` file that contains the target MCP servers configuration.
   mcpJson: |
     {
       "mcpServers": {
@@ -62,6 +62,7 @@ config:
       }
     }
 
+  # config.appYaml supplies content to the `app.yaml` file that contains the application configuration.
   appYaml: |
     auth:
       enabled: false
@@ -69,3 +70,17 @@ config:
       base: "allow"
     toolExtensions:
       services: {}
+
+
+secretRef:
+  # secretRef.name is the name of the Kubernetes Secret that contains the sensitive data.
+  name: ""
+  # secretRef.keys is a list of keys in the Kubernetes Secret that should be made available as environment variables in the mcpx container.
+  keys: []
+
+controlPlane:
+  host: ""
+  streaming:
+    enabled: false
+  rest:
+    enabled: false
