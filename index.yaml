@@ -2,6 +2,17 @@ apiVersion: v1
 entries:
   lunar-mcpx:
   - apiVersion: v2
+    appVersion: v0.1.7
+    created: "2025-07-14T12:24:46.432759206Z"
+    description: Helm chart for Lunar MCPX
+    digest: 4b1f8c770bba85a052991073000c38a819163371dc1962e22a6a83244ac46a98
+    icon: https://storage.googleapis.com/lunar-webapp-assets/favicon/apple-touch-icon.png
+    name: lunar-mcpx
+    type: application
+    urls:
+    - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/lunar-mcpx-v0.1.7/lunar-mcpx-v0.1.7.tgz
+    version: v0.1.7
+  - apiVersion: v2
     appVersion: v0.1.4
     created: "2025-06-25T14:00:32.811507567Z"
     description: Helm chart for Lunar MCPX
@@ -895,4 +906,4 @@ entries:
     urls:
     - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/lunar-proxy-v0.1.2/lunar-proxy-v0.1.2.tgz
     version: v0.1.2
-generated: "2025-07-14T12:24:14.792195486Z"
+generated: "2025-07-14T12:24:46.433011048Z"
