@@ -5,13 +5,13 @@ This Helm chart will install Lunar Gateway on your Kubernetes cluster.
 
 In order to install it, only a minimal configuration is required:
 ```bash
-helm install lunar-proxy lunar/lunar-proxy --version 0.1.3 --set tenantName=<organization-name> --set lunarAPIKey=<api-key>
+helm install lunar-proxy lunar/lunar-proxy --version 0.1.7 --set tenantName=<organization-name> --set lunarAPIKey=<api-key>
 ```
 The API key can be obtained by opening an account on [app.lunar.dev](app.lunar.dev).
 
 Alternatively, you may work with a separate `values` file to handle values override just like any other Helm chart:
 ```bash
-helm install lunar-proxy lunar/lunar-proxy --version 0.1.3 -f ./values-override.yaml
+helm install lunar-proxy lunar/lunar-proxy --version 0.1.7 -f ./values-override.yaml
 ```
 
 ## Versioning
@@ -40,7 +40,7 @@ spec:
   project: default
   source:
     repoURL: https://thelunarcompany.github.io/proxy-helm-chart/
-    targetRevision: '0.1.3'
+    targetRevision: '0.1.7'
     chart: lunar-proxy
     helm:
       values: |
