@@ -4,7 +4,7 @@
 This Helm chart will install Lunar MCPX on your Kubernetes cluster.
 
 ```bash
-helm install my-mcpx lunar/lunar-mcpx --version 0.1.4
+helm install my-mcpx lunar/lunar-mcpx --version 0.1.7
 ```
 
 ## Versioning
@@ -27,7 +27,7 @@ config:
 
 We can then install the chart with
 ```bash
-helm install my-mcpx lunar/lunar-mcpx --version 0.1.4 -f ./charts/lunar-mcpx/override-values.yaml
+helm install my-mcpx lunar/lunar-mcpx --version 0.1.7 -f ./charts/lunar-mcpx/override-values.yaml
 ```
 
 ## Supplying Secrets
@@ -60,7 +60,7 @@ spec:
   project: default
   source:
     repoURL: https://thelunarcompany.github.io/proxy-helm-chart/
-    targetRevision: '0.1.4'
+    targetRevision: '0.1.7'
     chart: lunar-mcpx
     helm:
       values: |
