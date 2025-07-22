@@ -19,14 +19,14 @@ spec:
           image: "{{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: 9000
+            - containerPort: {{ .Values.service.port }}
 
           {{- with .Values.healthcheck }}
           {{- if .readinessProbe.enabled }}
           readinessProbe:
             httpGet:
               path: {{ .path }}
-              port: 9000
+              port: {{ .Values.service.port }}
             initialDelaySeconds: {{ .readinessProbe.initialDelaySeconds }}
             periodSeconds:      {{ .readinessProbe.periodSeconds }}
             timeoutSeconds:     {{ .readinessProbe.timeoutSeconds }}
@@ -38,7 +38,7 @@ spec:
           livenessProbe:
             httpGet:
               path: {{ .path }}
-              port: 9000
+              port: {{ .Values.service.port }}
             initialDelaySeconds: {{ .livenessProbe.initialDelaySeconds }}
             periodSeconds:      {{ .livenessProbe.periodSeconds }}
             timeoutSeconds:     {{ .livenessProbe.timeoutSeconds }}
@@ -61,6 +61,10 @@ spec:
                   key: {{ . }}
             {{- end }}
           {{- end }}
+            - name: MCPX_PORT
+              value: {{ .Values.service.port | quote }}
+            - name: LUNAR_URL
+              value: {{ .Values.lunarURL }}
             - name: SERVERS_CONFIG_PATH
               value: /etc/lunar-mcpx/mcp.json
             - name: APP_CONFIG_PATH
@@ -77,10 +81,9 @@ spec:
               value: {{ .Values.controlPlane.streaming.enabled | quote }}
             - name: ENABLE_CONTROL_PLANE_REST
               value: {{ .Values.controlPlane.rest.enabled | quote }}
-            - name: CONTROL_PLANE_HOST
+            - name: WEBSERVER_URL
               value: {{ .Values.controlPlane.host }}
           
-
       volumes:
         - name: mcp-config-vol
           configMap:
