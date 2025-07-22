@@ -61,6 +61,8 @@ spec:
                   key: {{ . }}
             {{- end }}
           {{- end }}
+            - name: LUNAR_API_KEY
+              value: {{ .Values.lunarAPIKey }}
             - name: MCPX_PORT
               value: {{ .Values.service.port | quote }}
             - name: LUNAR_URL

@@ -40,6 +40,7 @@ healthcheck:
 # logLevel is the log level for the mcpx deployment.
 logLevel: info
 lunarURL: "https://hosted-gateway.lunar.dev"
+lunarAPIKey: ""
 
 metrics:
   # metrics.enabled is used to enable or disable the metrics server & metrics collections.
