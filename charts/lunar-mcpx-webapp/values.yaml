@@ -1,0 +1,124 @@
+global:
+  # -- Global Docker registry secret names as an array
+  # e.g.
+  # imagePullSecrets:
+  #   - my-registry-secrets
+  #   - other-registry-secrets
+  imagePullSecrets: []
+
+  # -- extraEnvVars An array to add extra env vars
+  # e.g:
+  # extraEnvVars:
+  #   - name: FOO
+  #     value: "bar"
+  #   - name: FOO2
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: SECRET_NAME
+  #         key: KEY
+  extraEnvVars: []
+
+
+webserver:
+  image:
+    # -- Lunar mcpx-webserver image repository
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-webserver
+    # -- Lunar mcpx-webserver image pull policy
+    pullPolicy: IfNotPresent
+    # -- Lunar mcpx-webserver image tag
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ccd54a7
+
+  # -- number of replicas to run
+  replicaCount: 1
+
+  # -- Set pod resource requests & limits
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "150m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+  # -- extraEnvVars An array to add extra env vars
+  # e.g:
+  # extraEnvVars:
+  #   - name: FOO
+  #     value: "bar"
+  #   - name: FOO2
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: SECRET_NAME
+  #         key: KEY
+  extraEnvVars: []
+
+
+hub:
+  image:
+    # -- Lunar mcpx-webserver image repository
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hub
+    # -- Lunar mcpx-webserver image pull policy
+    pullPolicy: IfNotPresent
+    # -- Lunar mcpx-webserver image tag
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ccd54a7
+
+  # -- number of replicas to run
+  replicaCount: 1
+
+  # -- Set pod resource requests & limits
+  resources:
+    limits:
+      cpu: "500m"
+      memory: 512Mi
+    requests:
+      cpu: "500m"
+      memory: 512Mi
+
+  # -- extraEnvVars An array to add extra env vars
+  # e.g:
+  # extraEnvVars:
+  #   - name: FOO
+  #     value: "bar"
+  #   - name: FOO2
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: SECRET_NAME
+  #         key: KEY
+  extraEnvVars:
+    - name: AUTH0_DOMAIN
+      value: "dev-b8usc66hvtpq73zg.us.auth0.com"
+    - name: AUTH0_AUDIENCE
+      value: "mcpx-webapp"
+
+
+ingress:
+  # -- Enable or disable Ingress for mcpx-webapp services
+  enabled: true
+
+  # -- Ingress annotations
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: mcpx-lunar-mcpx-webapp
+
+  domains:
+    webserver:
+      - mcpx-app.example.com
+    hub:
+      - mcpx-hub.example.com
+
+  # -- Provision cloud-specific ingress resources and configuration. Available options: "manual", "gce"
+  type: gce
+
+  # -- GCP-specific configuration. Used only when ingress.type = gce
+  gce: {}
+
+
+postgres:
+  # -- Enable or disable embedded Postgresql statefulset
+  enabled: true
+
+
+redis:
+  # -- Enable or disable embedded Redis statefulset
+  enabled: true

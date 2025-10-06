@@ -1,0 +1,101 @@
+{{- if .Values.webserver.enabled | default true }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-webserver
+  labels:
+    name: {{ include "lunar-mcpx-webapp.fullname" . }}-webserver
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-webserver
+spec:
+  replicas: {{ .Values.webserver.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ include "lunar-mcpx-webapp.fullname" . }}-webserver
+      {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "lunar-mcpx-webapp.fullname" . }}-webserver
+        {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+        - name: mcpx-webserver-prisma-migration
+          image: "{{ .Values.webserver.image.repository }}:{{ default .Chart.AppVersion .Values.webserver.image.tag }}"
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          command: ["/bin/sh"]
+          args: ["-c", "cd /mcpx-webapp && npx prisma migrate deploy;"]
+          envFrom:
+            - secretRef:
+                name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
+          env:
+            - name: NODE_ENV
+              value: "production"
+          {{- if .Values.global.extraEnvVars }}
+          {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.webserver.extraEnvVars }}
+          {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.webserver.extraEnvVars "context" $) | nindent 12 }}
+          {{- end }}
+
+      containers:
+        - name: mcpx-webserver-container
+          image: "{{ .Values.webserver.image.repository }}:{{ default .Chart.AppVersion .Values.webserver.image.tag }}"
+          ports:
+            - containerPort: 3000
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            runAsUser: 1000
+            runAsGroup: 1000
+          envFrom:
+            - secretRef:
+                name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
+          env:
+            - name: NODE_ENV
+              value: "production"
+          {{- if .Values.global.extraEnvVars }}
+          {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.webserver.extraEnvVars }}
+          {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.webserver.extraEnvVars "context" $) | nindent 12 }}
+          {{- end }}
+
+          startupProbe:
+            successThreshold: 1
+            failureThreshold: 30
+            httpGet:
+              path: /healthcheck
+              port: 3000
+              scheme: HTTP
+            periodSeconds: 10
+          readinessProbe:
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              path: /healthcheck
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 10
+          livenessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /healthcheck
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 30
+
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range $.Values.global.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+  {{- end }}

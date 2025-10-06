@@ -1,0 +1,16 @@
+{{- if .Values.redis.enabled | default false }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-redis
+spec:
+  ports:
+    - name: redis
+      protocol: TCP
+      port: 6379
+      targetPort: 6379
+  type: ClusterIP
+  selector:
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-redis
+    {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 4 }}
+  {{- end }}
