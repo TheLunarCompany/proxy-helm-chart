@@ -42,7 +42,6 @@ metadata:
       {{- $newList = append $newList (printf "%s-%s" $xfullname $key) -}}
       {{- end }}
       {{ join "," $newList }}
-  
     networking.gke.io/v1beta1.FrontendConfig: {{ include "lunar-mcpx-webapp.fullname" . }}
     {{- end }}
     {{- if .Values.ingress.annotations }}

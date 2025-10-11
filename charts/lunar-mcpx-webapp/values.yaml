@@ -107,7 +107,10 @@ ingress:
     hub:
       - mcpx-hub.example.com
 
-  # -- Provision cloud-specific ingress resources and configuration. Available options: "manual", "gce"
+  # -- Provision cloud-specific ingress resources and configuration.
+  # Available options: "manual", "gce"
+  # - manual - deploys generic ingress without any cloud-specific configuration. Use ingress.annotations to configure it
+  # - gce    - deploys GCP-specific resources, like ManagedCertificate, FrontendConfig, BackendConfig, etc
   type: gce
 
   # -- GCP-specific configuration. Used only when ingress.type = gce
@@ -115,10 +118,42 @@ ingress:
 
 
 postgres:
-  # -- Enable or disable embedded Postgresql statefulset
+  # -- Enable or disable embedded Postgresql StatefulSet
+  # Warning: Do not use embedded Postgresql for production environments.
+  # The purpose of embedded services is to provide a 'quick-start' option and for testing purposes.
   enabled: true
 
+  # -- Configure persistent storage
+  # e.g.
+  # persistence:
+  #   enabled: true
+  #   type: sts
+  #   storageClassName: "storageClassName"
+  #   accessModes:
+  #     - ReadWriteOnce
+  #   size: 20Gi
+  persistence:
+    enabled: true
+
+  credentials:
+    username: postgres
+    password: postgres
+    database: mcpx
 
 redis:
-  # -- Enable or disable embedded Redis statefulset
+  # -- Enable or disable embedded Redis StatefulSet
+  # Warning: Do not use embedded Redis for production environments.
+  # The purpose of embedded services is to provide a 'quick-start' option and for testing purposes.
   enabled: true
+
+  # -- Configure persistent storage
+  # e.g.
+  # persistence:
+  #   enabled: true
+  #   type: sts
+  #   storageClassName: "storageClassName"
+  #   accessModes:
+  #     - ReadWriteOnce
+  #   size: 20Gi
+  persistence:
+    enabled: true

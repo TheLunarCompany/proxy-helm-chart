@@ -39,8 +39,10 @@ spec:
             - name: conf
               mountPath: /etc/redis/
               readOnly: false
+            {{- if .Values.redis.persistence.enabled | default false }}
             - name: data
               mountPath: /data
+            {{- end }}
           livenessProbe:
             exec:
               command:
@@ -64,13 +66,22 @@ spec:
           configMap:
             name: {{ include "lunar-mcpx-webapp.fullname" . }}-redis-config
             defaultMode: 0644
+  {{- if .Values.redis.persistence.enabled | default false }}
   volumeClaimTemplates:
     - metadata:
         name: data
       spec:
+        {{- if .Values.redis.persistence.accessModes }}
+        accessModes: {{ .Values.redis.persistence.accessModes }}
+        {{- else }}
         accessModes: [ "ReadWriteOnce" ]
+        {{- end }}
+        {{- if .Values.redis.persistence.storageClassName }}
+        storageClassName: {{ .Values.redis.persistence.storageClassName }}
+        {{- end }}
         resources:
           requests:
-            storage: 5Gi
-
+            storage: {{ .Values.redis.persistence.size | default "5Gi" }}
   {{- end }}
+
+{{- end }}
