@@ -1,0 +1,48 @@
+{{- if .Values.admin.enabled | default true }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-admin
+  annotations:
+    {{- if .Values.ingress.enabled | default true }}
+    {{- if eq .Values.ingress.type "gce" }}
+    cloud.google.com/backend-config: '{"ports": {"admin80":"{{ include "lunar-mcpx-webapp.fullname" . }}-admin"}}'
+    {{- end }}
+    {{- end }}
+spec:
+  ports:
+    - name: admin
+      protocol: TCP
+      port: 80
+      targetPort: 3000
+  sessionAffinity: ClientIP
+  type: ClusterIP
+  selector:
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-admin
+    {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 4 }}
+
+
+{{- if .Values.ingress.enabled | default true }}
+{{- if eq .Values.ingress.type "gce" }}
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-admin
+spec:
+  timeoutSec: 86400
+  sessionAffinity:
+    affinityType: "GENERATED_COOKIE"
+    affinityCookieTtlSec: 86400
+  healthCheck:
+    checkIntervalSec: 30
+    timeoutSec: 10
+    healthyThreshold: 1
+    unhealthyThreshold: 3
+    type: HTTP
+    requestPath: /healthcheck
+    port: 3000
+{{- end }}
+{{- end }}
+
+{{- end }}

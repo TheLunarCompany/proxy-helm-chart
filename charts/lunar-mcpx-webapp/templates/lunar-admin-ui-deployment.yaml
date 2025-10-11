@@ -1,0 +1,78 @@
+{{- if .Values.webserver.enabled | default true }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-admin
+  labels:
+    name: {{ include "lunar-mcpx-webapp.fullname" . }}-admin
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-admin
+spec:
+  replicas: {{ .Values.admin.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ include "lunar-mcpx-webapp.fullname" . }}-admin
+      {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "lunar-mcpx-webapp.fullname" . }}-admin
+        {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: mcpx-admin-container
+          image: "{{ .Values.admin.image.repository }}:{{ default .Chart.AppVersion .Values.admin.image.tag }}"
+          ports:
+            - containerPort: 3000
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            runAsUser: 1000
+            runAsGroup: 1000
+          env:
+            - name: NODE_ENV
+              value: "production"
+          {{- if .Values.global.extraEnvVars }}
+          {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.admin.extraEnvVars }}
+          {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.admin.extraEnvVars "context" $) | nindent 12 }}
+          {{- end }}
+
+          startupProbe:
+            successThreshold: 1
+            failureThreshold: 30
+            httpGet:
+              path: /healthcheck
+              port: 3000
+              scheme: HTTP
+            periodSeconds: 10
+          readinessProbe:
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              path: /healthcheck
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 10
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthcheck
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 10
+
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range $.Values.global.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+  {{- end }}
