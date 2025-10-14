@@ -1,10 +1,12 @@
+## @section Global Section
 global:
+  ## @param global.imagePullSecrets [default:\[lunar-private-mcpx-registry] Global Docker registry secret names as an array
   # -- Global Docker registry secret names as an array
   # e.g.
   # imagePullSecrets:
-  #   - my-registry-secrets
-  #   - other-registry-secrets
-  imagePullSecrets: []
+  #   - lunar-private-mcpx-registry
+  imagePullSecrets:
+    - lunar-private-mcpx-registry
 
   # -- extraEnvVars An array to add extra env vars
   # e.g:
@@ -17,6 +19,12 @@ global:
   #         name: SECRET_NAME
   #         key: KEY
   extraEnvVars: []
+
+  # -- extraEnvFromSecrets An array of secret names to add as extra env vars
+  # extraEnvFromSecrets:
+  #   - secret_1
+  #   - secret_2
+  extraEnvFromSecrets: []
 
 
 webserver:
@@ -52,6 +60,12 @@ webserver:
   #         name: SECRET_NAME
   #         key: KEY
   extraEnvVars: []
+
+  # -- extraEnvFromSecrets An array of secret names to add as extra env vars
+  # extraEnvFromSecrets:
+  #   - secret_1
+  #   - secret_2
+  extraEnvFromSecrets: []
 
 
 hub:
@@ -92,6 +106,12 @@ hub:
     - name: AUTH0_AUDIENCE
       value: "mcpx-webapp"
 
+  # -- extraEnvFromSecrets An array of secret names to add as extra env vars
+  # extraEnvFromSecrets:
+  #   - secret_1
+  #   - secret_2
+  extraEnvFromSecrets: []
+
 
 admin:
   image:
@@ -127,14 +147,19 @@ admin:
   #         key: KEY
   extraEnvVars: []
 
+  # -- extraEnvFromSecrets An array of secret names to add as extra env vars
+  # extraEnvFromSecrets:
+  #   - secret_1
+  #   - secret_2
+  extraEnvFromSecrets: []
+
 
 ingress:
   # -- Enable or disable Ingress for mcpx-webapp services
   enabled: true
 
   # -- Ingress annotations
-  annotations:
-    kubernetes.io/ingress.global-static-ip-name: mcpx-lunar-mcpx-webapp
+  annotations: {}
 
   domains:
     webserver:
@@ -148,7 +173,7 @@ ingress:
   # Available options: "manual", "gce"
   # - manual - deploys generic ingress without any cloud-specific configuration. Use ingress.annotations to configure it
   # - gce    - deploys GCP-specific resources, like ManagedCertificate, FrontendConfig, BackendConfig, etc
-  type: gce
+  type: manual
 
   # -- GCP-specific configuration. Used only when ingress.type = gce
   gce: {}
@@ -158,7 +183,7 @@ postgres:
   # -- Enable or disable embedded Postgresql StatefulSet
   # Warning: Do not use embedded Postgresql for production environments.
   # The purpose of embedded services is to provide a 'quick-start' option and for testing purposes.
-  enabled: true
+  enabled: false
 
   # -- Configure persistent storage
   # e.g.
@@ -181,7 +206,7 @@ redis:
   # -- Enable or disable embedded Redis StatefulSet
   # Warning: Do not use embedded Redis for production environments.
   # The purpose of embedded services is to provide a 'quick-start' option and for testing purposes.
-  enabled: true
+  enabled: false
 
   # -- Configure persistent storage
   # e.g.

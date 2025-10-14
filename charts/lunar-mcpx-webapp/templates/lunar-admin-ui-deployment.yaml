@@ -31,6 +31,21 @@ spec:
             allowPrivilegeEscalation: false
             runAsUser: 1000
             runAsGroup: 1000
+          envFrom:
+            - secretRef:
+                name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
+          {{- with .Values.global.extraEnvFromSecrets }}
+          {{- range $.Values.global.extraEnvFromSecrets }}
+            - secretRef:
+              name: {{ . }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.admin.extraEnvFromSecrets }}
+          {{- range $.Values.admin.extraEnvFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+          {{- end }}
+          {{- end }}
           env:
             - name: NODE_ENV
               value: "production"
