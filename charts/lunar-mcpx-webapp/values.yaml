@@ -35,7 +35,7 @@ webserver:
     pullPolicy: IfNotPresent
     # -- Lunar mcpx-webserver image tag
     # Overrides the image tag whose default is the chart appVersion.
-    tag: bd576da
+    tag: ""
 
   # -- number of replicas to run
   replicaCount: 1
@@ -76,7 +76,7 @@ hub:
     pullPolicy: IfNotPresent
     # -- Lunar mcpx-webserver image tag
     # Overrides the image tag whose default is the chart appVersion.
-    tag: bd576da
+    tag: ""
 
   # -- number of replicas to run
   replicaCount: 1
@@ -121,7 +121,7 @@ admin:
     pullPolicy: IfNotPresent
     # -- Lunar mcpx-webserver image tag
     # Overrides the image tag whose default is the chart appVersion.
-    tag: bd576da
+    tag: ""
 
   # -- number of replicas to run
   replicaCount: 1
