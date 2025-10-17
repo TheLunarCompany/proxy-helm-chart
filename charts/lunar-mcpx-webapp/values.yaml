@@ -179,6 +179,47 @@ ingress:
   gce: {}
 
 
+auth:
+  image:
+    # -- Lunar mcpx-webserver image repository
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-auth-bff
+    # -- Lunar mcpx-webserver image pull policy
+    pullPolicy: IfNotPresent
+    # -- Lunar mcpx-webserver image tag
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+  # -- number of replicas to run
+  replicaCount: 1
+
+  # -- Set pod resource requests & limits
+  resources:
+    limits:
+      cpu: "500m"
+      memory: 512Mi
+    requests:
+      cpu: "500m"
+      memory: 512Mi
+
+  # -- extraEnvVars An array to add extra env vars
+  # e.g:
+  # extraEnvVars:
+  #   - name: FOO
+  #     value: "bar"
+  #   - name: FOO2
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: SECRET_NAME
+  #         key: KEY
+  extraEnvVars: []
+
+  # -- extraEnvFromSecrets An array of secret names to add as extra env vars
+  # extraEnvFromSecrets:
+  #   - secret_1
+  #   - secret_2
+  extraEnvFromSecrets: []
+
+
 postgres:
   # -- Enable or disable embedded Postgresql StatefulSet
   # Warning: Do not use embedded Postgresql for production environments.
