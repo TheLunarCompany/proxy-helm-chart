@@ -1,0 +1,1 @@
+{{- /* CRD now lives under crds/ for Helm v3; keep this template empty */ -}}

@@ -1,0 +1,95 @@
+{{- if .Values.router.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mcpx-hive.name" . }}-router
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "mcpx-hive.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: router
+    app.kubernetes.io/part-of: {{ include "mcpx-hive.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.router.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "mcpx-hive.name" . }}
+      app.kubernetes.io/component: router
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "mcpx-hive.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: router
+        app.kubernetes.io/part-of: {{ include "mcpx-hive.name" . }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+    spec:
+      containers:
+        - name: router
+          image: "openresty/openresty:1.27.1.2-4-alpine-fat"
+          command: ["/bin/sh", "-c", "/config/init.sh"]
+          ports:
+            - containerPort: 9000
+              name: mcpx-server
+            - containerPort: 5173
+              name: ui
+            - containerPort: 3000
+              name: metrics
+          env:
+            - name: OIDC_DISCOVERY
+              value: {{ .Values.router.oidc.issuerUrl | quote }}
+            - name: OIDC_CLIENT_ID
+              value: {{ .Values.router.oidc.clientId | quote }}
+            - name: OIDC_CLIENT_SECRET
+              value: {{ .Values.router.oidc.clientSecret | quote }}
+            - name: SESSION_SECRET
+              value: {{ .Values.router.oidc.sessionSecret | quote }}
+          volumeMounts:
+            - name: nginx-config-volume
+              mountPath: /config
+            - name: openresty-config-volume
+              mountPath: /usr/local/openresty/nginx/conf/nginx.conf
+              subPath: nginx.conf
+            - name: auth-utils-volume
+              mountPath: /usr/local/openresty/lualib/auth-utils.lua
+              subPath: auth-utils.lua
+            - name: nginx-logs-volume
+              mountPath: /var/log/nginx
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5173
+            initialDelaySeconds: 35 # Wait for luarocks to install
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5173
+            initialDelaySeconds: 35 # Wait for luarocks to install
+            periodSeconds: 10
+            timeoutSeconds: 5
+          resources:
+            {{- toYaml .Values.router.resources | nindent 12 }}
+      volumes:
+        - name: nginx-config-volume
+          configMap:
+            name: {{ include "mcpx-hive.name" . }}-router
+            defaultMode: 0755 # Make the init script executable
+        - name: openresty-config-volume
+          configMap:
+            name: {{ include "mcpx-hive.name" . }}-router
+        - name: auth-utils-volume
+          configMap:
+            name: {{ include "mcpx-hive.name" . }}-router
+            items:
+            - key: auth-utils.lua
+              path: auth-utils.lua
+        - name: nginx-logs-volume
+          emptyDir: {}
+      {{- with .Values.router.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 10 }}
+      {{- end }}
+{{- end }}

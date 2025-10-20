@@ -1,0 +1,41 @@
+{{- if .Values.hiveController.rbac.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "mcpx-hive.hive-controller.fullname" . }}
+  labels:
+    {{- include "mcpx-hive.hive-controller.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["hive.lunar.dev"]
+    resources: ["mcpxs"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["services", "configmaps"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "watch"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Additional permissions for secret management
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "mcpx-hive.hive-controller.fullname" . }}
+  labels:
+    {{- include "mcpx-hive.hive-controller.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "mcpx-hive.hive-controller.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "mcpx-hive.hive-controller.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }} 
