@@ -19,7 +19,9 @@ global:
   # Set to "gcp" for Google Cloud Platform
   # Example for GCP standalone deployment:
   # cloudProvider: "gcp"
-  cloudProvider: "generic" # generic, gcp, aws, azure
+  cloudProvider: "gcp" # generic, gcp, aws, azure
+  imagePullSecrets:
+    - lunar-private-mcpx-registry
 
   # --- GCP Specific Configuration ---
   # These values are used when cloudProvider is "gcp"
@@ -27,9 +29,12 @@ global:
   # staticIPName: "mcpx-hive-static-ip"
   # managedCertificateName: "mcpx-hive-managed-cert-sandbox"
   # frontendConfigName: "mcpx-hive-redirect-sandbox"
-  staticIPName: "" # Optional unified static IP name for GCP; if set, overrides per-ingress staticIPName
-  managedCertificateName: "" # Optional managed certificate name for GCP
-  frontendConfigName: "" # Optional FrontendConfig name for GCP (for HTTPS redirect)
+  staticIPName: "lunar-mcpx-hive" # Optional unified static IP name for GCP; if set, overrides per-ingress staticIPName
+  managedCertificateName: "mcpx-hive-managed-cert-stg" # Optional managed certificate name for GCP
+  frontendConfigName: "mcpx-hive-redirect-stg" # Optional FrontendConfig name for GCP (for HTTPS redirect)
+
+  gcp:
+    createManagedCertificate: true
 
 crds:
   enabled: true
@@ -37,8 +42,8 @@ crds:
 hiveController:
   image:
     repository: "us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-controller"
-    tag: "v0.0.25"
-    pullPolicy: "Always"
+    tag: "b223d43"
+    pullPolicy: "IfNotPresent"
 
   imagePullSecrets: []
 
@@ -53,6 +58,7 @@ hiveController:
       memory: 128Mi
 
   service:
+    enabled: true
     type: "ClusterIP"
     port: 80
     targetPort: 8080
@@ -169,8 +175,8 @@ router:
 #     hosts:
 #       - host: "mcpx-sandbox.lunar.dev"
 ingressesCombined:
-  enabled: false
-  className: ""
+  enabled: true
+  className: "gce"
 
 ingresses:
   # Controller ingress
@@ -185,7 +191,7 @@ ingresses:
             pathType: Prefix
     tls: []
     backend:
-      serviceName: "mcpx-hive-hive-controller"
+      serviceName: "mcpx-hive-controller"
       servicePort: 80
 
   # UI ingress

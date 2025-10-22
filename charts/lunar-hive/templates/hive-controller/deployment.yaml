@@ -1,26 +1,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "mcpx-hive.hive-controller.fullname" . }}
+  name: {{ include "mcpx-hive.controller.fullname" . }}
   labels:
-    {{- include "mcpx-hive.hive-controller.labels" . | nindent 4 }}
+    {{- include "mcpx-hive.controller.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.hiveController.autoscaling.enabled }}
   replicas: {{ .Values.hiveController.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "mcpx-hive.hive-controller.selectorLabels" . | nindent 6 }}
+      {{- include "mcpx-hive.controller.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "mcpx-hive.hive-controller.selectorLabels" . | nindent 8 }}
+        {{- include "mcpx-hive.controller.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.hiveController.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "mcpx-hive.hive-controller.serviceAccountName" . }}
+      serviceAccountName: {{ include "mcpx-hive.controller.serviceAccountName" . }}
       automountServiceAccountToken: true
       
       securityContext:
@@ -28,8 +28,7 @@ spec:
       containers:
         - name: hive-controller
           securityContext:
-            {{- $containerSC := omit .Values.hiveController.securityContext "fsGroup" }}
-            {{- toYaml $containerSC | nindent 12 }}
+            {{- toYaml .Values.hiveController.securityContext | nindent 12 }}
           image: "{{ .Values.hiveController.image.repository }}:{{ default .Chart.AppVersion .Values.hiveController.image.tag }}"
           imagePullPolicy: {{ .Values.hiveController.image.pullPolicy }}
           ports:

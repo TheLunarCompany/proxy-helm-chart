@@ -22,7 +22,7 @@ metadata:
     {{- $_ := set $ann "networking.gke.io/static-ip" $staticIPName }}
     {{- $_ := set $ann "kubernetes.io/ingress.global-static-ip-name" $staticIPName }}
   {{- end }}
-  {{- if and (eq .Values.global.cloudProvider "gcp") .Values.global.managedCertificateName }}
+  {{- if and (eq .Values.global.cloudProvider "gcp") .Values.global.managedCertificateName .Values.global.gcp.createManagedCertificate }}
     {{- $_ := set $ann "networking.gke.io/managed-certificates" .Values.global.managedCertificateName }}
   {{- end }}
   {{- if and (eq .Values.global.cloudProvider "gcp") .Values.global.frontendConfigName }}

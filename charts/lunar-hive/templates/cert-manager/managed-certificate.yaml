@@ -1,0 +1,16 @@
+{{- if and (eq .Values.global.cloudProvider "gcp") .Values.global.gcp.createManagedCertificate }}
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: {{ .Values.global.managedCertificateName | default (printf "%s-managed-cert" .Release.Name) }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  domains:
+    {{- range .Values.ingresses }}
+    {{- if .enabled }}
+    {{- range .hosts }}
+    - {{ .host | quote }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+{{- end }}

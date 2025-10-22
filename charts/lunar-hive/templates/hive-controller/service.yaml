@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "mcpx-hive.hive-controller.fullname" . }}
+  name: {{ include "mcpx-hive.controller.fullname" . }}
   labels:
-    {{- include "mcpx-hive.hive-controller.labels" . | nindent 4 }}
+    {{- include "mcpx-hive.controller.labels" . | nindent 4 }}
   {{- $ann := dict }}
   {{- if .Values.hiveController.service.annotations }}
     {{- $_ := merge $ann .Values.hiveController.service.annotations }}
@@ -27,5 +27,5 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "mcpx-hive.hive-controller.selectorLabels" . | nindent 4 }}
+    {{- include "mcpx-hive.controller.selectorLabels" . | nindent 4 }}
 {{- end }} 
