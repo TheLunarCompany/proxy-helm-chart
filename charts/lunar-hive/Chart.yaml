@@ -1,0 +1,10 @@
+apiVersion: v2
+name: mcpx-hive
+description: A comprehensive Helm chart for the MCPx Hive system including hive-controller and ingress
+type: application
+version: 0.1.0
+appVersion: "a9b275c"
+maintainers:
+  - name: Lunar Team
+    email: support@lunar.dev
+icon: https://storage.googleapis.com/lunar-webapp-assets/favicon/apple-touch-icon.png

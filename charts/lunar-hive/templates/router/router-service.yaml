@@ -1,0 +1,32 @@
+{{- if .Values.router.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.router.service.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "mcpx-hive.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: router-service
+    app.kubernetes.io/part-of: {{ include "mcpx-hive.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  {{- $ann := dict }}
+  {{- if .Values.router.service.annotations }}
+    {{- $_ := merge $ann .Values.router.service.annotations }}
+  {{- end }}
+  {{- if and (eq .Values.global.cloudProvider "gcp") (not (hasKey $ann "cloud.google.com/neg")) }}
+    {{- $_ := set $ann "cloud.google.com/neg" "{\"ingress\": true}" }}
+  {{- end }}
+  {{- if $ann }}
+  annotations:
+    {{- toYaml $ann | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.router.service.type }}
+  ports:
+    {{- toYaml .Values.router.service.ports | nindent 4 }}
+  selector:
+    # This must match the labels on your router pod
+    app.kubernetes.io/name: {{ include "mcpx-hive.name" . }}
+    app.kubernetes.io/component: router
+{{- end }}
