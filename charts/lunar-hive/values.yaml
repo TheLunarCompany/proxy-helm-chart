@@ -3,23 +3,14 @@
 # For cloud-specific features, use Terraform or override values
 
 # --- Domain Configuration ---
-# Example for GCP standalone deployment:
-# domain: "lunar.dev"
-# controller_domain: "controller-sandbox.lunar.dev"
-# ui_domain: "mcpx-ui-sandbox.lunar.dev"
-# router_domain: "mcpx-sandbox.lunar.dev"
-domain: ""
-controller_domain: ""
-ui_domain: ""
-router_domain: ""
+domain: "lunar.dev"
+controller_domain: &controller_domain "controller-stg.lunar.dev"
+ui_domain: &ui_domain "mcpx-ui-stg.lunar.dev"
+router_domain: &router_domain "mcpx-stg.lunar.dev"
+ingress_class: &ingress_class "gce"
 
 global:
   clusterDomain: "cluster.local"
-  # --- Cloud Provider ---
-  # Set to "gcp" for Google Cloud Platform
-  # Example for GCP standalone deployment:
-  # cloudProvider: "gcp"
-  cloudProvider: "gcp" # generic, gcp, aws, azure
   imagePullSecrets:
     - lunar-private-mcpx-registry
 
@@ -27,14 +18,7 @@ global:
   # These values are used when cloudProvider is "gcp"
   # Example for GCP standalone deployment:
   # staticIPName: "mcpx-hive-static-ip"
-  # managedCertificateName: "mcpx-hive-managed-cert-sandbox"
-  # frontendConfigName: "mcpx-hive-redirect-sandbox"
   staticIPName: "lunar-mcpx-hive" # Optional unified static IP name for GCP; if set, overrides per-ingress staticIPName
-  managedCertificateName: "mcpx-hive-managed-cert-stg" # Optional managed certificate name for GCP
-  frontendConfigName: "mcpx-hive-redirect-stg" # Optional FrontendConfig name for GCP (for HTTPS redirect)
-
-  gcp:
-    createManagedCertificate: true
 
 crds:
   enabled: true
@@ -104,7 +88,6 @@ hiveController:
   securityContext:
     runAsNonRoot: true
     runAsUser: 1000
-    fsGroup: 2000
 
   podSecurityContext:
     fsGroup: 2000
@@ -131,7 +114,7 @@ router:
       cpu: 100m
       memory: 128Mi
   service:
-    name: "mcpx-hive-ingress-router"
+    name: "mcpx-hive-router"
     type: ClusterIP
     ports:
       - name: ui
@@ -152,74 +135,40 @@ router:
   #   clientSecret: "q_hSiUn19oKIheKbrTaHX_tN21d3-Ojwo13VssWxWekI3JT3CXGuCAFiuuFE30ah"
   #   sessionSecret: "dev-session-secret-change-in-production"
   oidc:
-    issuerUrl: ""
-    clientId: ""
-    clientSecret: ""
-    sessionSecret: ""
+    issuerUrl: "https://trial-8582005.okta.com/oauth2/default"
+    clientId: "0oawaaedip5wphNgD697"
+    clientSecret: "q_hSiUn19oKIheKbrTaHX_tN21d3-Ojwo13VssWxWekI3JT3CXGuCAFiuuFE30ah"
+    sessionSecret: "dev-session-secret-change-in-production"
 
-# Standard ingress configuration (cloud-agnostic)
-# For cloud-specific features like static IPs and managed certificates,
-# use Terraform or override these values
-# For a standalone GCP deployment, you might configure ingresses like this:
-# ingressesCombined:
-#   enabled: true # Use a single combined ingress for GCP
-#   className: "gce" # Use the GCE ingress controller
-# ingresses:
-#   controller:
-#     hosts:
-#       - host: "controller-sandbox.lunar.dev"
-#   ui:
-#     hosts:
-#       - host: "mcpx-ui-sandbox.lunar.dev"
-#   server:
-#     hosts:
-#       - host: "mcpx-sandbox.lunar.dev"
-ingressesCombined:
+ingress:
   enabled: true
-  className: "gce"
-
-ingresses:
-  # Controller ingress
-  controller:
-    enabled: true
-    className: "nginx"
-    annotations: {}
-    hosts:
-      - host: "hive-controller.local"
+  type: *ingress_class
+  className: *ingress_class
+  domains:
+    controller:
+      - host: *controller_domain
         paths:
           - path: /
             pathType: Prefix
-    tls: []
-    backend:
-      serviceName: "mcpx-hive-controller"
-      servicePort: 80
-
-  # UI ingress
-  ui:
-    enabled: true
-    className: "nginx"
-    annotations: {}
-    hosts:
-      - host: "mcpx-ui.local"
+            backend:
+              serviceName: "controller"
+              servicePort: 80
+    router:
+      - host: *router_domain
         paths:
           - path: /
             pathType: Prefix
-    tls: []
-    backend:
-      serviceName: "mcpx-hive-ingress-router"
-      servicePort: 5173
-
-  # Main server ingress
-  server:
-    enabled: true
-    className: "nginx"
-    annotations: {}
-    hosts:
-      - host: "mcpx-server.local"
+            backend:
+              serviceName: "router"
+              servicePort: 9000
+    ui:
+      - host: *ui_domain
         paths:
           - path: /
             pathType: Prefix
-    tls: []
-    backend:
-      serviceName: "mcpx-hive-ingress-router"
-      servicePort: 9000
+            backend:
+              serviceName: "router"
+              servicePort: 5173
+  annotations: {}
+  # Additional annotations can be added here
+  # key: value
