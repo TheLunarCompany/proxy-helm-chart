@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mcpx-hive.hive-controller.fullname" . }}
+  labels:
+    {{- include "mcpx-hive.hive-controller.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.hiveController.autoscaling.enabled }}
+  replicas: {{ .Values.hiveController.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "mcpx-hive.hive-controller.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "mcpx-hive.hive-controller.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.hiveController.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "mcpx-hive.hive-controller.serviceAccountName" . }}
+      automountServiceAccountToken: true
+      
+      securityContext:
+        {{- toYaml .Values.hiveController.podSecurityContext | nindent 8 }}
+      containers:
+        - name: hive-controller
+          securityContext:
+            {{- $containerSC := omit .Values.hiveController.securityContext "fsGroup" }}
+            {{- toYaml $containerSC | nindent 12 }}
+          image: "{{ .Values.hiveController.image.repository }}:{{ .Values.hiveController.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.hiveController.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.hiveController.env.PORT | default 8080 }}
+              protocol: TCP
+          env:
+            # Source namespace from the Pod runtime environment to avoid drift
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            {{- range $key, $value := .Values.hiveController.env }}
+            {{- if and (ne $key "KUBERNETES_NAMESPACE") (ne $key "CONTROLLER_API_TOKEN") (ne $key "ROUTER_DOMAIN") }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- end }}
+            {{- if hasKey .Values.hiveController.env "ROUTER_DOMAIN" }}
+            - name: ROUTER_DOMAIN
+              value: {{ .Values.router_domain | quote }}
+            {{- end }}
+            {{- if .Values.ui_domain }}
+            - name: UI_DOMAIN
+              value: {{ .Values.ui_domain | quote }}
+            {{- end }}
+            {{- /* Prefer inline token if provided, else fall back to Secret if configured */ -}}
+            {{- if hasKey .Values.hiveController.env "CONTROLLER_API_TOKEN" }}
+            - name: CONTROLLER_API_TOKEN
+              value: {{ index .Values.hiveController.env "CONTROLLER_API_TOKEN" | quote }}
+            {{- else if .Values.hiveController.controllerTokenSecret.name }}
+            - name: CONTROLLER_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.hiveController.controllerTokenSecret.name }}
+                  key: {{ .Values.hiveController.controllerTokenSecret.key | default "token" }}
+            {{- end }}
+          {{- if .Values.hiveController.probes.livenessProbe }}
+          livenessProbe:
+            {{- toYaml .Values.hiveController.probes.livenessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .Values.hiveController.probes.readinessProbe }}
+          readinessProbe:
+            {{- toYaml .Values.hiveController.probes.readinessProbe | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.hiveController.resources | nindent 12 }}
+      {{- with .Values.hiveController.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.hiveController.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.hiveController.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }} 

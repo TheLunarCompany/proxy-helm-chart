@@ -1,0 +1,219 @@
+# MCPx Hive Helm Chart Values
+# This chart deploys MCPx Hive with cloud-agnostic configuration
+# For cloud-specific features, use Terraform or override values
+
+# --- Domain Configuration ---
+# Example for GCP standalone deployment:
+# domain: "lunar.dev"
+# controller_domain: "controller-sandbox.lunar.dev"
+# ui_domain: "mcpx-ui-sandbox.lunar.dev"
+# router_domain: "mcpx-sandbox.lunar.dev"
+domain: ""
+controller_domain: ""
+ui_domain: ""
+router_domain: ""
+
+global:
+  clusterDomain: "cluster.local"
+  # --- Cloud Provider ---
+  # Set to "gcp" for Google Cloud Platform
+  # Example for GCP standalone deployment:
+  # cloudProvider: "gcp"
+  cloudProvider: "generic" # generic, gcp, aws, azure
+
+  # --- GCP Specific Configuration ---
+  # These values are used when cloudProvider is "gcp"
+  # Example for GCP standalone deployment:
+  # staticIPName: "mcpx-hive-static-ip"
+  # managedCertificateName: "mcpx-hive-managed-cert-sandbox"
+  # frontendConfigName: "mcpx-hive-redirect-sandbox"
+  staticIPName: "" # Optional unified static IP name for GCP; if set, overrides per-ingress staticIPName
+  managedCertificateName: "" # Optional managed certificate name for GCP
+  frontendConfigName: "" # Optional FrontendConfig name for GCP (for HTTPS redirect)
+
+crds:
+  enabled: true
+
+hiveController:
+  image:
+    repository: "us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-controller"
+    tag: "v0.0.25"
+    pullPolicy: "Always"
+
+  imagePullSecrets: []
+
+  replicaCount: 1
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  service:
+    type: "ClusterIP"
+    port: 80
+    targetPort: 8080
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: ""
+
+  rbac:
+    create: true
+
+  autoscaling:
+    enabled: false
+
+  env:
+    PORT: 8080
+    LOG_LEVEL: info
+    MCPX_API_VERSION: hive.lunar.dev/v1alpha1
+    MCPX_KIND: MCPx
+    ROUTER_DOMAIN: "" # Will be set from .Values.router_domain in deployment template
+
+  # Optional: name/key of a secret containing the controller API token
+  controllerTokenSecret:
+    name: "" # e.g. mcpx-controller-token
+    key: token
+
+  # Health check probes
+  probes:
+    livenessProbe:
+      httpGet:
+        path: /health/live
+        port: 8080
+      initialDelaySeconds: 30
+      periodSeconds: 10
+    readinessProbe:
+      httpGet:
+        path: /health/ready
+        port: 8080
+      initialDelaySeconds: 5
+      periodSeconds: 5
+
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 2000
+
+  podSecurityContext:
+    fsGroup: 2000
+    runAsNonRoot: true
+    runAsUser: 1000
+
+  affinity: {}
+  tolerations: []
+  nodeSelector: {}
+
+# Router deployment & service configuration
+router:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: "openresty/openresty"
+    tag: "1.27.1.2-4-alpine-fat"
+    pullPolicy: "IfNotPresent"
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  service:
+    name: "mcpx-hive-ingress-router"
+    type: ClusterIP
+    ports:
+      - name: ui
+        port: 5173
+        targetPort: 5173
+      - name: mcpx-server
+        port: 9000
+        targetPort: 9000
+      - name: metrics
+        port: 3000
+        targetPort: 3000
+
+  # OIDC configuration for authentication
+  # Example for GCP standalone deployment:
+  # oidc:
+  #   issuerUrl: "https://trial-8582005.okta.com/oauth2/default"
+  #   clientId: "0oawaaedip5wphNgD697"
+  #   clientSecret: "q_hSiUn19oKIheKbrTaHX_tN21d3-Ojwo13VssWxWekI3JT3CXGuCAFiuuFE30ah"
+  #   sessionSecret: "dev-session-secret-change-in-production"
+  oidc:
+    issuerUrl: ""
+    clientId: ""
+    clientSecret: ""
+    sessionSecret: ""
+
+# Standard ingress configuration (cloud-agnostic)
+# For cloud-specific features like static IPs and managed certificates,
+# use Terraform or override these values
+# For a standalone GCP deployment, you might configure ingresses like this:
+# ingressesCombined:
+#   enabled: true # Use a single combined ingress for GCP
+#   className: "gce" # Use the GCE ingress controller
+# ingresses:
+#   controller:
+#     hosts:
+#       - host: "controller-sandbox.lunar.dev"
+#   ui:
+#     hosts:
+#       - host: "mcpx-ui-sandbox.lunar.dev"
+#   server:
+#     hosts:
+#       - host: "mcpx-sandbox.lunar.dev"
+ingressesCombined:
+  enabled: false
+  className: ""
+
+ingresses:
+  # Controller ingress
+  controller:
+    enabled: true
+    className: "nginx"
+    annotations: {}
+    hosts:
+      - host: "hive-controller.local"
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
+    backend:
+      serviceName: "mcpx-hive-hive-controller"
+      servicePort: 80
+
+  # UI ingress
+  ui:
+    enabled: true
+    className: "nginx"
+    annotations: {}
+    hosts:
+      - host: "mcpx-ui.local"
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
+    backend:
+      serviceName: "mcpx-hive-ingress-router"
+      servicePort: 5173
+
+  # Main server ingress
+  server:
+    enabled: true
+    className: "nginx"
+    annotations: {}
+    hosts:
+      - host: "mcpx-server.local"
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
+    backend:
+      serviceName: "mcpx-hive-ingress-router"
+      servicePort: 9000

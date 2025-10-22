@@ -1,0 +1,66 @@
+{{- $combined := .Values.ingressesCombined | default dict }}
+{{- $ingresses := .Values.ingresses | default dict }}
+{{- if $combined.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Namespace }}-ingress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "mcpx-hive.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: ingress
+    app.kubernetes.io/part-of: {{ include "mcpx-hive.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  {{- $staticIPName := .Values.global.staticIPName | default "" }}
+  {{- $ann := dict }}
+  {{- if $combined.annotations }}
+    {{- $_ := merge $ann $combined.annotations }}
+  {{- end }}
+  {{- if and (eq .Values.global.cloudProvider "gcp") $staticIPName }}
+    {{- $_ := set $ann "networking.gke.io/static-ip" $staticIPName }}
+    {{- $_ := set $ann "kubernetes.io/ingress.global-static-ip-name" $staticIPName }}
+  {{- end }}
+  {{- if and (eq .Values.global.cloudProvider "gcp") .Values.global.managedCertificateName }}
+    {{- $_ := set $ann "networking.gke.io/managed-certificates" .Values.global.managedCertificateName }}
+  {{- end }}
+  {{- if and (eq .Values.global.cloudProvider "gcp") .Values.global.frontendConfigName }}
+    {{- $_ := set $ann "networking.gke.io/v1beta1.FrontendConfig" .Values.global.frontendConfigName }}
+  {{- end }}
+  {{- if $combined.className }}
+    {{- $_ := set $ann "kubernetes.io/ingress.class" $combined.className }}
+  {{- else if eq .Values.global.cloudProvider "gcp" }}
+    {{- $_ := set $ann "kubernetes.io/ingress.class" "gce" }}
+  {{- end }}
+  {{- with $ann }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if $combined.className }}
+  ingressClassName: {{ $combined.className }}
+  {{- else if eq .Values.global.cloudProvider "gcp" }}
+  ingressClassName: gce
+  {{- end }}
+  rules:
+  {{- range $key, $ing := $ingresses }}
+  {{- if $ing.enabled }}
+    {{- /* Prefer explicit single host if provided; fallback to hosts list */ -}}
+    {{- range $hostObj := (or (and $ing.host (list (dict "host" $ing.host))) $ing.hosts) }}
+  - host: {{ $hostObj.host | quote }}
+    http:
+      paths:
+      {{- range $hostObj.paths }}
+      - path: {{ .path }}
+        pathType: {{ .pathType }}
+        backend:
+          service:
+            name: {{ $ing.backend.serviceName }}
+            port:
+              number: {{ $ing.backend.servicePort }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  {{- end }}
+{{- end }}
