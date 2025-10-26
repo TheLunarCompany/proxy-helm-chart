@@ -17,6 +17,10 @@ metadata:
   {{- if and (eq .Values.global.cloudProvider "gcp") (not (hasKey $ann "cloud.google.com/neg")) }}
     {{- $_ := set $ann "cloud.google.com/neg" "{\"ingress\": true}" }}
   {{- end }}
+  {{- if eq .Values.global.cloudProvider "gcp" }}
+    {{- $fullname := include "mcpx-hive.fullname" . }}
+    {{- $_ := set $ann "cloud.google.com/backend-config" (printf "{\"5173\": \"%s-websocket-backendconfig\", \"9000\": \"%s-backendconfig\"}" $fullname $fullname) }}
+  {{- end }}
   {{- if $ann }}
   annotations:
     {{- toYaml $ann | nindent 4 }}

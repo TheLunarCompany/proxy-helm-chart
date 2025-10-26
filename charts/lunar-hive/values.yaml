@@ -11,6 +11,7 @@ ingress_class: &ingress_class "gce"
 
 global:
   clusterDomain: "cluster.local"
+  cloudProvider: "gcp"
   imagePullSecrets:
     - lunar-private-mcpx-registry
 

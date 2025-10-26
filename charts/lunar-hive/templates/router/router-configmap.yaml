@@ -25,6 +25,10 @@ data:
         events { worker_connections  1024; }
 
         http {
+          map $http_upgrade $connection_upgrade {
+              default upgrade;
+              ''      close;
+          }
           lua_shared_dict discovery 1m;
           lua_shared_dict jwks 1m;
           lua_shared_dict sessions 1m;
@@ -41,23 +45,23 @@ data:
           }
 
           server {
-              listen 5173;
-              server_name {{ .Values.ui_domain }};
-            
-              location /health { return 200 "healthy"; }
+                listen 5173;
+                server_name {{ .Values.ui_domain }};
+                
+                location /health { return 200 "healthy"; }
 
-              location / {
-                  access_by_lua_block {
-                  local redirect_uri = "https://{{ .Values.ui_domain }}/redirect_uri"
-                  local session_opts = auth_utils.get_session_config()
-                  local oidc_opts = auth_utils.get_oidc_config(redirect_uri)
+                location / {
+                    access_by_lua_block {
+                    local redirect_uri = "https://{{ .Values.ui_domain }}/redirect_uri"
+                    local session_opts = auth_utils.get_session_config()
+                    local oidc_opts = auth_utils.get_oidc_config(redirect_uri)
 
-                  local res, err, _, session = require("resty.openidc").authenticate(oidc_opts, nil, nil, session_opts)
-                  if err then
-                      return ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
-                  end
+                    local res, err, _, session = require("resty.openidc").authenticate(oidc_opts, nil, nil, session_opts)
+                    if err then
+                        return ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
+                    end
 
-                  if res then
+                    if res then
                     if res.id_token then
                         local user_email = res.id_token.email or "unknown"
                         ngx.req.set_header("X-Auth-Email", user_email)
@@ -76,21 +80,29 @@ data:
                         end
                         ngx.var.dynamic_upstream = auth_utils.build_dynamic_upstream(user_prefix, target_port)
                     end
-                  end
-              }
+                    end
+                }
               
-              access_log /dev/stdout access_log_format;
-              
-              proxy_pass $dynamic_upstream;
-              proxy_set_header Host $host;
-              proxy_set_header Cookie $http_cookie;
-              proxy_set_header X-User-Email $user_email;
-              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-              proxy_set_header X-Real-IP $remote_addr;
-              proxy_http_version 1.1;
-              proxy_set_header Upgrade $http_upgrade;
-              proxy_set_header Connection "Upgrade";
-              proxy_read_timeout 600s;
+                access_log /dev/stdout access_log_format;
+                proxy_pass $dynamic_upstream;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection $connection_upgrade;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_set_header Sec-WebSocket-Key $http_sec_websocket_key;
+                proxy_set_header Sec-WebSocket-Version $http_sec_websocket_version;
+                proxy_set_header Sec-WebSocket-Extensions $http_sec_websocket_extensions;
+                proxy_cache_bypass $http_upgrade;
+                proxy_read_timeout 7d;
+                proxy_send_timeout 7d;
+                proxy_buffering off;              
+            #   proxy_pass $dynamic_upstream;
+            #   proxy_set_header Host $host;
+            #   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            #   proxy_set_header X-Real-IP $remote_addr;
             }
 
             location = /redirect_uri {
@@ -399,24 +411,22 @@ data:
                         ngx.log(ngx.DEBUG, "[Token Endpoint] Notifying MCPx of login for user: ", user_email)
                         
                         -- Use the id_token if available, otherwise create a simple notification
-                        local notification_data
+                        local token_to_send
                         if id_token_from_oidc then
-                            notification_data = id_token_from_oidc
+                            -- id_token_from_oidc is already a JWT string, don't encode it
+                            token_to_send = id_token_from_oidc
                         else
-                            notification_data = {
+                            -- Create a simple notification object and encode it
+                            local notification_data = {
                                 user_email = user_email,
                                 user_sub = user_sub,
                                 auth_type = "token_endpoint",
                                 timestamp = os.time()
                             }
+                            token_to_send = require("cjson").encode(notification_data)
                         end
                         
-                        local encrypted_data, enc_err = auth_utils.encrypt_jwt(require("cjson").encode(notification_data))
-                        if encrypted_data then
-                            auth_utils.notify_mcpx_of_login(encrypted_data, user_prefix)
-                        else
-                            ngx.log(ngx.ERR, "[Token Endpoint] Failed to encrypt notification data: ", enc_err)
-                        end
+                        auth_utils.notify_mcpx_of_login(token_to_send, user_prefix)
                     end
                 end
 
@@ -487,11 +497,12 @@ data:
                 proxy_set_header X-User-Email $user_email;
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                 proxy_set_header X-Real-IP $remote_addr;
-                proxy_connect_timeout 600s;
-                proxy_send_timeout 600s;
-                proxy_read_timeout 600s;
+                proxy_connect_timeout 7d;
+                proxy_send_timeout 7d;
+                proxy_read_timeout 7d;
                 proxy_http_version 1.1;
-                proxy_set_header Connection "";
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection $connection_upgrade;
             }
         }
         } # <-- End http block
@@ -510,6 +521,7 @@ data:
                  client_secret = os.getenv("OIDC_CLIENT_SECRET"),
                  redirect_uri = redirect_uri,
                  scope = "openid email offline_access",
+                 response_type = "code id_token",
                  session_storage = "cookie",
                  -- Only store the encrypted ID token in the session to keep size minimal
                  session_contents = { id_token=true},
@@ -523,19 +535,33 @@ data:
 
         -- OIDC on_authenticated callback
         function _M.on_authenticated_callback(session, id_token, token_response)
+            -- Validate id_token parameter
+            if not id_token then
+                ngx.log(ngx.ERR, "[UI Root] OIDC callback received nil id_token - check OIDC configuration")
+                return
+            end
+            
+            -- The id_token is already decoded by the OIDC library
             local user_email = id_token.email or "unknown"
             local user_prefix = _M.extract_user_prefix(user_email)
             
             if user_prefix then
                 ngx.log(ngx.DEBUG, "[UI Root] Notifying MCPx of login for user: ", user_email)
-                local raw_jwt = require("cjson").encode(id_token)
-                local encrypted_token, enc_err = _M.encrypt_jwt(raw_jwt)
-
-                if encrypted_token then
-                    _M.notify_mcpx_of_login(encrypted_token, user_prefix)
-                else
-                    ngx.log(ngx.ERR, "[UI Root] Failed to encrypt token for notification: ", enc_err)
+                
+                -- Get the raw JWT from the session (stored by OIDC library)
+                local raw_jwt = session.data.raw_id_token or session.data.id_token_raw
+                if not raw_jwt then
+                    -- Fallback: try to get from token_response
+                    raw_jwt = token_response and token_response.id_token
                 end
+                
+                if raw_jwt then
+                    _M.notify_mcpx_of_login(raw_jwt, user_prefix)
+                else
+                    ngx.log(ngx.ERR, "[UI Root] Could not find raw JWT in session or token_response")
+                end
+            else
+                ngx.log(ngx.WARN, "[UI Root] Could not extract user prefix from email: ", user_email)
             end
         end
 
@@ -846,76 +872,15 @@ data:
             return key, iv, nil
         end
 
-        -- Encrypt raw JWT (returns Base64 string)
-        function _M.encrypt_jwt(raw_jwt)
-            if not raw_jwt then
-                return nil, "missing raw_jwt"
-            end
-
-            local aes = require "resty.aes"
-            local str = require "resty.string"
-            local ngx_encode_b64 = ngx.encode_base64
-
-            local key, iv, err = derive_aes_key_and_iv()
-            if not key then
-                return nil, err
-            end
-
-            local aes_cipher, err_aes = aes:new(key, nil, aes.cipher(256, "cbc"), { iv = iv })
-            if not aes_cipher then
-                return nil, "failed to create AES cipher: " .. tostring(err_aes)
-            end
-
-            local encrypted, err_encrypt = aes_cipher:encrypt(raw_jwt)
-            if not encrypted then
-                return nil, "encryption failed: " .. tostring(err_encrypt)
-            end
-
-            local b64 = ngx_encode_b64(encrypted)
-            return b64, nil
-        end
-
-        -- Decrypt Base64-encrypted JWT (returns raw JWT string)
-        function _M.decrypt_jwt(enc_b64)
-            if not enc_b64 then
-                return nil, "missing enc_b64"
-            end
-
-            local aes = require "resty.aes"
-            local ngx_decode_b64 = ngx.decode_base64
-
-            local key, iv, err = derive_aes_key_and_iv()
-            if not key then
-                return nil, err
-            end
-
-            local aes_cipher, err_aes = aes:new(key, nil, aes.cipher(256, "cbc"), { iv = iv })
-            if not aes_cipher then
-                return nil, "failed to create AES cipher: " .. tostring(err_aes)
-            end
-
-            local decoded = ngx_decode_b64(enc_b64)
-            if not decoded then
-                return nil, "base64 decode failed"
-            end
-
-            local decrypted, err_decrypt = aes_cipher:decrypt(decoded)
-            if not decrypted then
-                return nil, "decryption failed: " .. tostring(err_decrypt)
-            end
-
-            return decrypted, nil
-        end
-
         -- Notify MCPx instance of successful login (expects token to already be AES-encrypted Base64)
-        function _M.notify_mcpx_of_login(enc_token_b64, user_prefix)
-            if not (enc_token_b64 and user_prefix) then
-                ngx.log(ngx.ERR, "notify_mcpx_of_login: missing enc_token_b64 or user_prefix")
+        function _M.notify_mcpx_of_login(token_id, user_prefix)
+            if not (token_id and user_prefix) then
+                ngx.log(ngx.ERR, "notify_mcpx_of_login: missing token_id or user_prefix")
                 return
             end
 
             -- schedule in background using timer, pass args explicitly
-            local ok, err = ngx.timer.at(0, function(premature, enc_b64, prefix)
+            local ok, err = ngx.timer.at(0, function(premature, token_id, prefix)
                 if premature then
                     ngx.log(ngx.WARN, "notify_mcpx_of_login timer aborted (premature)")
                     return
@@ -929,9 +894,10 @@ data:
                 httpc:set_timeout(5000)
 
                 ngx.log(ngx.DEBUG, "Sending login notification to ", dest_server_url)
+                ngx.log(ngx.DEBUG, "Token ID: ", token_id)
                 local res, err_req = httpc:request_uri(dest_server_url .. "/auth/mcpx", {
                     method = "POST",
-                    body = cjson.encode({ token = enc_b64 }),
+                    body = cjson.encode({ token = token_id }),
                     headers = {
                         ["Content-Type"] = "application/json",
                     },
@@ -947,7 +913,7 @@ data:
                 else
                     ngx.log(ngx.DEBUG, "Successfully sent login notification to ", dest_server_url, " status=", res.status)
                 end
-            end, enc_token_b64, user_prefix)
+            end, token_id, user_prefix)
 
             if not ok then
                 ngx.log(ngx.ERR, "Failed to create timer for login notification: ", err)
