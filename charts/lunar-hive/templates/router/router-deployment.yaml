@@ -56,6 +56,9 @@ spec:
               subPath: auth-utils.lua
             - name: nginx-logs-volume
               mountPath: /var/log/nginx
+            - name: handlers-volume
+              mountPath: /usr/local/openresty/lualib/handlers.lua
+              subPath: handlers.lua
           livenessProbe:
             httpGet:
               path: /health
@@ -86,6 +89,12 @@ spec:
             items:
             - key: auth-utils.lua
               path: auth-utils.lua
+        - name: handlers-volume
+          configMap:
+            name: {{ include "mcpx-hive.name" . }}-router
+            items:
+            - key: handlers.lua
+              path: handlers.lua
         - name: nginx-logs-volume
           emptyDir: {}
       {{- with .Values.router.nodeSelector }}
