@@ -4,88 +4,78 @@
 domain: "lunar.dev"
 controller_domain: &controller_domain "controller.local"
 ui_domain: &ui_domain "ui.local"
-router_domain: &router_domain "router.local"
+router_domain: &router_domain "mcpx.local"
 
 global:
   imagePullSecrets:
     - name: lunar-private-mcpx-registry
 
+  # OIDC configuration for authentication
+  oidc:
+    issuerUrl: ""
+    clientId: ""
+    clientSecret: ""
+    sessionSecret: "dev-session-secret-change-in-production"
+
+  # Redis configuration for instance ID lookup
+  redis:
+    isCluster: true
+    url: ""
+
+ingress:
+  enabled: true
+  annotations: {}
+  # --- Cloud Provider Configuration ---
+  # Configure ONE of the following cloud providers by providing its object
+  # The presence of the object determines which cloud provider to use
+
+  gcp:
+    # GCP-specific configuration
+    staticIPName: "" # Optional unified static IP name for GCP
+
+  # aws:
+  #   # AWS-specific configuration
+  #   loadBalancerType: "" # Options: nlb, alb
+  #   loadBalancerName: "" # Custom name for the ALB
+  #   securityGroups: [] # EKS cluster security group
+  #   subnets: []
+  #   certificateArn: "" # ACM certificate ARN for TLS termination
+
+  # azure:
+  #   # Azure-specific configuration (uncomment and configure for Azure)
+  #   applicationGatewayName: "" # Name of the Application Gateway
+  #   resourceGroup: "" # Resource group containing the Application Gateway
+  #   subscriptionId: "" # Azure subscription ID
+  #   staticIP: "" # Static public IP address for Azure Application Gateway
+
+  domains:
+    controller:
+      - host: *controller_domain
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              serviceName: "controller"
+              servicePort: 80
+    router:
+      - host: *router_domain
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              serviceName: "router"
+              servicePort: 9000
+    ui:
+      - host: *ui_domain
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              serviceName: "router"
+              servicePort: 5173
+
 crds:
   enabled: true
-
-hiveController:
-  image:
-    repository: "us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-controller"
-    tag: "b223d43"
-    pullPolicy: "IfNotPresent"
-
-  replicaCount: 1
-
-  resources:
-    limits:
-      cpu: 500m
-      memory: 512Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
-
-  service:
-    enabled: true
-    # In GCP it was ClusterIP, but in AWS it must be NodePort
-    type: "NodePort"
-    port: 80
-    targetPort: 8080
-
-  serviceAccount:
-    create: true
-    annotations: {}
-    name: ""
-
-  rbac:
-    create: true
-
-  autoscaling:
-    enabled: false
-
-  env:
-    PORT: 8080
-    LOG_LEVEL: info
-    MCPX_API_VERSION: hive.lunar.dev/v1alpha1
-    MCPX_KIND: MCPx
-    ROUTER_DOMAIN: "" # Will be set from .Values.router_domain in deployment template
-
-  # Optional: name/key of a secret containing the controller API token
-  controllerTokenSecret:
-    name: "" # e.g. mcpx-controller-token
-    key: token
-
-  # Health check probes
-  probes:
-    livenessProbe:
-      httpGet:
-        path: /health/live
-        port: 8080
-      initialDelaySeconds: 30
-      periodSeconds: 10
-    readinessProbe:
-      httpGet:
-        path: /health/ready
-        port: 8080
-      initialDelaySeconds: 5
-      periodSeconds: 5
-
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: 1000
-
-  podSecurityContext:
-    fsGroup: 2000
-    runAsNonRoot: true
-    runAsUser: 1000
-
-  affinity: {}
-  tolerations: []
-  nodeSelector: {}
 
 # Router deployment & service configuration
 router:
@@ -117,69 +107,76 @@ router:
         port: 3000
         targetPort: 3000
 
-  # OIDC configuration for authentication
-  oidc:
-    issuerUrl: ""
-    clientId: ""
-    clientSecret: ""
-    sessionSecret: "dev-session-secret-change-in-production"
+hiveController:
+  image:
+    repository: "us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-controller"
+    tag: "b223d43"
+    pullPolicy: "IfNotPresent"
 
-  # Redis configuration for instance ID lookup
-  redis:
-    isCluster: true
-    url: ""
+  replicaCount: 1
 
-ingress:
-  enabled: true
-  domains:
-    controller:
-      - host: *controller_domain
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              serviceName: "controller"
-              servicePort: 80
-    router:
-      - host: *router_domain
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              serviceName: "router"
-              servicePort: 9000
-    ui:
-      - host: *ui_domain
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              serviceName: "router"
-              servicePort: 5173
-  annotations: {}
-  # Additional annotations can be added here
-  # key: value
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
 
-  # --- Cloud Provider Configuration ---
-  # Configure ONE of the following cloud providers by providing its object
-  # The presence of the object determines which cloud provider to use
+  service:
+    enabled: true
+    type: "NodePort"
+    port: 80
+    targetPort: 8080
 
-  gcp:
-    # GCP-specific configuration
-    staticIPName: "" # Optional unified static IP name for GCP
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: ""
 
+  rbac:
+    create: true
 
-  # aws:
-  #   # AWS-specific configuration
-  #   loadBalancerType: "" # Options: nlb, alb
-  #   loadBalancerName: "" # Custom name for the ALB
-  #   securityGroups: [] # EKS cluster security group
-  #   subnets: []
-  #   certificateArn: "" # ACM certificate ARN for TLS termination
+  autoscaling:
+    enabled: false
 
-  # azure:
-  #   # Azure-specific configuration (uncomment and configure for Azure)
-  #   applicationGatewayName: "" # Name of the Application Gateway
-  #   resourceGroup: "" # Resource group containing the Application Gateway
-  #   subscriptionId: "" # Azure subscription ID
-  #   staticIP: "" # Static public IP address for Azure Application Gateway
+  env:
+    PORT: 8080
+    LOG_LEVEL: info
+    MCPX_API_VERSION: hive.lunar.dev/v1alpha1
+    MCPX_KIND: MCPx
+    ROUTER_DOMAIN: "" # Will be set from .Values.router_domain in deployment template
+
+  # Optional: name/key of a secret containing the controller API token
+  # TODO: maybe once the controller is only used locally, we can remove this.
+  controllerTokenSecret:
+    name: "" # e.g. mcpx-controller-token
+    key: token
+
+  # Health check probes
+  probes:
+    livenessProbe:
+      httpGet:
+        path: /health/live
+        port: 8080
+      initialDelaySeconds: 30
+      periodSeconds: 10
+    readinessProbe:
+      httpGet:
+        path: /health/ready
+        port: 8080
+      initialDelaySeconds: 5
+      periodSeconds: 5
+
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+
+  podSecurityContext:
+    fsGroup: 2000
+    runAsNonRoot: true
+    runAsUser: 1000
+
+  affinity: {}
+  tolerations: []
+  nodeSelector: {}

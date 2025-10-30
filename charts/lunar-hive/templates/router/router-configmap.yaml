@@ -324,7 +324,7 @@ data:
 
       local new_state, cc, ccm = auth_utils.handle_oidc_redirect(args, sessions)
       local credentials = auth_utils.get_oidc_credentials()
-      local auth_url = "{{ .Values.router.oidc.issuerUrl }}/v1/authorize?"
+      local auth_url = "{{ .Values.global.oidc.issuerUrl }}/v1/authorize?"
         .. ngx.encode_args({
           response_type         = "code",
           client_id             = credentials.client_id,
@@ -438,7 +438,7 @@ data:
         return ngx.exit(ngx.HTTP_BAD_REQUEST)
       end
 
-      local token_url = "{{ .Values.router.oidc.issuerUrl }}/v1/token"
+      local token_url = "{{ .Values.global.oidc.issuerUrl }}/v1/token"
       local token_params = {
         grant_type    = "authorization_code",
         client_id     = client_id,
@@ -475,7 +475,7 @@ data:
 
       local user_email, user_sub, user_name = "unknown", "unknown", "unknown"
       if access_token then
-        local userinfo_url = "{{ .Values.router.oidc.issuerUrl }}/v1/userinfo"
+        local userinfo_url = "{{ .Values.global.oidc.issuerUrl }}/v1/userinfo"
         local userinfo_res = httpc:request_uri(userinfo_url, {
           method = "GET", headers = { ["Authorization"] = "Bearer " .. access_token }
         })
@@ -594,7 +594,7 @@ data:
 
     function _M.get_oidc_config(redirect_uri)
       return {
-        discovery        = "{{ .Values.router.oidc.issuerUrl }}/.well-known/openid-configuration",
+        discovery        = "{{ .Values.global.oidc.issuerUrl }}/.well-known/openid-configuration",
         client_id        = os.getenv("OIDC_CLIENT_ID"),
         client_secret    = os.getenv("OIDC_CLIENT_SECRET"),
         redirect_uri     = redirect_uri,
@@ -779,7 +779,7 @@ data:
 
     function _M.get_oidc_validation_config()
       return {
-        discovery   = "{{ .Values.router.oidc.issuerUrl }}/.well-known/openid-configuration",
+        discovery   = "{{ .Values.global.oidc.issuerUrl }}/.well-known/openid-configuration",
         client_id   = os.getenv("OIDC_CLIENT_ID"),
         client_secret = os.getenv("OIDC_CLIENT_SECRET"),
         ssl_verify  = true,
