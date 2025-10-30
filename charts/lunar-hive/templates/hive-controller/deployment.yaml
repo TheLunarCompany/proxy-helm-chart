@@ -16,9 +16,9 @@ spec:
       labels:
         {{- include "mcpx-hive.controller.selectorLabels" . | nindent 8 }}
     spec:
-      {{- with .Values.hiveController.imagePullSecrets }}
+      {{- if .Values.global.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "mcpx-hive.controller.serviceAccountName" . }}
       automountServiceAccountToken: true

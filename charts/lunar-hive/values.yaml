@@ -1,25 +1,14 @@
 # MCPx Hive Helm Chart Values
-# This chart deploys MCPx Hive with cloud-agnostic configuration
-# For cloud-specific features, use Terraform or override values
 
 # --- Domain Configuration ---
 domain: "lunar.dev"
-controller_domain: &controller_domain "controller-stg.lunar.dev"
-ui_domain: &ui_domain "mcpx-ui-stg.lunar.dev"
-router_domain: &router_domain "mcpx-stg.lunar.dev"
-ingress_class: &ingress_class "gce"
+controller_domain: &controller_domain "controller.local"
+ui_domain: &ui_domain "ui.local"
+router_domain: &router_domain "router.local"
 
 global:
-  clusterDomain: "cluster.local"
-  cloudProvider: "gcp"
   imagePullSecrets:
-    - lunar-private-mcpx-registry
-
-  # --- GCP Specific Configuration ---
-  # These values are used when cloudProvider is "gcp"
-  # Example for GCP standalone deployment:
-  # staticIPName: "mcpx-hive-static-ip"
-  staticIPName: "lunar-mcpx-hive" # Optional unified static IP name for GCP; if set, overrides per-ingress staticIPName
+    - name: lunar-private-mcpx-registry
 
 crds:
   enabled: true
@@ -29,8 +18,6 @@ hiveController:
     repository: "us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-controller"
     tag: "b223d43"
     pullPolicy: "IfNotPresent"
-
-  imagePullSecrets: []
 
   replicaCount: 1
 
@@ -44,7 +31,8 @@ hiveController:
 
   service:
     enabled: true
-    type: "ClusterIP"
+    # In GCP it was ClusterIP, but in AWS it must be NodePort
+    type: "NodePort"
     port: 80
     targetPort: 8080
 
@@ -116,7 +104,8 @@ router:
       memory: 128Mi
   service:
     name: "mcpx-hive-router"
-    type: ClusterIP
+    # In GCP it was ClusterIP, but in AWS it must be NodePort
+    type: NodePort
     ports:
       - name: ui
         port: 5173
@@ -129,22 +118,19 @@ router:
         targetPort: 3000
 
   # OIDC configuration for authentication
-  # Example for GCP standalone deployment:
-  # oidc:
-  #   issuerUrl: "https://trial-8582005.okta.com/oauth2/default"
-  #   clientId: "0oawaaedip5wphNgD697"
-  #   clientSecret: "q_hSiUn19oKIheKbrTaHX_tN21d3-Ojwo13VssWxWekI3JT3CXGuCAFiuuFE30ah"
-  #   sessionSecret: "dev-session-secret-change-in-production"
   oidc:
-    issuerUrl: "https://trial-8582005.okta.com/oauth2/default"
-    clientId: "0oawaaedip5wphNgD697"
-    clientSecret: "q_hSiUn19oKIheKbrTaHX_tN21d3-Ojwo13VssWxWekI3JT3CXGuCAFiuuFE30ah"
+    issuerUrl: ""
+    clientId: ""
+    clientSecret: ""
     sessionSecret: "dev-session-secret-change-in-production"
+
+  # Redis configuration for instance ID lookup
+  redis:
+    isCluster: true
+    url: ""
 
 ingress:
   enabled: true
-  type: *ingress_class
-  className: *ingress_class
   domains:
     controller:
       - host: *controller_domain
@@ -173,3 +159,27 @@ ingress:
   annotations: {}
   # Additional annotations can be added here
   # key: value
+
+  # --- Cloud Provider Configuration ---
+  # Configure ONE of the following cloud providers by providing its object
+  # The presence of the object determines which cloud provider to use
+
+  gcp:
+    # GCP-specific configuration
+    staticIPName: "" # Optional unified static IP name for GCP
+
+
+  # aws:
+  #   # AWS-specific configuration
+  #   loadBalancerType: "" # Options: nlb, alb
+  #   loadBalancerName: "" # Custom name for the ALB
+  #   securityGroups: [] # EKS cluster security group
+  #   subnets: []
+  #   certificateArn: "" # ACM certificate ARN for TLS termination
+
+  # azure:
+  #   # Azure-specific configuration (uncomment and configure for Azure)
+  #   applicationGatewayName: "" # Name of the Application Gateway
+  #   resourceGroup: "" # Resource group containing the Application Gateway
+  #   subscriptionId: "" # Azure subscription ID
+  #   staticIP: "" # Static public IP address for Azure Application Gateway

@@ -11,6 +11,9 @@ data:
     luarocks install lua-resty-openidc
     luarocks install lua-resty-session 3.10
     luarocks install lua-resty-string
+    luarocks install lua-resty-redis
+    luarocks install lua-resty-url
+    luarocks install lua-resty-redis-cluster
     echo "--- Running NGINX configuration test ---"
     /usr/local/openresty/bin/openresty -t
     echo "--- Configuration test successful. Starting NGINX. ---"
@@ -20,6 +23,8 @@ data:
     env OIDC_CLIENT_ID;
     env OIDC_CLIENT_SECRET;
     env SESSION_SECRET;
+    env REDIS_URL;
+    env REDIS_IS_CLUSTER;
 
     worker_processes  1;
     events { worker_connections  1024; }
@@ -30,6 +35,11 @@ data:
       lua_shared_dict discovery 10m;
       lua_shared_dict jwks 10m;
       lua_shared_dict sessions 32m;
+
+      lua_shared_dict mcpx_redis_cluster 10m;  # slot cache (specified via dict_name)
+      lua_shared_dict mcpx_redis_cluster_unhealthy_nodes 100k;  # unhealthy nodes tracking
+      lua_shared_dict mcpx_redis_cluster_red_lock 100k;  # lock dictionary variant 1
+      lua_shared_dict mcpx_redis_cluster_locks 100k;  # lock dictionary variant 2
 
       resolver kube-dns.kube-system.svc.cluster.local valid=30s ipv6=off;
       lua_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
@@ -52,11 +62,18 @@ data:
       proxy_buffering off;
 
       init_by_lua_block {
+        -- load modules into globals for fast require() later
         auth_utils = require "auth-utils"
         handlers   = require "handlers"
         openidc    = require "resty.openidc"
         cjson      = require "cjson"
         http       = require "resty.http"
+        redis_client = require "redis-client"
+      }
+
+      init_worker_by_lua_block {
+        local redis_client = require "redis-client"
+        redis_client.schedule_background_tasks()
       }
 
       server {
@@ -149,262 +166,15 @@ data:
         location = /.well-known/dynamic-client-registration/mcp {
           if ($request_method != POST) { add_header Allow "POST"; return 405; }
           default_type application/json;
-          content_by_lua_block {
-            ngx.req.read_body()
-            local body = ngx.req.get_body_data() or "{}"
-            local ok, req = pcall(cjson.decode, body); if not ok then req = {} end
-            local want = req.redirect_uris or {}
-
-            local allowed = {
-              ["https://{{ .Values.router_domain }}/redirect_uri"] = true,
-              ["cursor://anysphere.cursor-mcp/oauth/user-mcpx/callback"] = true,
-              ["https://chatgpt.com/connector_platform_oauth_redirect"] = true,
-            }
-            local final_redirects = {}
-            for _, u in ipairs(want) do
-              if allowed[u] then table.insert(final_redirects, u) end
-            end
-            if #final_redirects == 0 then
-              final_redirects = {
-                "https://{{ .Values.router_domain }}/redirect_uri",
-                "cursor://anysphere.cursor-mcp/oauth/user-mcpx/callback",
-                "https://chatgpt.com/connector_platform_oauth_redirect"
-              }
-            end
-
-            local creds = auth_utils.get_oidc_credentials()
-            ngx.status = 201
-            ngx.say(cjson.encode({
-              client_id     = creds.client_id,
-              client_secret = creds.client_secret,
-              redirect_uris = final_redirects,
-              grant_types   = {"authorization_code","refresh_token"},
-              response_types= {"code"},
-              scope         = "openid email offline_access",
-              id_token_signed_response_alg = "RS256",
-              application_type = "native",
-            }))
-          }
+          content_by_lua_block { require("router-endpoints").dynamic_client_registration() }
         }
 
         location = /redirect_uri {
-          access_by_lua_block {
-            local sessions   = ngx.shared.sessions
-            local args       = ngx.req.get_uri_args()
-            local code       = args.code
-            local state      = args.state
-
-            if code and state then
-              return auth_utils.handle_oidc_callback(code, state, sessions)
-            end
-
-            local new_state, cc, ccm = auth_utils.handle_oidc_redirect(args, sessions)
-            local credentials = auth_utils.get_oidc_credentials()
-            local auth_url = "{{ .Values.router.oidc.issuerUrl }}/v1/authorize?"
-              .. ngx.encode_args({
-                response_type         = "code",
-                client_id             = credentials.client_id,
-                redirect_uri          = "https://{{ .Values.router_domain }}/redirect_uri",
-                scope                 = "openid email offline_access",
-                state                 = new_state,
-                code_challenge        = cc,
-                code_challenge_method = ccm,
-              })
-            return ngx.redirect(auth_url)
-          }
+          access_by_lua_block { require("router-endpoints").redirect_uri_handler() }
         }
 
         location = /token {
-          content_by_lua_block {
-            local httpc = http.new()
-            local sessions = ngx.shared.sessions
-
-            ngx.req.read_body()
-            local args = ngx.req.get_post_args()
-
-            local grant_type   = args.grant_type
-            local client_id    = args.client_id
-            local client_secret= args.client_secret
-
-            -- Support client_secret_basic as well as client_secret_post
-            do
-              if (not client_id or not client_secret) then
-                local auth = ngx.var.http_authorization
-                if auth and auth:find("^Basic%s+") then
-                  local b64 = auth:gsub("^Basic%s+", "")
-                  local decoded = ngx.decode_base64(b64 or "")
-                  if decoded then
-                    local cid, csec = decoded:match("^([^:]+):(.*)$")
-                    if cid and csec then
-                      client_id     = client_id     or cid
-                      client_secret = client_secret or csec
-                    end
-                  end
-                end
-              end
-            end
-
-            if not grant_type then
-              ngx.status = 400
-              ngx.say('{"error":"invalid_request","error_description":"missing grant_type"}')
-              return ngx.exit(ngx.HTTP_BAD_REQUEST)
-            end
-
-            if not (client_id and client_secret) then
-              ngx.status = 401
-              ngx.header["WWW-Authenticate"] = 'Basic realm="token", error="invalid_client", error_description="client authentication required"'
-              ngx.say('{"error":"invalid_client","error_description":"client_id/client_secret not provided"}')
-              return ngx.exit(ngx.HTTP_UNAUTHORIZED)
-            end
-
-            if grant_type == "refresh_token" then
-              local refresh_token = args.refresh_token
-              if not refresh_token then
-                ngx.status = 400
-                ngx.say('{"error":"invalid_request","error_description":"missing refresh_token"}')
-                return ngx.exit(ngx.HTTP_BAD_REQUEST)
-              end
-
-              local token_data, err = auth_utils.validate_refresh_token(refresh_token, sessions)
-              if not token_data then
-                ngx.status = 400
-                ngx.say('{"error":"invalid_grant","error_description":"' .. (err or "invalid refresh token") .. '"}')
-                return ngx.exit(ngx.HTTP_BAD_REQUEST)
-              end
-
-              local new_refresh_token = auth_utils.generate_refresh_token()
-              local new_access_token  = auth_utils.generate_access_token(new_refresh_token)
-              auth_utils.store_refresh_token(new_refresh_token, token_data.user_email, token_data.user_sub, sessions)
-              auth_utils.revoke_refresh_token(refresh_token, sessions)
-
-              local custom_id_token_payload = {
-                iss = "https://" .. ngx.var.host, sub = token_data.user_sub, aud = client_id,
-                exp = os.time() + 3600, iat = os.time(),
-                email = token_data.user_email, name = token_data.user_email,
-              }
-
-              ngx.header["Content-Type"] = "application/json"
-              ngx.say(cjson.encode({
-                access_token  = new_access_token,
-                token_type    = "Bearer",
-                expires_in    = 3600,
-                refresh_token = new_refresh_token,
-                id_token      = cjson.encode(custom_id_token_payload),
-              }))
-              return ngx.exit(200)
-            end
-
-            -- Only authorization_code and refresh_token are supported
-            if grant_type ~= "authorization_code" then
-              ngx.status = 400
-              ngx.say('{"error":"unsupported_grant_type","error_description":"only authorization_code and refresh_token supported"}')
-              return ngx.exit(ngx.HTTP_BAD_REQUEST)
-            end
-
-            local code          = args.code
-            local code_verifier = args.code_verifier
-            local redirect_uri  = "https://{{ .Values.router_domain }}/redirect_uri"
-
-            if not code then
-              ngx.status = 400
-              ngx.say('{"error":"invalid_request","error_description":"missing code"}')
-              return ngx.exit(ngx.HTTP_BAD_REQUEST)
-            end
-            if not code_verifier then
-              ngx.status = 400
-              ngx.say('{"error":"invalid_request","error_description":"missing code_verifier (PKCE)"}')
-              return ngx.exit(ngx.HTTP_BAD_REQUEST)
-            end
-
-            local token_url = "{{ .Values.router.oidc.issuerUrl }}/v1/token"
-            local token_params = {
-              grant_type    = "authorization_code",
-              client_id     = client_id,
-              client_secret = client_secret,
-              code          = code,
-              redirect_uri  = redirect_uri,
-              code_verifier = code_verifier,
-            }
-
-            local res, err = httpc:request_uri(token_url, {
-              method = "POST",
-              headers = { ["Content-Type"] = "application/x-www-form-urlencoded" },
-              body    = ngx.encode_args(token_params),
-            })
-
-            local access_token
-            local id_token_from_oidc
-            if res and res.status == 200 then
-              local ok, token_data = pcall(cjson.decode, res.body)
-              if ok and token_data and token_data.access_token then
-                access_token       = token_data.access_token
-                id_token_from_oidc = token_data.id_token
-              else
-                ngx.status = 500
-                ngx.say('{"error":"server_error","error_description":"failed to parse IdP token response"}')
-                return ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
-              end
-            else
-              ngx.log(ngx.ERR, "Token exchange failed: ", err or (res and ("HTTP "..res.status..": "..(res.body or ""))) or "unknown")
-              ngx.status = 502
-              ngx.say('{"error":"server_error","error_description":"IdP token exchange failed"}')
-              return ngx.exit(ngx.HTTP_BAD_GATEWAY)
-            end
-
-            local user_email, user_sub, user_name = "unknown", "unknown", "unknown"
-            if access_token then
-              local userinfo_url = "{{ .Values.router.oidc.issuerUrl }}/v1/userinfo"
-              local userinfo_res = httpc:request_uri(userinfo_url, {
-                method = "GET", headers = { ["Authorization"] = "Bearer " .. access_token }
-              })
-              if userinfo_res and userinfo_res.status == 200 then
-                local ok, info = pcall(cjson.decode, userinfo_res.body)
-                if ok and info then
-                  user_email = info.email or info.sub
-                  user_sub   = info.sub
-                  user_name  = info.name or info.email or info.sub
-                end
-              end
-            end
-
-            local final_id_token = id_token_from_oidc
-            if not final_id_token then
-              final_id_token = cjson.encode({
-                iss = "https://" .. ngx.var.host, sub = user_sub, aud = client_id,
-                exp = os.time() + 3600, iat = os.time(),
-                email = user_email, name = user_name,
-              })
-            end
-
-            if user_email and user_email ~= "unknown" then
-              local user_prefix = auth_utils.extract_user_prefix(user_email)
-              if user_prefix then
-                ngx.log(ngx.DEBUG, "[Token] notifying MCPx for user: ", user_email)
-                local token_to_send = id_token_from_oidc or cjson.encode({
-                  user_email = user_email, user_sub = user_sub, auth_type = "token_endpoint", timestamp = os.time()
-                })
-                auth_utils.notify_mcpx_of_login(token_to_send, user_prefix)
-              end
-            end
-
-            ngx.header["Content-Type"] = "application/json"
-
-            local refresh_token
-            if user_email and user_sub then
-              refresh_token = auth_utils.generate_refresh_token()
-              auth_utils.store_refresh_token(refresh_token, user_email, user_sub, sessions)
-            end
-            local custom_access_token = refresh_token and auth_utils.generate_access_token(refresh_token) or access_token
-
-            ngx.say(cjson.encode({
-              access_token  = custom_access_token,
-              token_type    = "Bearer",
-              expires_in    = 3600,
-              id_token      = final_id_token,
-              refresh_token = refresh_token
-            }))
-            return ngx.exit(200)
-          }
+          content_by_lua_block { require("router-endpoints").token_handler() }
         }
 
         # Friendly failure
@@ -414,25 +184,7 @@ data:
 
         location /mcp {
           default_type application/json;
-          access_by_lua_block {
-            local auth_header = ngx.var.http_authorization
-            auth_utils.log_auth_attempt(ngx.var.remote_addr, auth_header)
-
-            local user_email, err = auth_utils.validate_bearer_token(auth_header)
-
-            if not user_email then
-              ngx.log(ngx.ERR, "[/mcp] Authentication failed: ", err or "No valid Bearer token")
-              return auth_utils.send_unauthorized("Authentication required",
-                string.format("%s://%s/login", ngx.var.scheme, ngx.var.host))
-            end
-
-            local success = auth_utils.setup_user_routing(user_email, 9000)
-            if not success then
-              return -- Error already handled in setup_user_routing
-            end
-
-            ngx.log(ngx.DEBUG, "[/mcp] Successfully set dynamic upstream to: ", ngx.var.dynamic_upstream)
-          }
+          access_by_lua_block { require("router-endpoints").mcp_access_handler() }
 
           proxy_pass $dynamic_upstream;
           proxy_set_header Host $host;
@@ -471,9 +223,11 @@ data:
         ngx.req.set_header("X-Auth-Email", user_email)
         ngx.var.user_email = user_email
 
-        local user_prefix = auth_utils.extract_user_prefix(user_email)
-        if not user_prefix then
-          return auth_utils.send_bad_request("Invalid email format")
+        -- To use only email prefix as instance ID use function auth_utils.extract_user_prefix(user_email) instead of auth_utils.get_instance_id_by_email(user_email)
+        local instance_id, err = auth_utils.get_instance_id_by_email(user_email)
+        if not instance_id then
+          ngx.log(ngx.ERR, "Failed to get instance ID for ", user_email, ": ", err)
+          return auth_utils.send_bad_request("Could not resolve instance ID")
         end
 
         local session_data = session.data[1] and session.data[1][1] or session.data
@@ -496,8 +250,7 @@ data:
         else
           target_port = 5173
         end
-
-        ngx.var.dynamic_upstream = auth_utils.build_dynamic_upstream(user_prefix, target_port)
+        ngx.var.dynamic_upstream = auth_utils.build_dynamic_upstream(instance_id, target_port)
       end
     end
 
@@ -515,12 +268,292 @@ data:
 
     return handlers
 
+  router-endpoints.lua: |
+    local cjson      = require "cjson"
+    local http       = require "resty.http"
+    local auth_utils = require "auth-utils"
+
+    local _M = {}
+
+    function _M.dynamic_client_registration()
+      ngx.req.read_body()
+      local body = ngx.req.get_body_data() or "{}"
+      local ok, req = pcall(cjson.decode, body); if not ok then req = {} end
+      local want = req.redirect_uris or {}
+
+      local allowed = {
+        ["https://{{ .Values.router_domain }}/redirect_uri"] = true,
+        ["cursor://anysphere.cursor-mcp/oauth/user-mcpx/callback"] = true,
+        ["https://chatgpt.com/connector_platform_oauth_redirect"] = true,
+      }
+      local final_redirects = {}
+      for _, u in ipairs(want) do
+        if allowed[u] then table.insert(final_redirects, u) end
+      end
+      if #final_redirects == 0 then
+        final_redirects = {
+          "https://{{ .Values.router_domain }}/redirect_uri",
+          "cursor://anysphere.cursor-mcp/oauth/user-mcpx/callback",
+          "https://chatgpt.com/connector_platform_oauth_redirect"
+        }
+      end
+
+      local creds = auth_utils.get_oidc_credentials()
+      ngx.status = 201
+      ngx.say(cjson.encode({
+        client_id     = creds.client_id,
+        client_secret = creds.client_secret,
+        redirect_uris = final_redirects,
+        grant_types   = {"authorization_code","refresh_token"},
+        response_types= {"code"},
+        scope         = "openid email offline_access",
+        id_token_signed_response_alg = "RS256",
+        application_type = "native",
+      }))
+    end
+
+    function _M.redirect_uri_handler()
+      local sessions   = ngx.shared.sessions
+      local args       = ngx.req.get_uri_args()
+      local code       = args.code
+      local state      = args.state
+
+      if code and state then
+        return auth_utils.handle_oidc_callback(code, state, sessions)
+      end
+
+      local new_state, cc, ccm = auth_utils.handle_oidc_redirect(args, sessions)
+      local credentials = auth_utils.get_oidc_credentials()
+      local auth_url = "{{ .Values.router.oidc.issuerUrl }}/v1/authorize?"
+        .. ngx.encode_args({
+          response_type         = "code",
+          client_id             = credentials.client_id,
+          redirect_uri          = "https://{{ .Values.router_domain }}/redirect_uri",
+          scope                 = "openid email offline_access",
+          state                 = new_state,
+          code_challenge        = cc,
+          code_challenge_method = ccm,
+        })
+      return ngx.redirect(auth_url)
+    end
+
+    local function extract_basic_auth()
+      local auth = ngx.var.http_authorization
+      if auth and auth:find("^Basic%s+") then
+        local b64 = auth:gsub("^Basic%s+", "")
+        local decoded = ngx.decode_base64(b64 or "")
+        if decoded then
+          local cid, csec = decoded:match("^([^:]+):(.*)$")
+          return cid, csec
+        end
+      end
+    end
+
+    function _M.token_handler()
+      local httpc = http.new()
+      local sessions = ngx.shared.sessions
+
+      ngx.req.read_body()
+      local args = ngx.req.get_post_args()
+
+      local grant_type   = args.grant_type
+      local client_id    = args.client_id
+      local client_secret= args.client_secret
+
+      if (not client_id or not client_secret) then
+        local cid, csec = extract_basic_auth()
+        if cid and csec then
+          client_id, client_secret = client_id or cid, client_secret or csec
+        end
+      end
+
+      if not grant_type then
+        ngx.status = 400
+        ngx.say('{"error":"invalid_request","error_description":"missing grant_type"}')
+        return ngx.exit(ngx.HTTP_BAD_REQUEST)
+      end
+
+      if not (client_id and client_secret) then
+        ngx.status = 401
+        ngx.header["WWW-Authenticate"] = 'Basic realm="token", error="invalid_client", error_description="client authentication required"'
+        ngx.say('{"error":"invalid_client","error_description":"client_id/client_secret not provided"}')
+        return ngx.exit(ngx.HTTP_UNAUTHORIZED)
+      end
+
+      if grant_type == "refresh_token" then
+        local refresh_token = args.refresh_token
+        if not refresh_token then
+          ngx.status = 400
+          ngx.say('{"error":"invalid_request","error_description":"missing refresh_token"}')
+          return ngx.exit(ngx.HTTP_BAD_REQUEST)
+        end
+
+        local token_data, err = auth_utils.validate_refresh_token(refresh_token, sessions)
+        if not token_data then
+          ngx.status = 400
+          ngx.say('{"error":"invalid_grant","error_description":"' .. (err or "invalid refresh token") .. '"}')
+          return ngx.exit(ngx.HTTP_BAD_REQUEST)
+        end
+
+        local new_refresh_token = auth_utils.generate_refresh_token()
+        local new_access_token  = auth_utils.generate_access_token(new_refresh_token)
+        auth_utils.store_refresh_token(new_refresh_token, token_data.user_email, token_data.user_sub, sessions)
+        auth_utils.revoke_refresh_token(refresh_token, sessions)
+
+        local custom_id_token_payload = {
+          iss = "https://" .. ngx.var.host, sub = token_data.user_sub, aud = client_id,
+          exp = os.time() + 3600, iat = os.time(),
+          email = token_data.user_email, name = token_data.user_email,
+        }
+
+        ngx.header["Content-Type"] = "application/json"
+        ngx.say(cjson.encode({
+          access_token  = new_access_token,
+          token_type    = "Bearer",
+          expires_in    = 3600,
+          refresh_token = new_refresh_token,
+          id_token      = cjson.encode(custom_id_token_payload),
+        }))
+        return ngx.exit(200)
+      end
+
+      if grant_type ~= "authorization_code" then
+        ngx.status = 400
+        ngx.say('{"error":"unsupported_grant_type","error_description":"only authorization_code and refresh_token supported"}')
+        return ngx.exit(ngx.HTTP_BAD_REQUEST)
+      end
+
+      local code          = args.code
+      local code_verifier = args.code_verifier
+      local redirect_uri  = "https://{{ .Values.router_domain }}/redirect_uri"
+
+      if not code then
+        ngx.status = 400
+        ngx.say('{"error":"invalid_request","error_description":"missing code"}')
+        return ngx.exit(ngx.HTTP_BAD_REQUEST)
+      end
+      if not code_verifier then
+        ngx.status = 400
+        ngx.say('{"error":"invalid_request","error_description":"missing code_verifier (PKCE)"}')
+        return ngx.exit(ngx.HTTP_BAD_REQUEST)
+      end
+
+      local token_url = "{{ .Values.router.oidc.issuerUrl }}/v1/token"
+      local token_params = {
+        grant_type    = "authorization_code",
+        client_id     = client_id,
+        client_secret = client_secret,
+        code          = code,
+        redirect_uri  = redirect_uri,
+        code_verifier = code_verifier,
+      }
+
+      local res, err = httpc:request_uri(token_url, {
+        method = "POST",
+        headers = { ["Content-Type"] = "application/x-www-form-urlencoded" },
+        body    = ngx.encode_args(token_params),
+      })
+
+      local access_token
+      local id_token_from_oidc
+      if res and res.status == 200 then
+        local ok, token_data = pcall(cjson.decode, res.body)
+        if ok and token_data and token_data.access_token then
+          access_token       = token_data.access_token
+          id_token_from_oidc = token_data.id_token
+        else
+          ngx.status = 500
+          ngx.say('{"error":"server_error","error_description":"failed to parse IdP token response"}')
+          return ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
+        end
+      else
+        ngx.log(ngx.ERR, "Token exchange failed: ", err or (res and ("HTTP "..res.status..": "..(res.body or ""))) or "unknown")
+        ngx.status = 502
+        ngx.say('{"error":"server_error","error_description":"IdP token exchange failed"}')
+        return ngx.exit(ngx.HTTP_BAD_GATEWAY)
+      end
+
+      local user_email, user_sub, user_name = "unknown", "unknown", "unknown"
+      if access_token then
+        local userinfo_url = "{{ .Values.router.oidc.issuerUrl }}/v1/userinfo"
+        local userinfo_res = httpc:request_uri(userinfo_url, {
+          method = "GET", headers = { ["Authorization"] = "Bearer " .. access_token }
+        })
+        if userinfo_res and userinfo_res.status == 200 then
+          local ok, info = pcall(cjson.decode, userinfo_res.body)
+          if ok and info then
+            user_email = info.email or info.sub
+            user_sub   = info.sub
+            user_name  = info.name or info.email or info.sub
+          end
+        end
+      end
+
+      local final_id_token = id_token_from_oidc
+      if not final_id_token then
+        final_id_token = cjson.encode({
+          iss = "https://" .. ngx.var.host, sub = user_sub, aud = client_id,
+          exp = os.time() + 3600, iat = os.time(),
+          email = user_email, name = user_name,
+        })
+      end
+
+      if user_email and user_email ~= "unknown" then
+        local instance_id, ierr = auth_utils.get_instance_id_by_email(user_email)
+        if not instance_id then
+          ngx.log(ngx.ERR, "Failed to get instance ID for ", user_email, ": ", ierr)
+          return auth_utils.send_bad_request("Could not resolve instance ID")
+        end
+        auth_utils.notify_mcpx_of_login(id_token_from_oidc, instance_id)
+      end
+
+      ngx.header["Content-Type"] = "application/json"
+
+      local refresh_token
+      if user_email and user_sub then
+        refresh_token = auth_utils.generate_refresh_token()
+        auth_utils.store_refresh_token(refresh_token, user_email, user_sub, sessions)
+      end
+      local custom_access_token = refresh_token and auth_utils.generate_access_token(refresh_token) or access_token
+
+      ngx.say(cjson.encode({
+        access_token  = custom_access_token,
+        token_type    = "Bearer",
+        expires_in    = 3600,
+        id_token      = final_id_token,
+        refresh_token = refresh_token
+      }))
+      return ngx.exit(200)
+    end
+
+    function _M.mcp_access_handler()
+      local auth_header = ngx.var.http_authorization
+      auth_utils.log_auth_attempt(ngx.var.remote_addr, auth_header)
+
+      local user_email, err = auth_utils.validate_bearer_token(auth_header)
+      if not user_email then
+        ngx.log(ngx.ERR, "[/mcp] Authentication failed: ", err or "No valid Bearer token")
+        return auth_utils.send_unauthorized("Authentication required",
+          string.format("%s://%s/login", ngx.var.scheme, ngx.var.host))
+      end
+
+      local success = auth_utils.setup_user_routing(user_email, 9000)
+      if not success then
+        return
+      end
+
+      ngx.log(ngx.DEBUG, "[/mcp] Successfully set dynamic upstream to: ", ngx.var.dynamic_upstream)
+    end
+
+    return _M
+
   auth-utils.lua: |
     local cjson    = require "cjson"
     local http     = require "resty.http"
     local openidc  = require "resty.openidc"
     local session  = require "resty.session"
     local random   = require "resty.random"
+    local redis_client = require "redis-client"
 
     local _M = {}
 
@@ -612,8 +645,37 @@ data:
       return string.match(user_email, "^([^@]+)")
     end
 
+    function _M.get_instance_id_by_email(email)
+        ngx.log(ngx.DEBUG, "[redis] Looking up instance id for email=", tostring(email))
+        local red, err = redis_client.get_connection()
+        if not red then
+            ngx.log(ngx.ERR, "[redis] Failed to obtain connection: ", err or "unknown")
+            return nil, err
+        end
+
+        local instance_id, err_get = red:get(email)
+
+        if err_get then
+            if red.close then pcall(red.close, red) end
+            ngx.log(ngx.ERR, "[redis] GET failed for ", tostring(email), ": ", err_get)
+            return nil, "failed to get instance ID from Redis: " .. err_get
+        end
+
+        redis_client.release_connection(red)
+
+        if instance_id == ngx.null then
+            ngx.log(ngx.DEBUG, "[redis] No mapping found for ", tostring(email))
+            return nil, "no instanceID found for email"
+        end
+
+        ngx.log(ngx.DEBUG, "[redis] Found instance id ", tostring(instance_id), " for ", tostring(email))
+        return instance_id, nil
+    end
+
     function _M.build_dynamic_upstream(user_prefix, target_port)
+      ngx.log(ngx.DEBUG, "[build_dynamic_upstream] user prefix: ", user_prefix, " and target port: ", target_port)
       local base = "http://mcpx-" .. user_prefix .. ".{{ $.Release.Namespace }}.svc.cluster.local"
+      ngx.log(ngx.DEBUG, "[build_dynamic_upstream] base: ", base)
       return string.format("%s:%d", base, tonumber(target_port or 9000))
     end
 
@@ -671,16 +733,13 @@ data:
     end
 
     function _M.setup_user_routing(user_email, target_port)
-      local user_prefix = _M.extract_user_prefix(user_email)
-      if not user_prefix then
-        ngx.log(ngx.ERR, "Invalid/missing email: ", user_email or "nil")
+      -- To use only email prefix as instance ID use function _M.extract_user_prefix(user_email) instead of _M.get_instance_id_by_email(user_email)
+      local instance_id, err = _M.get_instance_id_by_email(user_email)
+      if not instance_id then
+        ngx.log(ngx.ERR, "Invalid/missing email: ", user_email or "nil", ": ", err)
         return _M.send_bad_request("Invalid email format")
       end
-      ngx.var.dynamic_upstream = _M.build_dynamic_upstream(user_prefix, target_port)
-      ngx.var.user_email       = user_email
-      ngx.req.set_header("X-Auth-Email", user_email)
-      ngx.log(ngx.DEBUG, "[/mcp] Successfully set dynamic upstream to: ", ngx.var.dynamic_upstream)
-      return true
+      ngx.var.dynamic_upstream = _M.build_dynamic_upstream(instance_id, target_port)  
     end
 
     function _M.log_auth_attempt(ip, auth_header)
@@ -811,6 +870,214 @@ data:
       local cb = string.format("%s?code=%s&state=%s",
         agent_redirect_uri, ngx.escape_uri(oidc_code), ngx.escape_uri(agent_state))
       return ngx.redirect(cb)
+    end
+
+    return _M
+
+  redis-client.lua: |
+    local redis = require "resty.redis"
+    local url_parser = require "resty.url"
+
+    local _M = {}
+
+    local IS_CLUSTER = os.getenv("REDIS_IS_CLUSTER") == "true"
+    local REDIS_URL   = os.getenv("REDIS_URL")
+    local POPULATE_TEST = "true"
+
+    -- cached cluster client (so we don't recreate on each request)
+    local CLUSTER_CLIENT = nil
+
+    local function parse_redis_url(url_string)
+      local parsed_url = url_parser.parse(url_string or "")
+      local hosts = {}
+      local password = parsed_url.password
+
+      if parsed_url.host then
+        if parsed_url.host:find(",") then
+          for host_port in string.gmatch(parsed_url.host, "([^,]+)") do
+            local host, port = string.match(host_port, "([^:]+):?(.*)")
+            table.insert(hosts, { ip = host, port = tonumber(port) or 6379 })
+          end
+        else
+          table.insert(hosts, { ip = parsed_url.host, port = parsed_url.port or 6379 })
+        end
+      end
+      return hosts, password
+    end
+
+    -- Initialize and cache the cluster client.
+    -- This is safe to call from a timer or request context (must NOT be called from init_worker_by_lua directly).
+    function _M.init_cluster()
+      if not REDIS_URL then
+        return nil, "REDIS_URL not configured"
+      end
+
+      if CLUSTER_CLIENT then
+        return CLUSTER_CLIENT, nil
+      end
+
+      local hosts, password = parse_redis_url(REDIS_URL)
+      if #hosts == 0 then
+        return nil, "Could not parse Redis host(s) from URL"
+      end
+
+      local rediscluster = require "resty.rediscluster"
+      -- Note: The library auto-constructs dictionary names from 'name':
+      --   - Slot cache: dict_name parameter (explicit)
+      --   - Locks: {name}_locks = "mcpx_redis_cluster_locks"
+      --   - Unhealthy nodes: {name}_unhealthy_nodes = "mcpx_redis_cluster_unhealthy_nodes"
+      local client, err = rediscluster:new({
+        name = "mcpx_redis_cluster",
+        dict_name = "mcpx_redis_cluster",  -- slot cache dictionary (must match lua_shared_dict)
+        serv_list = hosts,
+        keepalive_timeout = 60000,
+        keepalive_cons    = 100,
+        connect_timeout   = 5000,  -- Increased to 5 seconds for slow initialization
+        read_timeout      = 5000,  -- Increased to 5 seconds
+        send_timeout      = 5000,  -- Increased to 5 seconds
+        max_redirection   = 5,
+        auth              = password
+      })
+
+      if not client then
+        return nil, err or "failed to create redis cluster client"
+      end
+
+      CLUSTER_CLIENT = client
+      return CLUSTER_CLIENT, nil
+    end
+
+    function _M.get_connection()
+      if not REDIS_URL then
+        return nil, "REDIS_URL not configured"
+      end
+
+      local hosts, password = parse_redis_url(REDIS_URL)
+
+      if #hosts == 0 then
+        return nil, "Could not parse Redis host(s) from URL"
+      end
+
+      if IS_CLUSTER then
+        if CLUSTER_CLIENT then
+          ngx.log(ngx.DEBUG, "[redis] Using cached cluster client")
+          return CLUSTER_CLIENT, nil
+        end
+        local client, err = _M.init_cluster()
+        if not client then
+          ngx.log(ngx.ERR, "[redis] Cluster init failed: ", err or "unknown")
+          return nil, err
+        end
+        ngx.log(ngx.DEBUG, "[redis] Cluster client initialized on-demand")
+        return client, nil
+      else
+        -- Standalone mode: return a fresh redis connection (pooled via set_keepalive)
+        local red = redis:new()
+        red:set_timeout(1000) -- 1 second
+
+        local host_info = hosts[1]
+        local ok, err = red:connect(host_info.ip, host_info.port)
+        if not ok then
+          ngx.log(ngx.ERR, "[redis] Connect failed to ", tostring(host_info.ip), ":", tostring(host_info.port), ": ", err)
+          return nil, "failed to connect to Redis: " .. err
+        end
+        ngx.log(ngx.DEBUG, "[redis] Connected to ", tostring(host_info.ip), ":", tostring(host_info.port))
+
+        if password then
+          local replies, err_auth = red:auth(password)
+          -- redis:auth returns "OK" or nil+err
+          if not replies or replies ~= "OK" then
+            -- some redis versions return table; handle that
+            if type(replies) == "table" and replies[1] == "OK" then
+              -- ok
+            else
+              ngx.log(ngx.ERR, "[redis] AUTH failed: ", err_auth or "invalid password")
+              red:close()
+              return nil, "failed to authenticate with Redis: " .. (err_auth or "invalid password")
+            end
+          end
+          ngx.log(ngx.DEBUG, "[redis] AUTH succeeded")
+        end
+        return red, nil
+      end
+    end
+
+    function _M.release_connection(red)
+      if not red then return end
+      if IS_CLUSTER then
+        -- cluster client is cached and manages its own pooling/connection behavior; no op
+        return
+      end
+
+      local ok, err = red:set_keepalive(60000, 100)
+      if not ok then
+        ngx.log(ngx.WARN, "failed to set redis keepalive: ", err)
+        red:close()
+      end
+    end
+
+    -- Schedule background initialization tasks (cluster init and optional test data population)
+    function _M.schedule_background_tasks()
+      local function try_init_cluster(premature)
+        if premature then return end
+        local ok, err = _M.init_cluster()
+        if not ok then
+          ngx.log(ngx.ERR, "redis_client.init_cluster() failed: ", err or "unknown")
+          local retry_after = 5
+          local retry_ok, retry_err = ngx.timer.at(retry_after, try_init_cluster)
+          if not retry_ok then
+            ngx.log(ngx.ERR, "Failed to schedule redis cluster init retry: ", retry_err)
+          end
+          return
+        end
+        ngx.log(ngx.NOTICE, "redis_client.init_cluster() succeeded")
+      end
+
+      local function try_populate(premature)
+        if premature then return end
+        local red, err = _M.get_connection()
+        if not red then
+          ngx.log(ngx.ERR, "Redis connection failed for data population: ", err or "unknown")
+          local retry_after = 5
+          local ok_retry, err_retry = ngx.timer.at(retry_after, try_populate)
+          if not ok_retry then ngx.log(ngx.ERR, "Failed to schedule redis populate retry: ", err_retry) end
+          return
+        end
+
+        ngx.log(ngx.NOTICE, "Populating Redis with test data...")
+
+        local mappings = {
+          ["eitang@lunar.dev"]     = "eitang",
+          ["rotemy@lunar.dev"]     = "rotemy",
+          ["eliavl@lunar.dev"]     = "eliavl",
+          ["mayab@lunar.dev"]      = "mayab",
+          ["royg@lunar.dev"]       = "royg",
+          ["rotemy.x10@gmail.com"] = "abc6",
+        }
+
+        for email, instanceID in pairs(mappings) do
+          local ok_set, err_set = red:set(email, instanceID)
+          if not ok_set then
+            ngx.log(ngx.ERR, "Failed to set test key '", email, "' in Redis: ", err_set)
+          else
+            ngx.log(ngx.NOTICE, "Successfully set test key '", email, "' to '", instanceID, "'")
+          end
+        end
+
+        _M.release_connection(red)
+      end
+
+      local ok_init, err_init = ngx.timer.at(0, try_init_cluster)
+      if not ok_init then
+        ngx.log(ngx.ERR, "Failed to schedule Redis cluster init timer: ", err_init)
+      end
+
+      if POPULATE_TEST then
+        local ok_timer, err_timer = ngx.timer.at(0, try_populate)
+        if not ok_timer then
+          ngx.log(ngx.ERR, "Failed to create Redis population timer: ", err_timer)
+        end
+      end
     end
 
     return _M

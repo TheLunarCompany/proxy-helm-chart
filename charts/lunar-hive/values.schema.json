@@ -19,14 +19,9 @@
         "global": {
             "type": "object",
             "properties": {
-                "cloudProvider": {
-                    "type": "string"
-                },
-                "clusterDomain": {
-                    "type": "string"
-                },
-                "staticIPName": {
-                    "type": "string"
+
+                "imagePullSecrets": {
+                    "type": "array"
                 }
             }
         },
@@ -244,8 +239,6 @@
             "type": "object",
             "properties": {
                 "enabled": { "type": "boolean" },
-                "type": { "type": "string" },
-                "className": { "type": "string" },
                 "annotations": { "type": "object" },
                 "domains": {
                     "type": "object",
@@ -253,6 +246,61 @@
                         "controller": { "$ref": "#/$defs/domainSpec" },
                         "router": { "$ref": "#/$defs/domainSpec" },
                         "ui": { "$ref": "#/$defs/domainSpec" }
+                    }
+                },
+                "gcp": {
+                    "type": "object",
+                    "properties": {
+                        "staticIPName": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "aws": {
+                    "type": "object",
+                    "properties": {
+                        "loadBalancerType": {
+                            "type": "string",
+                            "enum": ["nlb", "alb"]
+                        },
+                        "securityGroups": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "subnets": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "elasticIPs": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "certificateArn": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "azure": {
+                    "type": "object",
+                    "properties": {
+                        "applicationGatewayName": {
+                            "type": "string"
+                        },
+                        "resourceGroup": {
+                            "type": "string"
+                        },
+                        "subscriptionId": {
+                            "type": "string"
+                        },
+                        "staticIP": {
+                            "type": "string"
+                        }
                     }
                 }
             }
@@ -287,6 +335,22 @@
                                 }
                             }
                         }
+                    }
+                }
+            }
+        }
+    },
+    "router": {
+        "type": "object",
+        "properties": {
+            "redis": {
+                "type": "object",
+                "properties": {
+                    "isCluster": {
+                        "type": "boolean"
+                    },
+                    "url": {
+                        "type": "string"
                     }
                 }
             }

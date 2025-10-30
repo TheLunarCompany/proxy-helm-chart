@@ -38,13 +38,35 @@ spec:
               name: metrics
           env:
             - name: OIDC_DISCOVERY
-              value: {{ .Values.router.oidc.issuerUrl | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mcpx-hive.fullname" . }}-secret
+                  key: OIDC_ISSUER_URL
             - name: OIDC_CLIENT_ID
-              value: {{ .Values.router.oidc.clientId | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mcpx-hive.fullname" . }}-secret
+                  key: OIDC_CLIENT_ID
             - name: OIDC_CLIENT_SECRET
-              value: {{ .Values.router.oidc.clientSecret | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mcpx-hive.fullname" . }}-secret
+                  key: OIDC_CLIENT_SECRET
             - name: SESSION_SECRET
-              value: {{ .Values.router.oidc.sessionSecret | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mcpx-hive.fullname" . }}-secret
+                  key: SESSION_SECRET
+            - name: REDIS_IS_CLUSTER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mcpx-hive.fullname" . }}-secret
+                  key: REDIS_IS_CLUSTER
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mcpx-hive.fullname" . }}-secret
+                  key: REDIS_URL
           volumeMounts:
             - name: nginx-config-volume
               mountPath: /config
@@ -59,6 +81,9 @@ spec:
             - name: handlers-volume
               mountPath: /usr/local/openresty/lualib/handlers.lua
               subPath: handlers.lua
+            - name: redis-client-volume
+              mountPath: /usr/local/openresty/lualib/redis-client.lua
+              subPath: redis-client.lua
           livenessProbe:
             httpGet:
               path: /health
@@ -95,6 +120,12 @@ spec:
             items:
             - key: handlers.lua
               path: handlers.lua
+        - name: redis-client-volume
+          configMap:
+            name: {{ include "mcpx-hive.name" . }}-router
+            items:
+            - key: redis-client.lua
+              path: redis-client.lua
         - name: nginx-logs-volume
           emptyDir: {}
       {{- with .Values.router.nodeSelector }}

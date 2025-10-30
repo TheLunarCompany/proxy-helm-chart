@@ -1,0 +1,98 @@
+{{/*
+GCP-specific ingress resources (ManagedCertificate, FrontendConfig, BackendConfig)
+*/}}
+{{- define "ingress.gcp.resources" -}}
+{{- $fullname := include "mcpx-hive.fullname" . }}
+---
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: {{ printf "%s-cert" $fullname }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    name: {{ printf "%s-cert" $fullname }}
+    app: {{ printf "%s-cert" $fullname }}
+spec:
+  domains:
+    {{- range $key, $value := .Values.ingress.domains }}
+    {{- range $value }}
+    - {{ .host }}
+    {{- end }}
+    {{- end }}
+
+---
+apiVersion: networking.gke.io/v1beta1
+kind: FrontendConfig
+metadata:
+  name: {{ printf "%s-frontendconfig" $fullname }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  redirectToHttps:
+    enabled: true
+    responseCodeName: "302"
+
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: {{ printf "%s-backendconfig" $fullname }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    name: {{ printf "%s-backendconfig" $fullname }}
+    app: {{ printf "%s-backendconfig" $fullname }}
+spec:
+  timeoutSec: 3600
+  connectionDraining:
+    drainingTimeoutSec: 60
+  sessionAffinity:
+    affinityType: "CLIENT_IP"
+    affinityCookieTtlSec: 3600
+  healthCheck:
+    checkIntervalSec: 10
+    timeoutSec: 5
+    healthyThreshold: 1
+    unhealthyThreshold: 3
+    type: HTTP
+    requestPath: /health
+    port: 9000
+
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: {{ printf "%s-websocket-backendconfig" $fullname }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    name: {{ printf "%s-websocket-backendconfig" $fullname }}
+    app: {{ printf "%s-websocket-backendconfig" $fullname }}
+spec:
+  timeoutSec: 3600
+  connectionDraining:
+    drainingTimeoutSec: 60
+  sessionAffinity:
+    affinityType: "CLIENT_IP"
+    affinityCookieTtlSec: 3600
+  healthCheck:
+    checkIntervalSec: 10
+    timeoutSec: 5
+    healthyThreshold: 1
+    unhealthyThreshold: 3
+    type: HTTP
+    requestPath: /health
+    port: 5173
+{{- end }}
+
+{{/*
+GCP-specific ingress annotations
+*/}}
+{{- define "ingress.gcp.annotations" -}}
+{{- $fullname := include "mcpx-hive.fullname" . }}
+kubernetes.io/ingress.class: "gce"
+{{- if .Values.ingress.gcp.staticIPName }}
+networking.gke.io/static-ip: {{ .Values.ingress.gcp.staticIPName }}
+kubernetes.io/ingress.global-static-ip-name: {{ .Values.ingress.gcp.staticIPName }}
+{{- end }}
+networking.gke.io/managed-certificates: {{ printf "%s-cert" $fullname }}
+networking.gke.io/v1beta1.FrontendConfig: {{ printf "%s-frontendconfig" $fullname }}
+cloud.google.com/backend-config: '{"default": "{{ printf "%s-backendconfig" $fullname }}"}'
+{{- end }}

@@ -1,84 +1,16 @@
 {{- if .Values.ingress.enabled | default true }}
 {{- $fullname := include "mcpx-hive.fullname" . }}
----
-apiVersion: networking.gke.io/v1
-kind: ManagedCertificate
-metadata:
-  name: {{ printf "%s-cert" $fullname }}
-  labels:
-    name: {{ printf "%s-cert" $fullname }}
-    app: {{ printf "%s-cert" $fullname }}
-spec:
-  domains:
-    {{- range $key, $value := .Values.ingress.domains }}
-    {{- range $value }}
-    - {{ .host }}
-    {{- end }}
-    {{- end }}
 
----
-apiVersion: networking.gke.io/v1beta1
-kind: FrontendConfig
-metadata:
-  name: {{ printf "%s-frontendconfig" $fullname }}
-spec:
-  redirectToHttps:
-    enabled: true
-    responseCodeName: "302"
-
----
-apiVersion: cloud.google.com/v1
-kind: BackendConfig
-metadata:
-  name: {{ printf "%s-backendconfig" $fullname }}
-  labels:
-    name: {{ printf "%s-backendconfig" $fullname }}
-    app: {{ printf "%s-backendconfig" $fullname }}
-spec:
-  timeoutSec: 3600
-  connectionDraining:
-    drainingTimeoutSec: 60
-  sessionAffinity:
-    affinityType: "CLIENT_IP"
-    affinityCookieTtlSec: 3600
-  healthCheck:
-    checkIntervalSec: 10
-    timeoutSec: 5
-    healthyThreshold: 1
-    unhealthyThreshold: 3
-    type: HTTP
-    requestPath: /health
-    port: 9000
-
----
-apiVersion: cloud.google.com/v1
-kind: BackendConfig
-metadata:
-  name: {{ printf "%s-websocket-backendconfig" $fullname }}
-  labels:
-    name: {{ printf "%s-websocket-backendconfig" $fullname }}
-    app: {{ printf "%s-websocket-backendconfig" $fullname }}
-spec:
-  timeoutSec: 3600
-  connectionDraining:
-    drainingTimeoutSec: 60
-  sessionAffinity:
-    affinityType: "CLIENT_IP"
-    affinityCookieTtlSec: 3600
-  healthCheck:
-    checkIntervalSec: 10
-    timeoutSec: 5
-    healthyThreshold: 1
-    unhealthyThreshold: 3
-    type: HTTP
-    requestPath: /health
-    port: 5173
+{{- if .Values.ingress.gcp }}
+{{- include "ingress.gcp.resources" . }}
+{{- end }}
 
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ printf "%s-ingress" $fullname }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: {{ include "mcpx-hive.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
@@ -86,22 +18,24 @@ metadata:
     app.kubernetes.io/part-of: {{ include "mcpx-hive.name" . }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
   annotations:
-    {{- if eq .Values.ingress.type "gce" }}
-    kubernetes.io/ingress.class: "gce"
-    {{- if .Values.global.staticIPName }}
-    networking.gke.io/static-ip: {{ .Values.global.staticIPName }}
-    kubernetes.io/ingress.global-static-ip-name: {{ .Values.global.staticIPName }}
-    {{- end }}
-    networking.gke.io/managed-certificates: {{ printf "%s-cert" $fullname }}
-    networking.gke.io/v1beta1.FrontendConfig: {{ printf "%s-frontendconfig" $fullname }}
-    cloud.google.com/backend-config: '{"default": "{{ printf "%s-backendconfig" $fullname }}"}'
-    {{- else }}
-    # Future ingress types will be added here
+    {{- if .Values.ingress.gcp }}
+    {{- include "ingress.gcp.annotations" . | nindent 4 }}
+    {{- else if .Values.ingress.aws }}
+    {{- include "ingress.aws.annotations" . | nindent 4 }}
+    {{- else if .Values.ingress.azure }}
+    {{- include "ingress.azure.annotations" . | nindent 4 }}
     {{- end }}
     {{- if .Values.ingress.annotations }}
     {{- toYaml .Values.ingress.annotations | nindent 4 }}
     {{- end }}
 spec:
+  {{- if .Values.ingress.gcp }}
+  ingressClassName: gce
+  {{- else if .Values.ingress.aws }}
+  ingressClassName: alb
+  {{- else if .Values.ingress.azure }}
+  ingressClassName: azure/application-gateway
+  {{- end }}
   rules:
     {{- range $key, $value := .Values.ingress.domains }}
     {{- range $value }}
@@ -115,7 +49,20 @@ spec:
               service:
                 name: {{ if or (eq .backend.serviceName "router") (eq .backend.serviceName "ui") }}mcpx-hive-router{{ else }}{{ printf "%s-%s" $.Release.Name .backend.serviceName }}{{ end }}
                 port:
+                  {{- if and (or (eq .backend.serviceName "router") (eq .backend.serviceName "ui")) $.Values.ingress.gcp }}
+                  {{- $portNum := .backend.servicePort }}
+                  {{- $portName := "" }}
+                  {{- range $.Values.router.service.ports }}
+                  {{- if eq (toString .port) (toString $portNum) }}{{- $portName = .name }}{{- end }}
+                  {{- end }}
+                  {{- if $portName }}
+                  name: {{ $portName }}
+                  {{- else }}
+                  number: {{ $portNum }}
+                  {{- end }}
+                  {{- else }}
                   number: {{ .backend.servicePort }}
+                  {{- end }}
           {{- end }}
     {{- end }}
     {{- end }}
