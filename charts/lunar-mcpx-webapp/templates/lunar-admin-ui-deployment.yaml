@@ -37,7 +37,7 @@ spec:
           {{- with .Values.global.extraEnvFromSecrets }}
           {{- range $.Values.global.extraEnvFromSecrets }}
             - secretRef:
-              name: {{ . }}
+                name: {{ . }}
           {{- end }}
           {{- end }}
           {{- with .Values.admin.extraEnvFromSecrets }}

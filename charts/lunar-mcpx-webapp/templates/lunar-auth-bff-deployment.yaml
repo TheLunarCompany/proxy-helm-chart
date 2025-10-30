@@ -28,6 +28,18 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
+          {{- with .Values.global.extraEnvFromSecrets }}
+          {{- range $.Values.global.extraEnvFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.auth.extraEnvFromSecrets }}
+          {{- range $.Values.auth.extraEnvFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+          {{- end }}
+          {{- end }}
           env:
             - name: NODE_ENV
               value: "production"
@@ -57,7 +69,7 @@ spec:
           {{- with .Values.global.extraEnvFromSecrets }}
           {{- range $.Values.global.extraEnvFromSecrets }}
             - secretRef:
-              name: {{ . }}
+                name: {{ . }}
           {{- end }}
           {{- end }}
           {{- with .Values.auth.extraEnvFromSecrets }}
