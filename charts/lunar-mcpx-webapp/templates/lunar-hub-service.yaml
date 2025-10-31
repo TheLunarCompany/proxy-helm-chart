@@ -11,7 +11,7 @@ metadata:
     {{- end }}
 spec:
   ports:
-    - name: hub
+    - name: hub80
       protocol: TCP
       port: 80
       targetPort: 3000
