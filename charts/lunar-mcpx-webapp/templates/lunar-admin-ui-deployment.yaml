@@ -49,6 +49,12 @@ spec:
           env:
             - name: NODE_ENV
               value: "production"
+          {{- if .Values.ingress.enabled }}
+            - name: API_BASE_URL
+              value: "https://{{ first .Values.ingress.domains.webserver }}"
+            - name: AUTH_BFF_URL
+              value: "https://{{ first .Values.ingress.domains.auth }}"
+          {{- end }}
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}
