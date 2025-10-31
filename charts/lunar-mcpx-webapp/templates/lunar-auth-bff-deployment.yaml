@@ -20,7 +20,7 @@ spec:
     spec:
       initContainers:
         - name: mcpx-auth-prisma-migration
-          image: "{{ .Values.auth.image.repository }}:{{ default .Chart.AppVersion .Values.auth.image.tag }}"
+          image: "{{ .Values.auth.image.repository }}:{{ .Values.auth.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           command: ["/bin/sh"]
@@ -52,7 +52,7 @@ spec:
 
       containers:
         - name: mcpx-auth-container
-          image: "{{ .Values.auth.image.repository }}:{{ default .Chart.AppVersion .Values.auth.image.tag }}"
+          image: "{{ .Values.auth.image.repository }}:{{ .Values.auth.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           ports:
             - containerPort: 3000
           resources:

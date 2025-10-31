@@ -100,11 +100,7 @@ hub:
   #       secretKeyRef:
   #         name: SECRET_NAME
   #         key: KEY
-  extraEnvVars:
-    - name: AUTH0_DOMAIN
-      value: "dev-b8usc66hvtpq73zg.us.auth0.com"
-    - name: AUTH0_AUDIENCE
-      value: "mcpx-webapp"
+  extraEnvVars: []
 
   # -- extraEnvFromSecrets An array of secret names to add as extra env vars
   # extraEnvFromSecrets:

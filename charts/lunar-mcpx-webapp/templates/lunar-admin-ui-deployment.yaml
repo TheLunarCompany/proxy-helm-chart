@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: mcpx-admin-container
-          image: "{{ .Values.admin.image.repository }}:{{ default .Chart.AppVersion .Values.admin.image.tag }}"
+          image: "{{ .Values.admin.image.repository }}:{{ .Values.admin.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           ports:
             - containerPort: 3000
           resources:

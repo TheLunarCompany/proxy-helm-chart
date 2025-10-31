@@ -6,11 +6,19 @@ global:
   extraEnvFromSecrets:
     - mcpx-webapp-global
 
+webserver:
+  replicaCount: 2
+
 hub:
+  replicaCount: 2
   extraEnvFromSecrets:
     - mcpx-webapp-oidc
 
+admin:
+  replicaCount: 2
+
 auth:
+  replicaCount: 2
   extraEnvFromSecrets:
     - mcpx-webapp-oidc
 
