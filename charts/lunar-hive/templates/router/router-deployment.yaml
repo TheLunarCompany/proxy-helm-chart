@@ -27,8 +27,7 @@ spec:
     spec:
       containers:
         - name: router
-          image: "openresty/openresty:1.27.1.2-4-alpine-fat"
-          command: ["/bin/sh", "-c", "/config/init.sh"]
+          image: "{{ .Values.router.image.repository }}:{{ .Values.router.image.tag }}"
           ports:
             - containerPort: 9000
               name: mcpx-server
@@ -38,10 +37,7 @@ spec:
               name: metrics
           env:
             - name: OIDC_DISCOVERY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "mcpx-hive.fullname" . }}-secret
-                  key: OIDC_ISSUER_URL
+              value: "{{ .Values.global.oidc.issuerUrl }}/.well-known/openid-configuration"
             - name: OIDC_CLIENT_ID
               valueFrom:
                 secretKeyRef:
@@ -67,65 +63,29 @@ spec:
                 secretKeyRef:
                   name: {{ include "mcpx-hive.fullname" . }}-secret
                   key: REDIS_URL
-          volumeMounts:
-            - name: nginx-config-volume
-              mountPath: /config
-            - name: openresty-config-volume
-              mountPath: /usr/local/openresty/nginx/conf/nginx.conf
-              subPath: nginx.conf
-            - name: auth-utils-volume
-              mountPath: /usr/local/openresty/lualib/auth-utils.lua
-              subPath: auth-utils.lua
-            - name: nginx-logs-volume
-              mountPath: /var/log/nginx
-            - name: handlers-volume
-              mountPath: /usr/local/openresty/lualib/handlers.lua
-              subPath: handlers.lua
-            - name: redis-client-volume
-              mountPath: /usr/local/openresty/lualib/redis-client.lua
-              subPath: redis-client.lua
+            - name: UI_DOMAIN
+              value: "{{ .Values.ui_domain }}"
+            - name: ROUTER_DOMAIN
+              value: "{{ .Values.router_domain }}"
+            - name: HIVE_DOMAIN
+              value: "{{ .Values.domain }}"
+            - name: RELEASE_NAMESPACE
+              value: "{{ .Release.Namespace }}"
           livenessProbe:
             httpGet:
               path: /health
               port: 5173
-            initialDelaySeconds: 35 # Wait for luarocks to install
             periodSeconds: 10
             timeoutSeconds: 5
           readinessProbe:
             httpGet:
               path: /health
               port: 5173
-            initialDelaySeconds: 35 # Wait for luarocks to install
             periodSeconds: 10
             timeoutSeconds: 5
           resources:
             {{- toYaml .Values.router.resources | nindent 12 }}
       volumes:
-        - name: nginx-config-volume
-          configMap:
-            name: {{ include "mcpx-hive.name" . }}-router
-            defaultMode: 0755 # Make the init script executable
-        - name: openresty-config-volume
-          configMap:
-            name: {{ include "mcpx-hive.name" . }}-router
-        - name: auth-utils-volume
-          configMap:
-            name: {{ include "mcpx-hive.name" . }}-router
-            items:
-            - key: auth-utils.lua
-              path: auth-utils.lua
-        - name: handlers-volume
-          configMap:
-            name: {{ include "mcpx-hive.name" . }}-router
-            items:
-            - key: handlers.lua
-              path: handlers.lua
-        - name: redis-client-volume
-          configMap:
-            name: {{ include "mcpx-hive.name" . }}-router
-            items:
-            - key: redis-client.lua
-              path: redis-client.lua
         - name: nginx-logs-volume
           emptyDir: {}
       {{- with .Values.router.nodeSelector }}

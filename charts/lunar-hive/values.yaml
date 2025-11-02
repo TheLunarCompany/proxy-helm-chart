@@ -1,9 +1,9 @@
 # MCPx Hive Helm Chart Values
 
 # --- Domain Configuration ---
-domain: "lunar.dev"
+domain: "local"
 controller_domain: &controller_domain "controller.local"
-ui_domain: &ui_domain "ui.local"
+ui_domain: &ui_domain "mcpx-ui.local"
 router_domain: &router_domain "mcpx.local"
 
 global:
@@ -19,16 +19,40 @@ global:
 
   # Redis configuration for instance ID lookup
   redis:
-    isCluster: true
+    # When true, deploy a Redis instance within this chart
+    deploy: false
+    isCluster: false
+    # If deploy=false, set this to an external Redis URL (e.g., redis://host:6379)
     url: ""
+
+redis:
+  image:
+    repository: "redis"
+    tag: "7.2-alpine"
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 6379
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  persistence:
+    enabled: false
+    size: 1Gi
+    storageClass: ""
 
 ingress:
   enabled: true
   annotations: {}
+
   # --- Cloud Provider Configuration ---
   # Configure ONE of the following cloud providers by providing its object
   # The presence of the object determines which cloud provider to use
-
   gcp:
     # GCP-specific configuration
     staticIPName: "" # Optional unified static IP name for GCP
@@ -82,8 +106,8 @@ router:
   enabled: true
   replicaCount: 1
   image:
-    repository: "openresty/openresty"
-    tag: "1.27.1.2-4-alpine-fat"
+    repository: "us-central1-docker.pkg.dev/prj-common-442813/lunar-private/hive-router"
+    tag: "275175e"
     pullPolicy: "IfNotPresent"
   resources:
     limits:
