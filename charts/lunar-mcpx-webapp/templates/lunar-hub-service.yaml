@@ -21,28 +21,4 @@ spec:
     app: {{ include "lunar-mcpx-webapp.fullname" . }}-hub
     {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 4 }}
 
-
-{{- if .Values.ingress.enabled | default true }}
-{{- if eq .Values.ingress.type "gce" }}
----
-apiVersion: cloud.google.com/v1
-kind: BackendConfig
-metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" . }}-hub
-spec:
-  timeoutSec: 86400
-  sessionAffinity:
-    affinityType: "GENERATED_COOKIE"
-    affinityCookieTtlSec: 86400
-  healthCheck:
-    checkIntervalSec: 30
-    timeoutSec: 10
-    healthyThreshold: 1
-    unhealthyThreshold: 3
-    type: HTTP
-    requestPath: /healthcheck
-    port: 3000
-{{- end }}
-{{- end }}
-
 {{- end }}

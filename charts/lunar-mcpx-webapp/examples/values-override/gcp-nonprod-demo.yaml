@@ -50,8 +50,6 @@ ingress:
   domains:
     webserver:
       - mcpx-app.example.com
-    hub:
-      - mcpx-hub.example.com
     admin:
       - mcpx-admin.example.com
     auth:
