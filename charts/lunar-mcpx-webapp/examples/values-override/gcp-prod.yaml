@@ -1,0 +1,42 @@
+---
+global:
+  extraEnvVars:
+    - name: LOG_LEVEL
+      value: debug
+  extraEnvFromSecrets:
+    - mcpx-webapp-global
+
+webserver:
+  replicaCount: 2
+
+hub:
+  replicaCount: 2
+  extraEnvFromSecrets:
+    - mcpx-webapp-oidc
+
+admin:
+  replicaCount: 2
+
+auth:
+  replicaCount: 2
+  extraEnvFromSecrets:
+    - mcpx-webapp-oidc
+
+ingress:
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: mcpx-lunar-mcpx-webapp
+  type: gce
+
+  domains:
+    webserver:
+      - mcpx-app.example.com
+    admin:
+      - mcpx-admin.example.com
+    auth:
+      - mcpx-auth.example.com
+
+postgres:
+  enabled: false
+
+redis:
+  enabled: false

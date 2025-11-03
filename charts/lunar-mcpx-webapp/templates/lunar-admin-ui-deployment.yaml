@@ -20,11 +20,11 @@ spec:
     spec:
       containers:
         - name: mcpx-admin-container
-          image: "{{ .Values.admin.image.repository }}:{{ default .Chart.AppVersion .Values.admin.image.tag }}"
+          image: "{{ .Values.admin.image.repository }}:{{ .Values.admin.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           ports:
             - containerPort: 3000
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.admin.resources | nindent 12 }}
           securityContext:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
@@ -37,7 +37,7 @@ spec:
           {{- with .Values.global.extraEnvFromSecrets }}
           {{- range $.Values.global.extraEnvFromSecrets }}
             - secretRef:
-              name: {{ . }}
+                name: {{ . }}
           {{- end }}
           {{- end }}
           {{- with .Values.admin.extraEnvFromSecrets }}
@@ -49,6 +49,12 @@ spec:
           env:
             - name: NODE_ENV
               value: "production"
+          {{- if .Values.ingress.enabled }}
+            - name: API_BASE_URL
+              value: "https://{{ first .Values.ingress.domains.webserver }}"
+            - name: AUTH_BFF_URL
+              value: "https://{{ first .Values.ingress.domains.auth }}"
+          {{- end }}
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}

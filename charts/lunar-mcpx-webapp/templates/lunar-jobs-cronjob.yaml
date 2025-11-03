@@ -1,0 +1,50 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-db-ses-rtn
+  labels:
+    service: {{ include "lunar-mcpx-webapp.fullname" . }}-db-ses-rtn
+spec:
+  schedule: "0 */4 * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 3 # Retries 3 times before marking the job as failed
+      activeDeadlineSeconds: 3600 # The job will be terminated after 1 hour
+      template:
+        metadata:
+          labels:
+            service: {{ include "lunar-mcpx-webapp.fullname" . }}-db-ses-rtn
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: job-runner
+              image: "{{ .Values.jobs.image.repository }}:{{ .Values.jobs.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+              args:
+                - clean-terminated-sessions
+              resources:
+                {{- toYaml .Values.jobs.resources | nindent 16 }}
+              envFrom:
+                - secretRef:
+                    name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
+              {{- with .Values.global.extraEnvFromSecrets }}
+              {{- range $.Values.global.extraEnvFromSecrets }}
+                - secretRef:
+                    name: {{ . }}
+              {{- end }}
+              {{- end }}
+              {{- with .Values.jobs.extraEnvFromSecrets }}
+              {{- range $.Values.jobs.extraEnvFromSecrets }}
+                - secretRef:
+                    name: {{ . }}
+              {{- end }}
+              {{- end }}
+              env:
+              {{- if .Values.global.extraEnvVars }}
+              {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 16 }}
+              {{- end }}
+              {{- if .Values.jobs.extraEnvVars }}
+              {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.jobs.extraEnvVars "context" $) | nindent 16 }}
+              {{- end }}

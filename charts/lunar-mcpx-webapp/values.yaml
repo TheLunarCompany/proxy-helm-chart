@@ -100,11 +100,7 @@ hub:
   #       secretKeyRef:
   #         name: SECRET_NAME
   #         key: KEY
-  extraEnvVars:
-    - name: AUTH0_DOMAIN
-      value: "dev-b8usc66hvtpq73zg.us.auth0.com"
-    - name: AUTH0_AUDIENCE
-      value: "mcpx-webapp"
+  extraEnvVars: []
 
   # -- extraEnvFromSecrets An array of secret names to add as extra env vars
   # extraEnvFromSecrets:
@@ -154,31 +150,6 @@ admin:
   extraEnvFromSecrets: []
 
 
-ingress:
-  # -- Enable or disable Ingress for mcpx-webapp services
-  enabled: true
-
-  # -- Ingress annotations
-  annotations: {}
-
-  domains:
-    webserver:
-      - mcpx-app.example.com
-    hub:
-      - mcpx-hub.example.com
-    admin:
-      - mcpx-admin.example.com
-
-  # -- Provision cloud-specific ingress resources and configuration.
-  # Available options: "manual", "gce"
-  # - manual - deploys generic ingress without any cloud-specific configuration. Use ingress.annotations to configure it
-  # - gce    - deploys GCP-specific resources, like ManagedCertificate, FrontendConfig, BackendConfig, etc
-  type: manual
-
-  # -- GCP-specific configuration. Used only when ingress.type = gce
-  gce: {}
-
-
 auth:
   image:
     # -- Lunar mcpx-webserver image repository
@@ -218,6 +189,68 @@ auth:
   #   - secret_1
   #   - secret_2
   extraEnvFromSecrets: []
+
+jobs:
+  image:
+    # -- Lunar mcpx-jobs image repository
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-jobs
+    # -- Lunar mcpx-jobs image pull policy
+    pullPolicy: IfNotPresent
+    # -- Lunar mcpx-jobs image tag
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+  # -- Set pod resource requests & limits
+  resources:
+    limits:
+      cpu: "500m"
+      memory: 512Mi
+    requests:
+      cpu: "500m"
+      memory: 512Mi
+
+  # -- extraEnvVars An array to add extra env vars
+  # e.g:
+  # extraEnvVars:
+  #   - name: FOO
+  #     value: "bar"
+  #   - name: FOO2
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: SECRET_NAME
+  #         key: KEY
+  extraEnvVars: []
+
+  # -- extraEnvFromSecrets An array of secret names to add as extra env vars
+  # extraEnvFromSecrets:
+  #   - secret_1
+  #   - secret_2
+  extraEnvFromSecrets: []
+
+
+ingress:
+  # -- Enable or disable Ingress for mcpx-webapp services
+  enabled: true
+
+  # -- Ingress annotations
+  annotations: {}
+
+  domains:
+    webserver:
+      - mcpx-app.example.com
+    admin:
+      - mcpx-admin.example.com
+    auth:
+      - mcpx-auth.example.com
+
+  # -- Provision cloud-specific ingress resources and configuration.
+  # Available options: "manual", "gce"
+  # - undef  - deploys generic ingress without any cloud-specific configuration. Use ingress.annotations to configure it
+  # - gce    - deploys GCP-specific resources, like ManagedCertificate, FrontendConfig, BackendConfig, etc
+  type: undef
+
+  # -- GCP-specific configuration. Used only when ingress.type = gce
+  gce: {}
 
 
 postgres:

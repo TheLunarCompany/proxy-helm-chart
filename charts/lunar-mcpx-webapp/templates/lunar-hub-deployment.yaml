@@ -20,9 +20,9 @@ spec:
     spec:
       initContainers:
         - name: mcpx-hub-prisma-migration
-          image: "{{ .Values.hub.image.repository }}:{{ default .Chart.AppVersion .Values.hub.image.tag }}"
+          image: "{{ .Values.hub.image.repository }}:{{ .Values.hub.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.hub.resources | nindent 12 }}
           command: ["/bin/sh"]
           args: ["-c", "cd /mcpx-webapp && npx prisma migrate deploy;"]
           envFrom:
@@ -52,11 +52,11 @@ spec:
 
       containers:
         - name: mcpx-hub-container
-          image: "{{ .Values.hub.image.repository }}:{{ default .Chart.AppVersion .Values.hub.image.tag }}"
+          image: "{{ .Values.hub.image.repository }}:{{ .Values.hub.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           ports:
             - containerPort: 3000
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.hub.resources | nindent 12 }}
           securityContext:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
@@ -66,6 +66,18 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
+          {{- with .Values.global.extraEnvFromSecrets }}
+          {{- range $.Values.global.extraEnvFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.hub.extraEnvFromSecrets }}
+          {{- range $.Values.hub.extraEnvFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+          {{- end }}
+          {{- end }}
           env:
             - name: NODE_ENV
               value: "production"

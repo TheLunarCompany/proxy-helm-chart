@@ -11,7 +11,7 @@ metadata:
     {{- end }}
 spec:
   ports:
-    - name: auth
+    - name: auth80
       protocol: TCP
       port: 80
       targetPort: 3000
