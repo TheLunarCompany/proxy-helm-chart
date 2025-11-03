@@ -1,0 +1,131 @@
+{{- if .Values.auth.enabled | default true }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-auth
+  labels:
+    name: {{ include "lunar-mcpx-webapp.fullname" . }}-auth
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-auth
+spec:
+  replicas: {{ .Values.auth.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ include "lunar-mcpx-webapp.fullname" . }}-auth
+      {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "lunar-mcpx-webapp.fullname" . }}-auth
+        {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+        - name: mcpx-auth-prisma-migration
+          image: "{{ .Values.auth.image.repository }}:{{ .Values.auth.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          resources:
+            {{- toYaml .Values.auth.resources | nindent 12 }}
+          command: ["/bin/sh"]
+          args: ["-c", "cd /mcpx-webapp && npx prisma migrate deploy;"]
+          envFrom:
+            - secretRef:
+                name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
+          {{- with .Values.global.extraEnvFromSecrets }}
+          {{- range $.Values.global.extraEnvFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.auth.extraEnvFromSecrets }}
+          {{- range $.Values.auth.extraEnvFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+          {{- end }}
+          {{- end }}
+          env:
+            - name: NODE_ENV
+              value: "production"
+          {{- if .Values.global.extraEnvVars }}
+          {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.auth.extraEnvVars }}
+          {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.auth.extraEnvVars "context" $) | nindent 12 }}
+          {{- end }}
+
+      containers:
+        - name: mcpx-auth-container
+          image: "{{ .Values.auth.image.repository }}:{{ .Values.auth.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          ports:
+            - containerPort: 3000
+          resources:
+            {{- toYaml .Values.auth.resources | nindent 12 }}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            runAsUser: 1000
+            runAsGroup: 1000
+          envFrom:
+            - secretRef:
+                name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
+          {{- with .Values.global.extraEnvFromSecrets }}
+          {{- range $.Values.global.extraEnvFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.auth.extraEnvFromSecrets }}
+          {{- range $.Values.auth.extraEnvFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+          {{- end }}
+          {{- end }}
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3000"
+          {{- if .Values.ingress.enabled }}
+            - name: CORS_ALLOWED_ORIGINS
+              value: "https://{{ first .Values.ingress.domains.admin }}"
+          {{- end }}
+          {{- if .Values.global.extraEnvVars }}
+          {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.auth.extraEnvVars }}
+          {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.auth.extraEnvVars "context" $) | nindent 12 }}
+          {{- end }}
+
+          startupProbe:
+            successThreshold: 1
+            failureThreshold: 30
+            httpGet:
+              path: /healthcheck
+              port: 3000
+              scheme: HTTP
+            periodSeconds: 10
+          readinessProbe:
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              path: /healthcheck
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 10
+          livenessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /healthcheck
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 30
+
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range $.Values.global.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+  {{- end }}

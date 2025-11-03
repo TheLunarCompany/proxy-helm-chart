@@ -1,0 +1,24 @@
+{{- if .Values.hub.enabled | default true }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-hub
+  annotations:
+    {{- if .Values.ingress.enabled | default true }}
+    {{- if eq .Values.ingress.type "gce" }}
+    cloud.google.com/backend-config: '{"ports": {"hub80":"{{ include "lunar-mcpx-webapp.fullname" . }}-hub"}}'
+    {{- end }}
+    {{- end }}
+spec:
+  ports:
+    - name: hub80
+      protocol: TCP
+      port: 80
+      targetPort: 3000
+  sessionAffinity: ClientIP
+  type: ClusterIP
+  selector:
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-hub
+    {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 4 }}
+
+{{- end }}

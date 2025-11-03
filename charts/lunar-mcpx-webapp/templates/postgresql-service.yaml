@@ -1,0 +1,16 @@
+{{- if .Values.postgres.enabled | default false }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-postgres
+spec:
+  ports:
+    - name: postgres
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+  selector:
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-postgres
+    {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 4 }}
+  {{- end }}

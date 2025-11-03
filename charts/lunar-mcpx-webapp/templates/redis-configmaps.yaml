@@ -1,0 +1,27 @@
+{{- if .Values.redis.enabled | default false }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-redis-config
+data:
+  redis.conf: |
+    port 6379
+    cluster-enabled no
+    appendonly yes
+    appendfsync everysec
+    save 900 1
+    save 300 10
+    save 60 10000
+    tcp-keepalive 60
+    tcp-backlog 511
+    timeout 0
+    databases 1
+    maxmemory-policy noeviction
+    # Security
+    protected-mode no
+    # Logging
+    loglevel notice
+    logfile ""
+    dir /data
+
+{{- end }}

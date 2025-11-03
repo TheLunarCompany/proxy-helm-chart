@@ -1,0 +1,64 @@
+{{- if .Values.postgres.enabled | default false }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-postgres
+  labels:
+    name: {{ include "lunar-mcpx-webapp.fullname" . }}-postgres
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-postgres
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "lunar-mcpx-webapp.fullname" . }}-postgres
+      {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 6 }}
+  serviceName: postgres
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ include "lunar-mcpx-webapp.fullname" . }}-postgres
+        {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: db
+          image: postgres:17.6
+          envFrom:
+            - secretRef:
+                name: {{ include "lunar-mcpx-webapp.fullname" . }}-postgres-env
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata/17
+          command: []
+          resources:
+            requests:
+              memory: "2048Mi"
+              cpu: "256m"
+            limits:
+              memory: "2048Mi"
+              cpu: "256m"
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            {{- if .Values.postgres.persistence.enabled | default false }}
+            - name: data
+              mountPath: /var/lib/postgresql/data/pgdata
+            {{- end }}
+  {{- if .Values.postgres.persistence.enabled | default false }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        {{- if .Values.postgres.persistence.accessModes }}
+        accessModes: {{ .Values.postgres.persistence.accessModes }}
+        {{- else }}
+        accessModes: [ "ReadWriteOnce" ]
+        {{- end }}
+        {{- if .Values.postgres.persistence.storageClassName }}
+        storageClassName: {{ .Values.postgres.persistence.storageClassName }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.postgres.persistence.size | default "5Gi" }}
+  {{- end }}
+
+{{- end }}

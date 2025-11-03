@@ -1,0 +1,295 @@
+## @section Global Section
+global:
+  ## @param global.imagePullSecrets [default:\[lunar-private-mcpx-registry] Global Docker registry secret names as an array
+  # -- Global Docker registry secret names as an array
+  # e.g.
+  # imagePullSecrets:
+  #   - lunar-private-mcpx-registry
+  imagePullSecrets:
+    - lunar-private-mcpx-registry
+
+  # -- extraEnvVars An array to add extra env vars
+  # e.g:
+  # extraEnvVars:
+  #   - name: FOO
+  #     value: "bar"
+  #   - name: FOO2
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: SECRET_NAME
+  #         key: KEY
+  extraEnvVars: []
+
+  # -- extraEnvFromSecrets An array of secret names to add as extra env vars
+  # extraEnvFromSecrets:
+  #   - secret_1
+  #   - secret_2
+  extraEnvFromSecrets: []
+
+
+webserver:
+  image:
+    # -- Lunar mcpx-webserver image repository
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-webserver
+    # -- Lunar mcpx-webserver image pull policy
+    pullPolicy: IfNotPresent
+    # -- Lunar mcpx-webserver image tag
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+  # -- number of replicas to run
+  replicaCount: 1
+
+  # -- Set pod resource requests & limits
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "150m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+  # -- extraEnvVars An array to add extra env vars
+  # e.g:
+  # extraEnvVars:
+  #   - name: FOO
+  #     value: "bar"
+  #   - name: FOO2
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: SECRET_NAME
+  #         key: KEY
+  extraEnvVars: []
+
+  # -- extraEnvFromSecrets An array of secret names to add as extra env vars
+  # extraEnvFromSecrets:
+  #   - secret_1
+  #   - secret_2
+  extraEnvFromSecrets: []
+
+
+hub:
+  image:
+    # -- Lunar mcpx-webserver image repository
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hub
+    # -- Lunar mcpx-webserver image pull policy
+    pullPolicy: IfNotPresent
+    # -- Lunar mcpx-webserver image tag
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+  # -- number of replicas to run
+  replicaCount: 1
+
+  # -- Set pod resource requests & limits
+  resources:
+    limits:
+      cpu: "500m"
+      memory: 512Mi
+    requests:
+      cpu: "500m"
+      memory: 512Mi
+
+  # -- extraEnvVars An array to add extra env vars
+  # e.g:
+  # extraEnvVars:
+  #   - name: FOO
+  #     value: "bar"
+  #   - name: FOO2
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: SECRET_NAME
+  #         key: KEY
+  extraEnvVars: []
+
+  # -- extraEnvFromSecrets An array of secret names to add as extra env vars
+  # extraEnvFromSecrets:
+  #   - secret_1
+  #   - secret_2
+  extraEnvFromSecrets: []
+
+
+admin:
+  image:
+    # -- Lunar mcpx-webserver image repository
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-admin-ui
+    # -- Lunar mcpx-webserver image pull policy
+    pullPolicy: IfNotPresent
+    # -- Lunar mcpx-webserver image tag
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+  # -- number of replicas to run
+  replicaCount: 1
+
+  # -- Set pod resource requests & limits
+  resources:
+    limits:
+      cpu: "500m"
+      memory: 512Mi
+    requests:
+      cpu: "500m"
+      memory: 512Mi
+
+  # -- extraEnvVars An array to add extra env vars
+  # e.g:
+  # extraEnvVars:
+  #   - name: FOO
+  #     value: "bar"
+  #   - name: FOO2
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: SECRET_NAME
+  #         key: KEY
+  extraEnvVars: []
+
+  # -- extraEnvFromSecrets An array of secret names to add as extra env vars
+  # extraEnvFromSecrets:
+  #   - secret_1
+  #   - secret_2
+  extraEnvFromSecrets: []
+
+
+auth:
+  image:
+    # -- Lunar mcpx-webserver image repository
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-auth-bff
+    # -- Lunar mcpx-webserver image pull policy
+    pullPolicy: IfNotPresent
+    # -- Lunar mcpx-webserver image tag
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+  # -- number of replicas to run
+  replicaCount: 1
+
+  # -- Set pod resource requests & limits
+  resources:
+    limits:
+      cpu: "500m"
+      memory: 512Mi
+    requests:
+      cpu: "500m"
+      memory: 512Mi
+
+  # -- extraEnvVars An array to add extra env vars
+  # e.g:
+  # extraEnvVars:
+  #   - name: FOO
+  #     value: "bar"
+  #   - name: FOO2
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: SECRET_NAME
+  #         key: KEY
+  extraEnvVars: []
+
+  # -- extraEnvFromSecrets An array of secret names to add as extra env vars
+  # extraEnvFromSecrets:
+  #   - secret_1
+  #   - secret_2
+  extraEnvFromSecrets: []
+
+jobs:
+  image:
+    # -- Lunar mcpx-jobs image repository
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-jobs
+    # -- Lunar mcpx-jobs image pull policy
+    pullPolicy: IfNotPresent
+    # -- Lunar mcpx-jobs image tag
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+  # -- Set pod resource requests & limits
+  resources:
+    limits:
+      cpu: "500m"
+      memory: 512Mi
+    requests:
+      cpu: "500m"
+      memory: 512Mi
+
+  # -- extraEnvVars An array to add extra env vars
+  # e.g:
+  # extraEnvVars:
+  #   - name: FOO
+  #     value: "bar"
+  #   - name: FOO2
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: SECRET_NAME
+  #         key: KEY
+  extraEnvVars: []
+
+  # -- extraEnvFromSecrets An array of secret names to add as extra env vars
+  # extraEnvFromSecrets:
+  #   - secret_1
+  #   - secret_2
+  extraEnvFromSecrets: []
+
+
+ingress:
+  # -- Enable or disable Ingress for mcpx-webapp services
+  enabled: true
+
+  # -- Ingress annotations
+  annotations: {}
+
+  domains:
+    webserver:
+      - mcpx-app.example.com
+    admin:
+      - mcpx-admin.example.com
+    auth:
+      - mcpx-auth.example.com
+
+  # -- Provision cloud-specific ingress resources and configuration.
+  # Available options: "manual", "gce"
+  # - undef  - deploys generic ingress without any cloud-specific configuration. Use ingress.annotations to configure it
+  # - gce    - deploys GCP-specific resources, like ManagedCertificate, FrontendConfig, BackendConfig, etc
+  type: undef
+
+  # -- GCP-specific configuration. Used only when ingress.type = gce
+  gce: {}
+
+
+postgres:
+  # -- Enable or disable embedded Postgresql StatefulSet
+  # Warning: Do not use embedded Postgresql for production environments.
+  # The purpose of embedded services is to provide a 'quick-start' option and for testing purposes.
+  enabled: false
+
+  # -- Configure persistent storage
+  # e.g.
+  # persistence:
+  #   enabled: true
+  #   type: sts
+  #   storageClassName: "storageClassName"
+  #   accessModes:
+  #     - ReadWriteOnce
+  #   size: 20Gi
+  persistence:
+    enabled: true
+
+  credentials:
+    username: postgres
+    password: postgres
+    database: mcpx
+
+redis:
+  # -- Enable or disable embedded Redis StatefulSet
+  # Warning: Do not use embedded Redis for production environments.
+  # The purpose of embedded services is to provide a 'quick-start' option and for testing purposes.
+  enabled: false
+
+  # -- Configure persistent storage
+  # e.g.
+  # persistence:
+  #   enabled: true
+  #   type: sts
+  #   storageClassName: "storageClassName"
+  #   accessModes:
+  #     - ReadWriteOnce
+  #   size: 20Gi
+  persistence:
+    enabled: true
