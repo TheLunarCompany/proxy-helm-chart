@@ -24,7 +24,7 @@ spec:
           ports:
             - containerPort: 3000
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.admin.resources | nindent 12 }}
           securityContext:
             readOnlyRootFilesystem: true
             runAsNonRoot: true

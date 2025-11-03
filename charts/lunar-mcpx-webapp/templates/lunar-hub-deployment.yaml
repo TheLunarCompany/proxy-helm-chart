@@ -22,7 +22,7 @@ spec:
         - name: mcpx-hub-prisma-migration
           image: "{{ .Values.hub.image.repository }}:{{ .Values.hub.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.hub.resources | nindent 12 }}
           command: ["/bin/sh"]
           args: ["-c", "cd /mcpx-webapp && npx prisma migrate deploy;"]
           envFrom:
@@ -56,7 +56,7 @@ spec:
           ports:
             - containerPort: 3000
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.hub.resources | nindent 12 }}
           securityContext:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
