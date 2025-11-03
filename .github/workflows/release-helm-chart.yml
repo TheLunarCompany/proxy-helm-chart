@@ -19,6 +19,8 @@ on:
         required: false
         type: string
 
+run-name: Helm Chart Release - ${{ inputs.chart-name }} version '${{ inputs.version }}' chart-version '${{ inputs.chart-version }}' by @${{ github.actor || github.event.client_payload.AUTHOR }}
+
 jobs:
   helm-chart:
     permissions:
@@ -69,15 +71,23 @@ jobs:
           export CHART_VERSION="${{ env.chart_version }}"
           envsubst < charts/${{ inputs.chart-name }}/README.tpl.md > charts/${{ inputs.chart-name }}/README.md
 
-      # Commit the updated README.md if there are any changes
-      - name: Commit updated README
+      # Update Chart.yaml
+      - name: Update Chart.yaml
         run: |
-          git add charts/${{ inputs.chart-name }}/README.md
+          sed -Ei.bak "s/(version: ).*/\1\"${{ inputs.version }}\"/" charts/${{ inputs.chart-name }}/Chart.yaml
+          sed -Ei.bak "s/(appVersion: ).*/\1\"${{ env.chart_version }}\"/" charts/${{ inputs.chart-name }}/Chart.yaml
+
+      # Commit the updated README.md if there are any changes
+      - name: Commit updates
+        run: |
+          git status
+          git diff 
+          git add charts/${{ inputs.chart-name }}
           if ! git diff --cached --quiet; then
-            git commit -m "Update ${{ inputs.chart-name }} README with chart version v${{ env.chart_version }}"
+            git commit -m "Update ${{ inputs.chart-name }} chart version v${{ env.chart_version }}"
             git push
           else
-            echo "No changes in charts/${{ inputs.chart-name }}/README.md to commit."
+            echo "No changes in charts/${{ inputs.chart-name }} to commit."
           fi
 
       - name: Package
