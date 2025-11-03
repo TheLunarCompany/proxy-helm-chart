@@ -19,6 +19,8 @@ on:
         required: false
         type: string
 
+run-name: Helm Chart Release - ${{ inputs.chart-name }} version '${{ inputs.version }}' chart-version '${{ inputs.chart-version }}' by @${{ github.actor || github.event.client_payload.AUTHOR }}
+
 jobs:
   helm-chart:
     permissions:
@@ -68,6 +70,12 @@ jobs:
           # Ensure the environment variable is exported so that envsubst can pick it up
           export CHART_VERSION="${{ env.chart_version }}"
           envsubst < charts/${{ inputs.chart-name }}/README.tpl.md > charts/${{ inputs.chart-name }}/README.md
+
+      # Update Chart.yaml
+      - name: Update Chart.yaml
+        run: |
+          sed -Ei.bak "s/(version: ).*/\1\"${{ inputs.version }}\"/" charts/${{ inputs.chart-name }}/Chart.yaml
+          sed -Ei.bak "s/(appVersion: ).*/\1\"${{ env.chart_version }}\"/" charts/${{ inputs.chart-name }}/Chart.yaml
 
       # Commit the updated README.md if there are any changes
       - name: Commit updated README
