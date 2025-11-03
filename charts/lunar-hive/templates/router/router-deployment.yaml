@@ -36,8 +36,8 @@ spec:
             - containerPort: 3000
               name: metrics
           env:
-            - name: OIDC_DISCOVERY
-              value: "{{ .Values.global.oidc.issuerUrl }}/.well-known/openid-configuration"
+            - name: OIDC_ISSUER_URL
+              value: "{{ .Values.global.oidc.issuerUrl }}"
             - name: OIDC_CLIENT_ID
               valueFrom:
                 secretKeyRef:

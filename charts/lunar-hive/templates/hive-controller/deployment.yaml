@@ -55,16 +55,17 @@ spec:
             - name: UI_DOMAIN
               value: {{ .Values.ui_domain | quote }}
             {{- end }}
-            {{- /* Prefer inline token if provided, else fall back to Secret if configured */ -}}
-            {{- if hasKey .Values.hiveController.env "CONTROLLER_API_TOKEN" }}
-            - name: CONTROLLER_API_TOKEN
-              value: {{ index .Values.hiveController.env "CONTROLLER_API_TOKEN" | quote }}
-            {{- else if .Values.hiveController.controllerTokenSecret.name }}
+            {{- if .Values.global.hubUrl }}
+            - name: HUB_WS_URL
+              value: {{ .Values.global.hubUrl | quote }}
+            {{- end }}
+            {{- /* Controller token */ -}}
+            {{- if .Values.hiveController.controllerToken }}
             - name: CONTROLLER_API_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.hiveController.controllerTokenSecret.name }}
-                  key: {{ .Values.hiveController.controllerTokenSecret.key | default "token" }}
+                  name: {{ include "mcpx-hive.controller.fullname" . }}-token
+                  key: controller-token
             {{- end }}
           {{- if .Values.hiveController.probes.livenessProbe }}
           livenessProbe:

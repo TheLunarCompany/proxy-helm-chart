@@ -1,29 +1,30 @@
 # MCPx Hive Helm Chart Values
 
 # --- Domain Configuration ---
-domain: "local"
-controller_domain: &controller_domain "controller.local"
-ui_domain: &ui_domain "mcpx-ui.local"
-router_domain: &router_domain "mcpx.local"
+domain: "TODO:1: add domain"
+controller_domain: &controller_domain "TODO:2: add controller domain"
+ui_domain: &ui_domain "TODO:3: add ui domain"
+router_domain: &router_domain "TODO:4: add router domain"
 
 global:
+  hubUrl: "TODO:5: add hub url"
   imagePullSecrets:
-    - name: lunar-private-mcpx-registry
+    - name: "TODO:6: add image pull secret"
 
   # OIDC configuration for authentication
   oidc:
-    issuerUrl: ""
-    clientId: ""
-    clientSecret: ""
-    sessionSecret: "dev-session-secret-change-in-production"
+    issuerUrl: "TODO:7: add oidc issuer url"
+    clientId: "TODO:8: add oidc client id"
+    clientSecret: "TODO:9: add oidc client secret"
+    sessionSecret: "TODO:10: add oidc session secret"
 
   # Redis configuration for instance ID lookup
   redis:
     # When true, deploy a Redis instance within this chart
     deploy: false
-    isCluster: false
+    isCluster: true
     # If deploy=false, set this to an external Redis URL (e.g., redis://host:6379)
-    url: ""
+    url: "TODO:11: add redis url"
 
 redis:
   image:
@@ -50,12 +51,13 @@ ingress:
   enabled: true
   annotations: {}
 
+  # TODO:12: add ingress configuration
   # --- Cloud Provider Configuration ---
   # Configure ONE of the following cloud providers by providing its object
   # The presence of the object determines which cloud provider to use
-  gcp:
-    # GCP-specific configuration
-    staticIPName: "" # Optional unified static IP name for GCP
+  # gcp:
+  #   # GCP-specific configuration
+  #   staticIPName: "" # Optional unified static IP name for GCP
 
   # aws:
   #   # AWS-specific configuration
@@ -106,8 +108,8 @@ router:
   enabled: true
   replicaCount: 1
   image:
-    repository: "us-central1-docker.pkg.dev/prj-common-442813/lunar-private/hive-router"
-    tag: "275175e"
+    repository: "us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-router"
+    tag: "lmnop"
     pullPolicy: "IfNotPresent"
   resources:
     limits:
@@ -132,9 +134,12 @@ router:
         targetPort: 3000
 
 hiveController:
+  # TODO: maybe once the controller is only used locally, we can remove this.
+  controllerToken: "TODO:13:add_controller_token"
+
   image:
     repository: "us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-controller"
-    tag: "b223d43"
+    tag: "lmnop"
     pullPolicy: "IfNotPresent"
 
   replicaCount: 1
@@ -170,12 +175,6 @@ hiveController:
     MCPX_API_VERSION: hive.lunar.dev/v1alpha1
     MCPX_KIND: MCPx
     ROUTER_DOMAIN: "" # Will be set from .Values.router_domain in deployment template
-
-  # Optional: name/key of a secret containing the controller API token
-  # TODO: maybe once the controller is only used locally, we can remove this.
-  controllerTokenSecret:
-    name: "" # e.g. mcpx-controller-token
-    key: token
 
   # Health check probes
   probes:
