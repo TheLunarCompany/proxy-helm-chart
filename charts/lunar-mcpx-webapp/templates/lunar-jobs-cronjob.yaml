@@ -48,3 +48,10 @@ spec:
               {{- if .Values.jobs.extraEnvVars }}
               {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.jobs.extraEnvVars "context" $) | nindent 16 }}
               {{- end }}
+
+          {{- with .Values.global.imagePullSecrets }}
+          imagePullSecrets:
+            {{- range $.Values.global.imagePullSecrets }}
+            - name: {{ . }}
+            {{- end }}
+          {{- end }}
