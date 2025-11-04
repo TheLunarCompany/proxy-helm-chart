@@ -1,3 +1,13 @@
+{{- $defaults := fromYaml (.Files.Get "internal-values.yaml") -}}
+{{- $values := mergeOverwrite (deepCopy $defaults) .Values -}}
+{{- $ctx := dict "Values" $values "Chart" .Chart "Release" .Release "Capabilities" .Capabilities "Files" .Files "Template" .Template "Subcharts" .Subcharts -}}
+{{- with $ctx }}
+{{- $controllerToken := default .Values.global.controllerToken .Values.hiveController.controllerToken }}
+{{- $env := deepCopy .Values.hiveController.env }}
+{{- $globalLogLevel := default "info" .Values.global.logLevel }}
+{{- if not (hasKey $env "LOG_LEVEL") }}
+{{- $_ := set $env "LOG_LEVEL" $globalLogLevel }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -41,13 +51,13 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            {{- range $key, $value := .Values.hiveController.env }}
+            {{- range $key, $value := $env }}
             {{- if and (ne $key "KUBERNETES_NAMESPACE") (ne $key "CONTROLLER_API_TOKEN") (ne $key "ROUTER_DOMAIN") }}
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
             {{- end }}
-            {{- if hasKey .Values.hiveController.env "ROUTER_DOMAIN" }}
+            {{- if hasKey $env "ROUTER_DOMAIN" }}
             - name: ROUTER_DOMAIN
               value: {{ .Values.router_domain | quote }}
             {{- end }}
@@ -60,7 +70,7 @@ spec:
               value: {{ .Values.global.hubUrl | quote }}
             {{- end }}
             {{- /* Controller token */ -}}
-            {{- if .Values.hiveController.controllerToken }}
+            {{- if $controllerToken }}
             - name: CONTROLLER_API_TOKEN
               valueFrom:
                 secretKeyRef:
@@ -88,4 +98,5 @@ spec:
       {{- with .Values.hiveController.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
-      {{- end }} 
+      {{- end }}
+{{- end }}

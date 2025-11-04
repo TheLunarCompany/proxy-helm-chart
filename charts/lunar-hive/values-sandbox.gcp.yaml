@@ -1,0 +1,208 @@
+# MCPx Hive Helm Chart Values
+
+# --- Domain Configuration ---
+domain: "lunar.dev"
+controller_domain: &controller_domain "controller-sandbox.lunar.dev"
+ui_domain: &ui_domain "mcpx-ui-sandbox.lunar.dev"
+router_domain: &router_domain "mcpx-sandbox.lunar.dev"
+
+global:
+  logLevel: &log_level "debug"
+  hubUrl: "ws://mcpx-hub-service.mcpx-webapp-sandbox.svc.cluster.local"
+  controllerToken: &controller_token "some_random_token"
+  imagePullSecrets:
+    - name: "lunar-private-mcpx-registry"
+
+  # OIDC configuration for authentication
+  oidc:
+    issuerUrl: "https://trial-8582005.okta.com/oauth2/default"
+    clientId: "0oawaaedip5wphNgD697"
+    clientSecret: "q_hSiUn19oKIheKbrTaHX_tN21d3-Ojwo13VssWxWekI3JT3CXGuCAFiuuFE30ah"
+    sessionSecret: "dev-session-secret-change-in-production"
+
+  # Redis configuration for instance ID lookup
+  redis:
+    # When true, deploy a Redis instance within this chart
+    deploy: true
+    isCluster: true
+    prefix: "mcpx-hive-sandbox"
+    # If deploy=false, set this to an external Redis URL (e.g., redis://host:6379)
+    # url: "redis://10.0.0.2:6379"
+
+redis:
+  image:
+    repository: "redis"
+    tag: "7.2-alpine"
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 6379
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  persistence:
+    enabled: false
+    size: 1Gi
+    storageClass: ""
+
+ingress:
+  enabled: true
+  annotations: {}
+
+  # TODO:12: add ingress configuration
+  # --- Cloud Provider Configuration ---
+  # Configure ONE of the following cloud providers by providing its object
+  # The presence of the object determines which cloud provider to use
+  gcp:
+    #   # GCP-specific configuration
+    staticIPName: "mcpx-hive-static-ip" # Optional unified static IP name for GCP
+
+  # aws:
+  #   # AWS-specific configuration
+  #   loadBalancerType: "" # Options: nlb, alb
+  #   loadBalancerName: "" # Custom name for the ALB
+  #   securityGroups: [] # EKS cluster security group
+  #   subnets: []
+  #   certificateArn: "" # ACM certificate ARN for TLS termination
+
+  # azure:
+  #   # Azure-specific configuration (uncomment and configure for Azure)
+  #   applicationGatewayName: "" # Name of the Application Gateway
+  #   resourceGroup: "" # Resource group containing the Application Gateway
+  #   subscriptionId: "" # Azure subscription ID
+  #   staticIP: "" # Static public IP address for Azure Application Gateway
+
+  domains:
+    controller:
+      - host: *controller_domain
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              serviceName: "controller"
+              servicePort: 80
+    router:
+      - host: *router_domain
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              serviceName: "router"
+              servicePort: 9000
+    ui:
+      - host: *ui_domain
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              serviceName: "router"
+              servicePort: 5173
+
+crds:
+  enabled: true
+
+# Router deployment & service configuration
+router:
+  enabled: true
+  replicaCount: 1
+  logLevel: *log_level
+  image:
+    repository: "us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-router"
+    tag: ""
+    pullPolicy: "IfNotPresent"
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  service:
+    name: "mcpx-hive-router"
+    # In GCP it was ClusterIP, but in AWS it must be NodePort
+    type: NodePort
+    ports:
+      - name: ui
+        port: 5173
+        targetPort: 5173
+      - name: mcpx-server
+        port: 9000
+        targetPort: 9000
+      - name: metrics
+        port: 3000
+        targetPort: 3000
+
+hiveController:
+  controllerToken: *controller_token
+  logLevel: *log_level
+
+  image:
+    repository: "us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-controller"
+    tag: ""
+    pullPolicy: "IfNotPresent"
+
+  replicaCount: 1
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  service:
+    enabled: true
+    type: "NodePort"
+    port: 80
+    targetPort: 8080
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: ""
+
+  rbac:
+    create: true
+
+  autoscaling:
+    enabled: false
+
+  env:
+    PORT: 8080
+    MCPX_API_VERSION: hive.lunar.dev/v1alpha1
+    MCPX_KIND: MCPx
+    ROUTER_DOMAIN: "" # Will be set from .Values.router_domain in deployment template
+
+  # Health check probes
+  probes:
+    livenessProbe:
+      httpGet:
+        path: /health/live
+        port: 8080
+      initialDelaySeconds: 30
+      periodSeconds: 10
+    readinessProbe:
+      httpGet:
+        path: /health/ready
+        port: 8080
+      initialDelaySeconds: 5
+      periodSeconds: 5
+
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+
+  podSecurityContext:
+    fsGroup: 2000
+    runAsNonRoot: true
+    runAsUser: 1000
+
+  affinity: {}
+  tolerations: []
+  nodeSelector: {}

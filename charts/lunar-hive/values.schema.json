@@ -19,9 +19,51 @@
         "global": {
             "type": "object",
             "properties": {
-
+                "logLevel": {
+                    "type": "string"
+                },
+                "controllerToken": {
+                    "type": "string"
+                },
+                "hubUrl": {
+                    "type": "string"
+                },
                 "imagePullSecrets": {
                     "type": "array"
+                },
+                "oidc": {
+                    "type": "object",
+                    "properties": {
+                        "clientId": {
+                            "type": "string"
+                        },
+                        "clientSecret": {
+                            "type": "string"
+                        },
+                        "issuerUrl": {
+                            "type": "string"
+                        },
+                        "sessionSecret": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "redis": {
+                    "type": "object",
+                    "properties": {
+                        "deploy": {
+                            "type": "boolean"
+                        },
+                        "isCluster": {
+                            "type": "boolean"
+                        },
+                        "prefix": {
+                            "type": "string"
+                        },
+                        "url": {
+                            "type": "string"
+                        }
+                    }
                 }
             }
         },

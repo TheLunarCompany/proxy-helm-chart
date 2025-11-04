@@ -1,3 +1,7 @@
+{{- $defaults := fromYaml (.Files.Get "internal-values.yaml") -}}
+{{- $values := mergeOverwrite (deepCopy $defaults) .Values -}}
+{{- $ctx := dict "Values" $values "Chart" .Chart "Release" .Release "Capabilities" .Capabilities "Files" .Files "Template" .Template "Subcharts" .Subcharts -}}
+{{- with $ctx }}
 {{- if .Values.hiveController.rbac.create -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -38,4 +42,5 @@ subjects:
   - kind: ServiceAccount
     name: {{ include "mcpx-hive.controller.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
-{{- end }} 
+{{- end }}
+{{- end }}

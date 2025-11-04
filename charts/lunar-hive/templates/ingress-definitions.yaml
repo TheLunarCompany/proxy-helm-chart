@@ -1,3 +1,10 @@
+{{- $defaults := fromYaml (.Files.Get "internal-values.yaml") -}}
+{{- $values := mergeOverwrite (deepCopy $defaults) .Values -}}
+{{- $ctx := dict "Values" $values "Chart" .Chart "Release" .Release "Capabilities" .Capabilities "Files" .Files "Template" .Template "Subcharts" .Subcharts -}}
+{{- with $ctx }}
+{{- $domains := fromYaml (include "mcpx-hive.ingress.domains" .) }}
+{{- $routerService := default dict (dig "router" "service" .Values) }}
+{{- $routerPorts := default list ($routerService.ports) }}
 {{- if .Values.ingress.enabled | default true }}
 {{- $fullname := include "mcpx-hive.fullname" . }}
 
@@ -37,7 +44,7 @@ spec:
   ingressClassName: azure/application-gateway
   {{- end }}
   rules:
-    {{- range $key, $value := .Values.ingress.domains }}
+    {{- range $key, $value := $domains }}
     {{- range $value }}
     - host: {{ .host }}
       http:
@@ -52,8 +59,10 @@ spec:
                   {{- if and (or (eq .backend.serviceName "router") (eq .backend.serviceName "ui")) $.Values.ingress.gcp }}
                   {{- $portNum := .backend.servicePort }}
                   {{- $portName := "" }}
-                  {{- range $.Values.router.service.ports }}
+                  {{- if $routerPorts }}
+                  {{- range $routerPorts }}
                   {{- if eq (toString .port) (toString $portNum) }}{{- $portName = .name }}{{- end }}
+                  {{- end }}
                   {{- end }}
                   {{- if $portName }}
                   name: {{ $portName }}
@@ -66,4 +75,5 @@ spec:
           {{- end }}
     {{- end }}
     {{- end }}
+{{- end }}
 {{- end }}

@@ -3,6 +3,7 @@ GCP-specific ingress resources (ManagedCertificate, FrontendConfig, BackendConfi
 */}}
 {{- define "ingress.gcp.resources" -}}
 {{- $fullname := include "mcpx-hive.fullname" . }}
+{{- $domains := fromYaml (include "mcpx-hive.ingress.domains" .) }}
 ---
 apiVersion: networking.gke.io/v1
 kind: ManagedCertificate
@@ -14,7 +15,7 @@ metadata:
     app: {{ printf "%s-cert" $fullname }}
 spec:
   domains:
-    {{- range $key, $value := .Values.ingress.domains }}
+    {{- range $key, $value := $domains }}
     {{- range $value }}
     - {{ .host }}
     {{- end }}

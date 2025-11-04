@@ -1,3 +1,7 @@
+{{- $defaults := fromYaml (.Files.Get "internal-values.yaml") -}}
+{{- $values := mergeOverwrite (deepCopy $defaults) .Values -}}
+{{- $ctx := dict "Values" $values "Chart" .Chart "Release" .Release "Capabilities" .Capabilities "Files" .Files "Template" .Template "Subcharts" .Subcharts -}}
+{{- with $ctx }}
 {{- if .Values.hiveController.service.enabled | default true }}
 apiVersion: v1
 kind: Service
@@ -53,4 +57,5 @@ spec:
       name: http
   selector:
     {{- include "mcpx-hive.controller.selectorLabels" . | nindent 4 }}
-{{- end }} 
+{{- end }}
+{{- end }}

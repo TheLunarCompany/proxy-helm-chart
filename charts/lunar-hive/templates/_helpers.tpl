@@ -135,10 +135,45 @@ app.kubernetes.io/name: router
 {{- end }}
 
 {{/*
+Resolve ingress domain mappings, defaulting to controller/router/ui hosts when none are provided.
+*/}}
+{{- define "mcpx-hive.ingress.domains" -}}
+{{- if .Values.ingress.domains }}
+{{- toYaml .Values.ingress.domains }}
+{{- else }}
+controller:
+  - host: {{ .Values.controller_domain | quote }}
+    paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          serviceName: "controller"
+          servicePort: 80
+router:
+  - host: {{ .Values.router_domain | quote }}
+    paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          serviceName: "router"
+          servicePort: 9000
+ui:
+  - host: {{ .Values.ui_domain | quote }}
+    paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          serviceName: "router"
+          servicePort: 5173
+{{- end }}
+{{- end }}
+
+{{/*
 GCP-specific ingress resources (ManagedCertificate, FrontendConfig, BackendConfig)
 */}}
 {{- define "ingress.gcp.resources" -}}
 {{- $fullname := include "mcpx-hive.fullname" . }}
+{{- $domains := fromYaml (include "mcpx-hive.ingress.domains" .) }}
 ---
 apiVersion: networking.gke.io/v1
 kind: ManagedCertificate
@@ -149,7 +184,7 @@ metadata:
     app: {{ printf "%s-cert" $fullname }}
 spec:
   domains:
-    {{- range $key, $value := .Values.ingress.domains }}
+    {{- range $key, $value := $domains }}
     {{- range $value }}
     - {{ .host }}
     {{- end }}
