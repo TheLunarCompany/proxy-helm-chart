@@ -75,8 +75,8 @@ jobs:
       # Update Chart.yaml
       - name: Update Chart.yaml
         run: |
-          sed -Ei.bak "s/(version: ).*/\1\"${{ inputs.version }}\"/" charts/${{ inputs.chart-name }}/Chart.yaml
-          sed -Ei.bak "s/(appVersion: ).*/\1\"${{ env.chart_version }}\"/" charts/${{ inputs.chart-name }}/Chart.yaml
+          sed -Ei.bak "s/(version: ).*/\1\"${{ env.chart_version }}\"/" charts/${{ inputs.chart-name }}/Chart.yaml
+          sed -Ei.bak "s/(appVersion: ).*/\1\"${{ inputs.version }}\"/" charts/${{ inputs.chart-name }}/Chart.yaml
 
       # Commit the updated README.md if there are any changes
       - name: Commit updates
