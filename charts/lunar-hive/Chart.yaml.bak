@@ -3,7 +3,7 @@ name: mcpx-hive
 description: A comprehensive Helm chart for the MCPx Hive system including hive-controller and ingress
 type: application
 version: "0.1.0"
-appVersion: "a9b275c"
+appVersion: "0.1.0"
 maintainers:
   - name: Lunar Team
     email: support@lunar.dev
