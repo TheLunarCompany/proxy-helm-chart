@@ -1,0 +1,19 @@
+{{/*
+Azure-specific ingress annotations
+*/}}
+{{- define "ingress.azure.annotations" -}}
+kubernetes.io/ingress.class: "azure/application-gateway"
+{{- if .Values.ingress.azure.applicationGatewayName }}
+appgw.ingress.kubernetes.io/application-gateway-name: {{ .Values.ingress.azure.applicationGatewayName }}
+{{- end }}
+{{- if .Values.ingress.azure.resourceGroup }}
+appgw.ingress.kubernetes.io/resource-group: {{ .Values.ingress.azure.resourceGroup }}
+{{- end }}
+{{- if .Values.ingress.azure.subscriptionId }}
+appgw.ingress.kubernetes.io/subscription-id: {{ .Values.ingress.azure.subscriptionId }}
+{{- end }}
+{{- if .Values.ingress.azure.staticIP }}
+appgw.ingress.kubernetes.io/static-ip: {{ .Values.ingress.azure.staticIP }}
+{{- end }}
+appgw.ingress.kubernetes.io/ssl-redirect: "true"
+{{- end }}

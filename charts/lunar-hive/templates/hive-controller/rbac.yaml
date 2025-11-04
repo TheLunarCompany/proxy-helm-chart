@@ -1,0 +1,42 @@
+{{- $defaults := fromYaml (.Files.Get "internal-values.yaml") -}}
+{{- $values := mergeOverwrite (deepCopy $defaults) .Values -}}
+{{- $ctx := dict "Values" $values "Chart" .Chart "Release" .Release "Capabilities" .Capabilities "Files" .Files "Template" .Template "Subcharts" .Subcharts -}}
+{{- with $ctx }}
+{{- if .Values.hiveController.rbac.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "mcpx-hive.controller.fullname" . }}
+  labels:
+    {{- include "mcpx-hive.controller.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["hive.lunar.dev"]
+    resources: ["mcpxs"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["services", "configmaps"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Additional permissions for secret management
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "mcpx-hive.controller.fullname" . }}
+  labels:
+    {{- include "mcpx-hive.controller.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "mcpx-hive.controller.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "mcpx-hive.controller.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}
+{{- end }}

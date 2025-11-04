@@ -3,14 +3,15 @@ on:
   workflow_dispatch:
     inputs:
       chart-name:
-        description: "Chart name to release (e.g., lunar-proxy or lunar-mcpx)"
+        description: "Chart name to release (e.g., lunar-proxy | lunar-mcpx | lunar-mcpx-webapp | lunar-hive)"
         required: true
         type: choice
         options:
           - lunar-proxy
           - lunar-mcpx
           - lunar-mcpx-webapp
-      version: # Effectively, the version of Lunar Gateway's Docker image tag
+          - lunar-hive
+      version: # Effectively, the version of the Docker image tag
         description: "Version to deploy"
         required: true
         type: string

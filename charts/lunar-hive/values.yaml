@@ -1,0 +1,54 @@
+# MCPx Hive Helm Chart Values
+
+# --- Domain Configuration ---
+domain: "TODO:1: add domain"
+controller_domain: "TODO:2: add controller domain (e.g. mcpx-controller-<env>.<domain>)"
+ui_domain: "TODO:3: add ui domain (e.g. mcpx-ui-<env>.<domain>)"
+router_domain: "TODO:4: add router domain (e.g. mcpx-<env>.<domain>)"
+
+global:
+  logLevel: "warn"
+  hubUrl: "TODO:5: add hub url"
+  controllerToken: "TODO:6:add_controller_token"
+
+  imagePullSecrets:
+    - name: "TODO:7: add image pull secret"
+
+  # OIDC configuration for authentication
+  oidc:
+    issuerUrl: "TODO:8: add oidc issuer url"
+    clientId: "TODO:9: add oidc client id"
+    clientSecret: "TODO:10: add oidc client secret"
+    sessionSecret: "TODO:11: add oidc session secret"
+
+  redis:
+    # When true, deploy a Redis instance within this chart
+    deploy: false
+    isCluster: true
+    prefix: "mcpx-hive-stg"
+    url: "TODO:12: add redis url"
+
+ingress:
+  enabled: true
+  annotations: {}
+
+  # TODO:13: add ingress configuration
+  # --- Cloud Provider Configuration ---
+  # Configure ONE of the following cloud providers by providing its object
+  # The presence of the object determines which cloud provider to use
+
+  # aws:
+  #   loadBalancerType: "" # Options: nlb, alb
+  #   loadBalancerName: "" # Custom name for the ALB
+  #   securityGroups: [] # EKS cluster security group
+  #   subnets: []
+  #   certificateArn: "" # ACM certificate ARN for TLS termination
+
+  # gcp:
+  # staticIPName: "" # Optional unified static IP name for GCP
+
+  # azure:
+  #   applicationGatewayName: "" # Name of the Application Gateway
+  #   resourceGroup: "" # Resource group containing the Application Gateway
+  #   subscriptionId: "" # Azure subscription ID
+  #   staticIP: "" # Static public IP address for Azure Application Gateway

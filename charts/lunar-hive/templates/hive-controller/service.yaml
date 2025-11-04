@@ -1,0 +1,61 @@
+{{- $defaults := fromYaml (.Files.Get "internal-values.yaml") -}}
+{{- $values := mergeOverwrite (deepCopy $defaults) .Values -}}
+{{- $ctx := dict "Values" $values "Chart" .Chart "Release" .Release "Capabilities" .Capabilities "Files" .Files "Template" .Template "Subcharts" .Subcharts -}}
+{{- with $ctx }}
+{{- if .Values.hiveController.service.enabled | default true }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mcpx-hive.controller.fullname" . }}
+  labels:
+    {{- include "mcpx-hive.controller.labels" . | nindent 4 }}
+  {{- $ann := dict }}
+  {{- if .Values.hiveController.service.annotations }}
+    {{- $_ := merge $ann .Values.hiveController.service.annotations }}
+  {{- end }}
+  {{- if .Values.ingress.gcp }}
+    {{- if not (hasKey $ann "cloud.google.com/neg") }}
+      {{- $_ := set $ann "cloud.google.com/neg" "{\"ingress\": true}" }}
+    {{- end }}
+  {{- else if .Values.ingress.aws }}
+    {{- if not (hasKey $ann "service.beta.kubernetes.io/aws-load-balancer-type") }}
+      {{- $_ := set $ann "service.beta.kubernetes.io/aws-load-balancer-type" "nlb" }}
+    {{- end }}
+    {{- if .Values.ingress.aws.securityGroups }}
+      {{- $_ := set $ann "service.beta.kubernetes.io/aws-load-balancer-security-groups" (join "," .Values.ingress.aws.securityGroups) }}
+    {{- end }}
+    {{- if .Values.ingress.aws.elasticIPs }}
+      {{- $_ := set $ann "service.beta.kubernetes.io/aws-load-balancer-eip-allocations" (join "," .Values.ingress.aws.elasticIPs) }}
+    {{- end }}
+  {{- else if .Values.ingress.azure }}
+    {{- if not (hasKey $ann "service.beta.kubernetes.io/azure-load-balancer-resource-group") }}
+      {{- $_ := set $ann "service.beta.kubernetes.io/azure-load-balancer-resource-group" (.Values.ingress.azure.resourceGroup | default "") }}
+    {{- end }}
+    {{- if .Values.ingress.azure.staticIP }}
+      {{- $_ := set $ann "service.beta.kubernetes.io/azure-load-balancer-ipv4" .Values.ingress.azure.staticIP }}
+    {{- end }}
+  {{- end }}
+  {{- if $ann }}
+  annotations:
+    {{- toYaml $ann | nindent 4 }}
+  {{- end }}
+spec:
+  {{- $svcType := .Values.hiveController.service.type }}
+  {{- if .Values.ingress.gcp }}
+  {{- $svcType = "ClusterIP" }}
+  {{- else if .Values.ingress.aws }}
+  {{- $svcType = "NodePort" }}
+  {{- end }}
+  type: {{ $svcType }}
+  {{- if eq $svcType "LoadBalancer" }}
+  loadBalancerIP: {{ .Values.hiveController.service.loadBalancerIP }}
+  {{- end }}
+  ports:
+    - port: {{ .Values.hiveController.service.port }}
+      targetPort: {{ .Values.hiveController.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "mcpx-hive.controller.selectorLabels" . | nindent 4 }}
+{{- end }}
+{{- end }}

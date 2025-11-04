@@ -1,0 +1,79 @@
+{{- $defaults := fromYaml (.Files.Get "internal-values.yaml") -}}
+{{- $values := mergeOverwrite (deepCopy $defaults) .Values -}}
+{{- $ctx := dict "Values" $values "Chart" .Chart "Release" .Release "Capabilities" .Capabilities "Files" .Files "Template" .Template "Subcharts" .Subcharts -}}
+{{- with $ctx }}
+{{- $domains := fromYaml (include "mcpx-hive.ingress.domains" .) }}
+{{- $routerService := default dict (dig "router" "service" .Values) }}
+{{- $routerPorts := default list ($routerService.ports) }}
+{{- if .Values.ingress.enabled | default true }}
+{{- $fullname := include "mcpx-hive.fullname" . }}
+
+{{- if .Values.ingress.gcp }}
+{{- include "ingress.gcp.resources" . }}
+{{- end }}
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ printf "%s-ingress" $fullname }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "mcpx-hive.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: ingress
+    app.kubernetes.io/part-of: {{ include "mcpx-hive.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+    {{- if .Values.ingress.gcp }}
+    {{- include "ingress.gcp.annotations" . | nindent 4 }}
+    {{- else if .Values.ingress.aws }}
+    {{- include "ingress.aws.annotations" . | nindent 4 }}
+    {{- else if .Values.ingress.azure }}
+    {{- include "ingress.azure.annotations" . | nindent 4 }}
+    {{- end }}
+    {{- if .Values.ingress.annotations }}
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if .Values.ingress.gcp }}
+  ingressClassName: gce
+  {{- else if .Values.ingress.aws }}
+  ingressClassName: alb
+  {{- else if .Values.ingress.azure }}
+  ingressClassName: azure/application-gateway
+  {{- end }}
+  rules:
+    {{- range $key, $value := $domains }}
+    {{- range $value }}
+    - host: {{ .host }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ if or (eq .backend.serviceName "router") (eq .backend.serviceName "ui") }}mcpx-hive-router{{ else }}{{ printf "%s-%s" $.Release.Name .backend.serviceName }}{{ end }}
+                port:
+                  {{- if and (or (eq .backend.serviceName "router") (eq .backend.serviceName "ui")) $.Values.ingress.gcp }}
+                  {{- $portNum := .backend.servicePort }}
+                  {{- $portName := "" }}
+                  {{- if $routerPorts }}
+                  {{- range $routerPorts }}
+                  {{- if eq (toString .port) (toString $portNum) }}{{- $portName = .name }}{{- end }}
+                  {{- end }}
+                  {{- end }}
+                  {{- if $portName }}
+                  name: {{ $portName }}
+                  {{- else }}
+                  number: {{ $portNum }}
+                  {{- end }}
+                  {{- else }}
+                  number: {{ .backend.servicePort }}
+                  {{- end }}
+          {{- end }}
+    {{- end }}
+    {{- end }}
+{{- end }}
+{{- end }}
