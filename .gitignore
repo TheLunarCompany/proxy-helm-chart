@@ -11,3 +11,7 @@
 
 # mcpx
 /charts/lunar-mcpx/override-values.yaml
+
+
+# Values.yaml with data
+*.tmp.yaml

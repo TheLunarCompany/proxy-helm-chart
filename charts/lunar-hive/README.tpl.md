@@ -1,45 +1,69 @@
 # mcpx-hive
 
-![Version: 0.1.10](https://img.shields.io/badge/Version-0.1.10-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+Helm chart for deploying the MCPx Hive services (controller, UI, router) into a Kubernetes cluster.
 
-A comprehensive Helm chart for the MCPx Hive system including hive-controller and ingress.
+- UI: The MCPx management interface
+- Router: The MCPx agent access
+- Controller: The MCPx-Hive management that allows to allocate MCPx deployments
+  
+## Prerequisites
 
-**Homepage:** <https://github.com/TheLunarCompany/hive-poc>
+- Helm 3 installed locally and available in your `PATH`.
+- `kubectl` configured for the target provider/cluster (`kubectl config current-context` should point to the desired cluster).
+- Permissions to create namespaces, secrets, ingresses, and any cloud-specific load balancer resources in the target cluster.
+- Network access from the cluster to backing services such as Redis and the MCPx Hub.
 
-## Maintainers
+## Preparation
 
-| Name       | Email               | Url |
-| ---------- | ------------------- | --- |
-| Lunar Team | <support@lunar.dev> |     |
+All chart configuration lives in `values.yaml` (view the latest copy [in the repository](https://github.com/TheLunarCompany/proxy-helm-chart/blob/gh-pages/charts/lunar-hive/values.yaml)). Before installing:
 
-## Source Code
+1. Copy `charts/lunar-hive/values.yaml` to an environment-specific file (for example, `values-override.yaml`).
+2. Populate all required settings (domains, hub URL, controller token, OIDC configuration, Redis connection, etc.) with environment-specific values.
+3. Store any sensitive values (controller token, OIDC secrets, etc.) securely and reference Kubernetes secrets when appropriate.
 
-* <https://github.com/TheLunarCompany/hive-poc>
+### Required configuration fields
 
-## Values
+- **Domains**: `controller_domain`, `ui_domain`, and `router_domain` must be set to routable hostnames (for example, `mcpx-controller-<env>.<domain>`), aligning with the ingress entries you plan to expose.
+- **Hub service**: `global.hubUrl` must point to the Hub WebSocket URL exposed by the MCPx Hub service installed via the [`lunar-mcpx-webapp` chart](https://artifacthub.io/packages/helm/lunar/lunar-mcpx-webapp). Use the service endpoint returned during that installation in the form `ws://<hubServiceEndpoint>`.
+- **Controller shared secret**: `global.controllerToken` should be a long, random secret; it is required to authenticate to the controller admin portal (`https://mcpx-controller-<env>.<domain>/admin`) when allocating MCPx instances.
+- **Image pull secrets**: Configure `global.imagePullSecrets` with Kubernetes secrets that hold Lunar's private registry credentials so the pods can pull their images.
+- **OIDC**: Populate `global.oidc.*` fields with the issuer URL, client credentials, and session secret provided by your identity provider.
+- **Redis**: If you are using an external Redis cluster set `global.redis.deploy: false`, `global.redis.isCluster: true`, and provide `global.redis.url` in the form `redis://<redisEndpoint>:<redisPort>`. Alternatively, enable the bundled Redis by setting `deploy: true` and adjust the other fields as needed.
+- **Ingress**: Confirm `ingress.enabled` and update `ingress.annotations` and provider-specific settings (AWS/GCP/Azure blocks) so certificates, load balancers, and IP addresses are managed correctly.
 
-Operational defaults for the router, controller, Redis, and CRDs are kept in `internal-values.yaml` so that `values.yaml` stays focused on user-provided configuration. Ingress host mappings automatically reuse the top-level domain settings unless you override `ingress.domains`. Environment specific examples are available in `values-sandbox.gcp.yaml` and `values-stg.gcp.yaml`.
+## Installation
 
-| Key                                       | Type   | Default                                | Description |
-| ----------------------------------------- | ------ | -------------------------------------- | ----------- |
-| `domain`                                  | string | `"TODO:1: add domain"`                 | Base domain for the deployment. |
-| `controller_domain`                       | string | `"TODO:2: add controller domain"`      | Public domain for the hive controller. |
-| `ui_domain`                               | string | `"TODO:3: add ui domain"`              | Public domain for the MCPx UI. |
-| `router_domain`                           | string | `"TODO:4: add router domain"`          | Public domain for the router/gateway. |
-| `global.hubUrl`                           | string | `"TODO:5: add hub url"`                | WebSocket URL for the hub service. |
-| `global.controllerToken`                  | string | `"some_random_token"`                  | Shared secret used by the controller. |
-| `global.logLevel`                         | string | `"info"`                               | Default log level applied to controller and router pods. |
-| `global.imagePullSecrets`                 | list   | `[{"name": "TODO:6: add image pull secret"}]` | Image pull secrets for private registries. |
-| `global.oidc.issuerUrl`                   | string | `"TODO:7: add oidc issuer url"`        | OIDC issuer URL. |
-| `global.oidc.clientId`                    | string | `"TODO:8: add oidc client id"`         | OIDC client ID. |
-| `global.oidc.clientSecret`                | string | `"TODO:9: add oidc client secret"`     | OIDC client secret. |
-| `global.oidc.sessionSecret`               | string | `"TODO:10: add oidc session secret"`   | Secret used to sign OIDC sessions. |
-| `global.redis.deploy`                     | bool   | `false`                                | Deploy the bundled Redis instance. |
-| `global.redis.isCluster`                  | bool   | `true`                                 | Indicates whether the Redis target is a cluster. |
-| `global.redis.prefix`                     | string | `"TODO:11: add redis prefix"`          | Prefix for keys created in Redis. |
-| `global.redis.url`                        | string | `"TODO:12: add redis url"`             | External Redis URL when `deploy` is `false`. |
-| `ingress.enabled`                         | bool   | `true`                                 | Enable ingress resources. |
-| `ingress.annotations`                     | object | `{}`                                   | Extra annotations added to ingress resources. |
-| `ingress.domains.controller[].host`       | string | `(derived from controller_domain)`     | Hostname routed to the controller service. |
-| `ingress.domains.router[].host`           | string | `(derived from router_domain)`         | Hostname routed to the router service. |
-| `ingress.domains.ui[].host`               | string | `(derived from ui_domain)`             | Hostname routed to the UI service. |
+Run Helm:
+
+```bash
+helm upgrade --install mcpx-hive charts/lunar-hive \
+  --namespace mcpx-hive \
+  --create-namespace \
+  -f values-override.yaml
+```
+
+## Configuration reference
+
+| Key                                 | Type   | Default                            | Description                                                                              |
+| ----------------------------------- | ------ | ---------------------------------- | ---------------------------------------------------------------------------------------- |
+| `domain`                            | string | `""`                               | Optional base domain propagated to the router service.                                   |
+| `controller_domain`                 | string | `(required)`                       | Public domain for the hive controller.                                                   |
+| `ui_domain`                         | string | `(required)`                       | Public domain for the MCPx UI.                                                           |
+| `router_domain`                     | string | `(required)`                       | Public domain for the router/gateway.                                                    |
+| `global.hubUrl`                     | string | `(required)`                       | WebSocket URL for the hub service.                                                       |
+| `global.controllerToken`            | string | `(required)`                       | Shared secret required for controller admin portal access.                               |
+| `global.logLevel`                   | string | `"warn"`                           | Default log level applied to controller and router pods.                                 |
+| `global.imagePullSecrets`           | list   | `[]`                               | Image pull secrets that grant access to Lunar's private registries.                      |
+| `global.oidc.issuerUrl`             | string | `(required)`                       | OIDC issuer URL.                                                                         |
+| `global.oidc.clientId`              | string | `(required)`                       | OIDC client ID.                                                                          |
+| `global.oidc.clientSecret`          | string | `(required)`                       | OIDC client secret.                                                                      |
+| `global.oidc.sessionSecret`         | string | `(required)`                       | Secret used to sign OIDC sessions.                                                       |
+| `global.redis.deploy`               | bool   | `false`                            | Deploy the bundled Redis instance.                                                       |
+| `global.redis.isCluster`            | bool   | `true`                             | Indicates whether the Redis target is a cluster.                                         |
+| `global.redis.prefix`               | string | `"mcpx-hive"`                      | Prefix for keys created in Redis.                                                        |
+| `global.redis.url`                  | string | `""`                               | External Redis URL when `deploy` is `false` (e.g., `redis://redis-endpoint:redis-port`). |
+| `ingress.enabled`                   | bool   | `true`                             | Enable ingress resources.                                                                |
+| `ingress.annotations`               | object | `{}`                               | Extra annotations added to ingress resources.                                            |
+| `ingress.domains.controller[].host` | string | `(derived from controller_domain)` | Hostname routed to the controller service.                                               |
+| `ingress.domains.router[].host`     | string | `(derived from router_domain)`     | Hostname routed to the router service.                                                   |
+| `ingress.domains.ui[].host`         | string | `(derived from ui_domain)`         | Hostname routed to the UI service.                                                       |
