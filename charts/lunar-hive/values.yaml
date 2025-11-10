@@ -30,6 +30,9 @@ global:
     prefix: "mcpx-hive"
     url: ""
 
+router:
+  replicaCount: 2
+
 ingress:
   enabled: true
   annotations: {}

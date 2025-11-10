@@ -385,6 +385,10 @@
     "router": {
         "type": "object",
         "properties": {
+            "replicaCount": {
+                "type": "integer",
+                "minimum": 1
+            },
             "redis": {
                 "type": "object",
                 "properties": {
