@@ -67,4 +67,3 @@ helm upgrade --install mcpx-hive charts/lunar-hive \
 | `ingress.domains.controller[].host` | string | `(derived from controller_domain)` | Hostname routed to the controller service.                                               |
 | `ingress.domains.router[].host`     | string | `(derived from router_domain)`     | Hostname routed to the router service.                                                   |
 | `ingress.domains.ui[].host`         | string | `(derived from ui_domain)`         | Hostname routed to the UI service.                                                       |
-| `router.replicaCount`               | int    | `1`                                | Number of router pods to run.                                                            |
