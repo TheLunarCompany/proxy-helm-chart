@@ -10,7 +10,10 @@ router_domain: "" # e.g. mcpx-<env>.<domain>
 global:
   logLevel: "warn"
   hubUrl: "" # WebSocket URL for the MCPx Hub service
-  controllerToken: "" # Long, random shared secret
+
+  # If you want to use the controller token, you can set it here.
+  # If you don't want to use the controller token, you can leave it empty, and the controller will not enforce it.
+  # controllerToken: ""
 
   imagePullSecrets: []
   # - name: "registry-credentials"

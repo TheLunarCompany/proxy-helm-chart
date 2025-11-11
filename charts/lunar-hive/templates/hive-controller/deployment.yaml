@@ -2,7 +2,6 @@
 {{- $values := mergeOverwrite (deepCopy $defaults) .Values -}}
 {{- $ctx := dict "Values" $values "Chart" .Chart "Release" .Release "Capabilities" .Capabilities "Files" .Files "Template" .Template "Subcharts" .Subcharts -}}
 {{- with $ctx }}
-{{- $controllerToken := default .Values.global.controllerToken .Values.hiveController.controllerToken }}
 {{- $env := deepCopy .Values.hiveController.env }}
 {{- $globalLogLevel := default "info" .Values.global.logLevel }}
 {{- if not (hasKey $env "LOG_LEVEL") }}
@@ -70,7 +69,7 @@ spec:
               value: {{ .Values.global.hubUrl | quote }}
             {{- end }}
             {{- /* Controller token */ -}}
-            {{- if $controllerToken }}
+            {{- if .Values.global.controllerToken }}
             - name: CONTROLLER_API_TOKEN
               valueFrom:
                 secretKeyRef:
