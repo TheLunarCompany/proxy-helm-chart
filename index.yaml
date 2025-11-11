@@ -1008,6 +1008,21 @@ entries:
     version: v0.1.2
   mcpx-hive:
   - apiVersion: v2
+    appVersion: v0.5.1
+    created: "2025-11-11T12:59:56.705043936Z"
+    description: A comprehensive Helm chart for the MCPx Hive system including hive-controller
+      and ingress
+    digest: b91ecdb20d71c5719d619210ae2d7d96d8655577bf4bfa81a2926b8b3f26a9c6
+    icon: https://storage.googleapis.com/lunar-webapp-assets/favicon/apple-touch-icon.png
+    maintainers:
+    - email: support@lunar.dev
+      name: Lunar Team
+    name: mcpx-hive
+    type: application
+    urls:
+    - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/mcpx-hive-v0.5.1/mcpx-hive-v0.5.1.tgz
+    version: v0.5.1
+  - apiVersion: v2
     appVersion: v0.5.0
     created: "2025-11-10T18:06:51.006286905Z"
     description: A comprehensive Helm chart for the MCPx Hive system including hive-controller
@@ -1097,4 +1112,4 @@ entries:
     urls:
     - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/mcpx-hive-v0.1.0/mcpx-hive-v0.1.0.tgz
     version: v0.1.0
-generated: "2025-11-10T18:06:51.006535447Z"
+generated: "2025-11-11T12:59:56.705339387Z"
