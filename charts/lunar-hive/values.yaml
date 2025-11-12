@@ -36,6 +36,9 @@ global:
 router:
   replicaCount: 2
 
+mcpxUi:
+  replicaCount: 1
+
 ingress:
   enabled: true
   annotations: {}

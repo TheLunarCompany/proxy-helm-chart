@@ -24,12 +24,43 @@ redis:
     size: 1Gi
     storageClass: ""
 
-router:
+mcpxUi:
   enabled: true
   replicaCount: 1
   image:
+    repository: "us-central1-docker.pkg.dev/prj-common-442813/mcpx-dev/mcpx-ui"
+    tag: "latest"
+    pullPolicy: "IfNotPresent"
+  containerPort: 5173
+  resources:
+    limits:
+      cpu: 150m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  service:
+    name: "mcpx-ui"
+    type: ClusterIP
+    ports:
+      - name: ui
+        port: 80
+        targetPort: 5173
+  env:
+    VITE_ENABLE_ENTERPRISE: "true"
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+router:
+  enabled: true
+  replicaCount: 1
+  uiTargetPort: 5173
+  mcpxTargetPort: 9000
+  image:
     repository: "us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-router"
-    tag: ""
+    tag: "lkjaaa"
     pullPolicy: "IfNotPresent"
   resources:
     limits:
@@ -51,12 +82,15 @@ router:
       - name: metrics
         port: 3000
         targetPort: 3000
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
 hiveController:
   controllerToken: ""
   image:
     repository: "us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-controller"
-    tag: ""
+    tag: "lkj"
     pullPolicy: "IfNotPresent"
   replicaCount: 1
   resources:

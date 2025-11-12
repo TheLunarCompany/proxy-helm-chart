@@ -4,6 +4,13 @@
 {{- with $ctx }}
 {{- $env := deepCopy .Values.hiveController.env }}
 {{- $globalLogLevel := default "info" .Values.global.logLevel }}
+{{- $uiConfig := default dict .Values.mcpxUi }}
+{{- $uiService := default dict $uiConfig.service }}
+{{- $uiServiceName := default "mcpx-ui" $uiService.name }}
+{{- $uiServiceDns := printf "%s.%s.svc.cluster.local" $uiServiceName .Release.Namespace }}
+{{- $routerConfig := default dict .Values.router }}
+{{- $uiTargetPort := default (dig "router" "uiTargetPort" $defaults) $routerConfig.uiTargetPort }}
+{{- $mcpxTargetPort := default (dig "router" "mcpxTargetPort" $defaults) $routerConfig.mcpxTargetPort }}
 {{- if not (hasKey $env "LOG_LEVEL") }}
 {{- $_ := set $env "LOG_LEVEL" $globalLogLevel }}
 {{- end }}
@@ -64,6 +71,12 @@ spec:
             - name: UI_DOMAIN
               value: {{ .Values.ui_domain | quote }}
             {{- end }}
+            - name: UI_SERVICE_DNS
+              value: "{{ $uiServiceDns }}"
+            - name: UI_TARGET_PORT
+              value: {{ $uiTargetPort | quote }}
+            - name: MCPX_TARGET_PORT
+              value: {{ $mcpxTargetPort | quote }}
             {{- if .Values.global.hubUrl }}
             - name: HUB_WS_URL
               value: {{ .Values.global.hubUrl | quote }}

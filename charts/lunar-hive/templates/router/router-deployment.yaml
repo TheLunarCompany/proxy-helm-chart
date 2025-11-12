@@ -3,6 +3,12 @@
 {{- $ctx := dict "Values" $values "Chart" .Chart "Release" .Release "Capabilities" .Capabilities "Files" .Files "Template" .Template "Subcharts" .Subcharts -}}
 {{- with $ctx }}
 {{- $logLevel := default "info" .Values.global.logLevel }}
+{{- $uiConfig := default dict .Values.mcpxUi }}
+{{- $uiService := default dict $uiConfig.service }}
+{{- $uiServiceName := default "mcpx-ui" $uiService.name }}
+{{- $uiServiceDns := printf "%s.%s.svc.cluster.local" $uiServiceName .Release.Namespace }}
+{{- $uiTargetPort := default (dig "router" "uiTargetPort" $defaults) .Values.router.uiTargetPort }}
+{{- $mcpxTargetPort := default (dig "router" "mcpxTargetPort" $defaults) .Values.router.mcpxTargetPort }}
 {{- if .Values.router.enabled }}
 apiVersion: apps/v1
 kind: Deployment
@@ -77,6 +83,12 @@ spec:
                   key: REDIS_PREFIX
             - name: UI_DOMAIN
               value: "{{ .Values.ui_domain }}"
+            - name: UI_SERVICE_DNS
+              value: "{{ $uiServiceDns }}"
+            - name: UI_TARGET_PORT
+              value: {{ $uiTargetPort | quote }}
+            - name: MCPX_TARGET_PORT
+              value: {{ $mcpxTargetPort | quote }}
             - name: ROUTER_DOMAIN
               value: "{{ .Values.router_domain }}"
             - name: HIVE_DOMAIN

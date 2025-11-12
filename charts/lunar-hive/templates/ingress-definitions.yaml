@@ -5,6 +5,7 @@
 {{- $domains := fromYaml (include "mcpx-hive.ingress.domains" .) }}
 {{- $routerService := default dict (dig "router" "service" .Values) }}
 {{- $routerPorts := default list ($routerService.ports) }}
+{{- $routerServiceName := default (printf "%s-router" .Release.Name) $routerService.name }}
 {{- if .Values.ingress.enabled | default true }}
 {{- $fullname := include "mcpx-hive.fullname" . }}
 
@@ -54,7 +55,7 @@ spec:
             pathType: {{ .pathType }}
             backend:
               service:
-                name: {{ if or (eq .backend.serviceName "router") (eq .backend.serviceName "ui") }}mcpx-hive-router{{ else }}{{ printf "%s-%s" $.Release.Name .backend.serviceName }}{{ end }}
+                name: {{ if or (eq .backend.serviceName "router") (eq .backend.serviceName "ui") }}{{ $routerServiceName }}{{ else }}{{ printf "%s-%s" $.Release.Name .backend.serviceName }}{{ end }}
                 port:
                   {{- if and (or (eq .backend.serviceName "router") (eq .backend.serviceName "ui")) $.Values.ingress.gcp }}
                   {{- $portNum := .backend.servicePort }}

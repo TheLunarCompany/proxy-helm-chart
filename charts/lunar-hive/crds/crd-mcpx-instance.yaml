@@ -65,14 +65,6 @@ spec:
                   type: integer
                   description: "Port for the core MCPX server."
                   default: 9000
-                webserver:
-                  type: integer
-                  description: "Port for the webserver API and WebSocket."
-                  default: 9001
-                ui:
-                  type: integer
-                  description: "Port for the user interface."
-                  default: 5173
                 metrics:
                   type: integer
                   description: "Port for serving Prometheus metrics."

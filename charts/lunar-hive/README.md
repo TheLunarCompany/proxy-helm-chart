@@ -67,3 +67,21 @@ helm upgrade --install mcpx-hive charts/lunar-hive \
 | `ingress.domains.controller[].host` | string | `(derived from controller_domain)` | Hostname routed to the controller service.                                               |
 | `ingress.domains.router[].host`     | string | `(derived from router_domain)`     | Hostname routed to the router service.                                                   |
 | `ingress.domains.ui[].host`         | string | `(derived from ui_domain)`         | Hostname routed to the UI service.                                                       |
+| `router.replicaCount`               | int    | `1`                                | Number of router pods to run.                                                            |
+| `router.uiTargetPort`               | int    | `5173`                             | Cluster-internal UI port the router forwards HTTP traffic to.                           |
+| `router.mcpxTargetPort`             | int    | `9000`                             | Cluster-internal MCPx service port used for websocket/user sessions.                     |
+| `router.image.repository`           | string | `us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-router` | Router image repository; override to test custom builds.                                 |
+| `router.image.tag`                  | string | `"" (Chart AppVersion)`            | Router image tag.                                                                         |
+| `mcpxUi.replicaCount`               | int    | `1`                                | Number of UI pods.                                                                        |
+| `mcpxUi.image.repository`           | string | `REPLACE_ME/mcpx-ui`               | UI image repository.                                                                      |
+| `mcpxUi.image.tag`                  | string | `"" (Chart AppVersion)`            | UI image tag.                                                                             |
+| `mcpxUi.service.ports[].port`       | int    | `80`                               | UI Service port (front-end).                                                             |
+| `mcpxUi.service.ports[].targetPort` | int    | `5173`                             | UI container port (back-end).                                                             |
+| `mcpxUi.env.VITE_ENABLE_ENTERPRISE` | string | `"true"`                           | Enables enterprise UI surfaces by default; override to disable.                          |
+| `mcpxUi.env.VITE_MCPX_SERVER_URL`   | string | `(derived)`                        | Defaults to `https://<router_domain>` when not explicitly provided.                      |
+
+### Router ↔ UI coordination
+
+- `UI_SERVICE_DNS`, `UI_TARGET_PORT` (default `5173`), and `MCPX_TARGET_PORT` (default `9000`) are automatically injected into the router pods. You can override the port numbers through `router.uiTargetPort` and `router.mcpxTargetPort` in your values file.
+- The UI Deployment receives the same port defaults plus `VITE_MCPX_SERVER_URL`, which is rendered as `https://{{ .Values.router_domain }}` unless you explicitly set that environment variable in `mcpxUi.env`.
+- The `mcpx-ui` Service exposes port `80` externally while forwarding to container port `5173`, so in-cluster callers (like the router) should continue using `UI_TARGET_PORT` when dialing the UI pods directly.
