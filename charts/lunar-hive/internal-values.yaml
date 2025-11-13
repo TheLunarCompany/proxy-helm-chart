@@ -56,8 +56,6 @@ mcpxUi:
 router:
   enabled: true
   replicaCount: 1
-  uiTargetPort: 5173
-  mcpxTargetPort: 9000
   image:
     repository: "us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-router"
     tag: "lkjaaa"
