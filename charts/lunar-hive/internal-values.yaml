@@ -58,7 +58,7 @@ router:
   replicaCount: 1
   image:
     repository: "us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-router"
-    tag: "lkjaaa"
+    tag: ""
     pullPolicy: "IfNotPresent"
   resources:
     limits:
@@ -88,7 +88,7 @@ hiveController:
   controllerToken: ""
   image:
     repository: "us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-controller"
-    tag: "lkj"
+    tag: ""
     pullPolicy: "IfNotPresent"
   replicaCount: 1
   resources:
