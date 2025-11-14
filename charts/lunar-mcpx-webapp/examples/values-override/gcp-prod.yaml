@@ -22,6 +22,17 @@ auth:
   extraEnvFromSecrets:
     - mcpx-webapp-oidc
 
+controller:
+  replicaCount: 2
+
+router:
+  replicaCount: 2
+  extraEnvFromSecrets:
+    - mcpx-webapp-oidc
+
+ui:
+  replicaCount: 2
+
 ingress:
   annotations:
     kubernetes.io/ingress.global-static-ip-name: mcpx-lunar-mcpx-webapp

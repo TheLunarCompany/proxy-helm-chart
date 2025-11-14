@@ -1,0 +1,113 @@
+{{- if .Values.router.enabled | default true }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-router
+  labels:
+    name: {{ include "lunar-mcpx-webapp.fullname" . }}-router
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-router
+spec:
+  replicas: {{ .Values.router.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ include "lunar-mcpx-webapp.fullname" . }}-router
+      {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "lunar-mcpx-webapp.fullname" . }}-router
+        {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: mcpx-router-container
+          image: "{{ .Values.router.image.repository }}:{{ .Values.router.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          ports:
+            - containerPort: 5173
+              name: ui
+            - containerPort: 9000
+              name: mcpx-server
+            - containerPort: 3000
+              name: metrics
+          resources:
+            {{- toYaml .Values.router.resources | nindent 12 }}
+          envFrom:
+            - secretRef:
+                name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
+          {{- with .Values.global.extraEnvFromSecrets }}
+          {{- range $.Values.global.extraEnvFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.router.extraEnvFromSecrets }}
+          {{- range $.Values.router.extraEnvFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+          {{- end }}
+          {{- end }}
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: RELEASE_NAMESPACE
+              value: "{{ .Release.Namespace }}"
+            - name: UI_SERVICE_DNS
+              value: "{{ include "lunar-mcpx-webapp.fullname" . }}-ui"
+            - name: UI_TARGET_PORT
+              value: "5173"
+            - name: MCPX_TARGET_PORT
+              value: "9000"
+          {{- if .Values.ingress.enabled }}
+            - name: ROUTER_DOMAIN
+              value: "https://{{ first .Values.ingress.domains.router }}"
+            - name: UI_DOMAIN
+              value: "https://{{ first .Values.ingress.domains.ui }}"
+          {{- end }}
+          {{- if .Values.global.extraEnvVars }}
+          {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.router.extraEnvVars }}
+          {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.router.extraEnvVars "context" $) | nindent 12 }}
+          {{- end }}
+
+          startupProbe:
+            successThreshold: 1
+            failureThreshold: 30
+            httpGet:
+              path: /health
+              port: 5173
+              scheme: HTTP
+            periodSeconds: 10
+          readinessProbe:
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 5173
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 10
+          livenessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /health
+              port: 5173
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 30
+      volumes:
+        - name: nginx-logs-volume
+          emptyDir: {}
+
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range $.Values.global.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+  {{- end }}

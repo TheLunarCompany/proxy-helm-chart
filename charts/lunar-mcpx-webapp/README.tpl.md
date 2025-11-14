@@ -40,21 +40,23 @@ Required service versions:
 |:---------------------:|:-----------------------------------------------------------------------------------------:|
 |    SESSION_SECRET     |    random string, can be generated on Unix system by running 'openssl rand -base64 32'    |
 | SESSION_COOKIE_DOMAIN |                                        example.com                                        |
+| CONTROLLER_API_TOKEN  |                                   MCPX Controller Token                                   |
 |     DATABASE_URL      | postgres://{{ USER }}:{{ PASS }}@{{ HOST }}:{{ PORT }}/{{ DATABASE }}?schema={{ SCHEMA }} |
 |       REDIS_URL       |                               redis://{{ HOST }}:{{ PORT }}                               |
 |   REDIS_IS_CLUSTER    |                                   boolean (true\|false)                                   |
 
 #### Required OIDC environment variables with sensitive data
 
-|              Variable               |                                                       Value                                                       |
-|:-----------------------------------:|:-----------------------------------------------------------------------------------------------------------------:|
-|           OIDC_CLIENT_ID            |                                 |        
-|         OIDC_CLIENT_SECRET          |                                 |
-|             OIDC_ISSUER             |                                 |
-|          OIDC_REDIRECT_URI          |                                 |
-|            OIDC_JWKS_URI            |                                 |
-|            OIDC_AUDIENCE            |                                 |
-|   OIDC_POST_LOGOUT_REDIRECT_URI     |                                 |
+|           Variable            | Value |
+|:-----------------------------:|:-----:|
+|        OIDC_CLIENT_ID         |       |
+|      OIDC_CLIENT_SECRET       |       |
+|          OIDC_ISSUER          |       |
+|       OIDC_REDIRECT_URI       |       |
+|         OIDC_JWKS_URI         |       |
+|         OIDC_AUDIENCE         |       |
+| OIDC_POST_LOGOUT_REDIRECT_URI |       |
+|       OIDC_ISSUER_URL         |       |
 
 #### Optional environmental variables
 
@@ -70,6 +72,7 @@ It is possible to supply this variables using several different techniques:
       ```bash
       kubectl create secret generic mcpx-webapp-global -n {{ mcpx_namespace }} \
         --from-literal=SESSION_SECRET="$(openssl rand -base64 32)" \
+        --from-literal=CONTROLLER_API_TOKEN="{{ secure string }}" \
         --from-literal=DATABASE_URL="postgres://{{ USER }}:{{ PASS }}@{{ HOST }}:{{ PORT }}/{{ DATABASE }}?schema={{ SCHEMA }}" \
         --from-literal=REDIS_URL="redis://{{ HOST }}:{{ PORT }}" \
         --from-literal=REDIS_IS_CLUSTER="{{ boolean (true or false) }}"

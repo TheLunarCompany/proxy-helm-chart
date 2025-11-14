@@ -81,6 +81,8 @@ spec:
           env:
             - name: NODE_ENV
               value: "production"
+            - name: HIVE_CONTROLLER_URL
+              value: http://{{ include "lunar-mcpx-webapp.fullname" . }}-controller
           {{- if .Values.ingress.enabled }}
             - name: CORS_ALLOWED_ORIGINS
               value: "https://{{ first .Values.ingress.domains.admin }}"
