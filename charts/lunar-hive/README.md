@@ -44,26 +44,36 @@ helm upgrade --install mcpx-hive charts/lunar-hive \
 
 ## Configuration reference
 
-| Key                                 | Type   | Default                            | Description                                                                              |
-| ----------------------------------- | ------ | ---------------------------------- | ---------------------------------------------------------------------------------------- |
-| `domain`                            | string | `""`                               | Optional base domain propagated to the router service.                                   |
-| `controller_domain`                 | string | `(required)`                       | Public domain for the hive controller.                                                   |
-| `ui_domain`                         | string | `(required)`                       | Public domain for the MCPx UI.                                                           |
-| `router_domain`                     | string | `(required)`                       | Public domain for the router/gateway.                                                    |
-| `global.hubUrl`                     | string | `(required)`                       | WebSocket URL for the hub service.                                                       |
-| `global.controllerToken`            | string | `(required)`                       | Shared secret required for controller admin portal access.                               |
-| `global.logLevel`                   | string | `"warn"`                           | Default log level applied to controller and router pods.                                 |
-| `global.imagePullSecrets`           | list   | `[]`                               | Image pull secrets that grant access to Lunar's private registries.                      |
-| `global.oidc.issuerUrl`             | string | `(required)`                       | OIDC issuer URL.                                                                         |
-| `global.oidc.clientId`              | string | `(required)`                       | OIDC client ID.                                                                          |
-| `global.oidc.clientSecret`          | string | `(required)`                       | OIDC client secret.                                                                      |
-| `global.oidc.sessionSecret`         | string | `(required)`                       | Secret used to sign OIDC sessions.                                                       |
-| `global.redis.deploy`               | bool   | `false`                            | Deploy the bundled Redis instance.                                                       |
-| `global.redis.isCluster`            | bool   | `true`                             | Indicates whether the Redis target is a cluster.                                         |
-| `global.redis.prefix`               | string | `"mcpx-hive"`                      | Prefix for keys created in Redis.                                                        |
-| `global.redis.url`                  | string | `""`                               | External Redis URL when `deploy` is `false` (e.g., `redis://redis-endpoint:redis-port`). |
-| `ingress.enabled`                   | bool   | `true`                             | Enable ingress resources.                                                                |
-| `ingress.annotations`               | object | `{}`                               | Extra annotations added to ingress resources.                                            |
-| `ingress.domains.controller[].host` | string | `(derived from controller_domain)` | Hostname routed to the controller service.                                               |
-| `ingress.domains.router[].host`     | string | `(derived from router_domain)`     | Hostname routed to the router service.                                                   |
-| `ingress.domains.ui[].host`         | string | `(derived from ui_domain)`         | Hostname routed to the UI service.                                                       |
+| Key                                 | Type   | Default                                                                       | Description                                                                              |
+| ----------------------------------- | ------ | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `domain`                            | string | `""`                                                                          | Optional base domain propagated to the router service.                                   |
+| `controller_domain`                 | string | `(required)`                                                                  | Public domain for the hive controller.                                                   |
+| `ui_domain`                         | string | `(required)`                                                                  | Public domain for the MCPx UI.                                                           |
+| `router_domain`                     | string | `(required)`                                                                  | Public domain for the router/gateway.                                                    |
+| `global.hubUrl`                     | string | `(required)`                                                                  | WebSocket URL for the hub service.                                                       |
+| `global.controllerToken`            | string | `(required)`                                                                  | Shared secret required for controller admin portal access.                               |
+| `global.logLevel`                   | string | `"warn"`                                                                      | Default log level applied to controller and router pods.                                 |
+| `global.imagePullSecrets`           | list   | `[]`                                                                          | Image pull secrets that grant access to Lunar's private registries.                      |
+| `global.oidc.issuerUrl`             | string | `(required)`                                                                  | OIDC issuer URL.                                                                         |
+| `global.oidc.clientId`              | string | `(required)`                                                                  | OIDC client ID.                                                                          |
+| `global.oidc.clientSecret`          | string | `(required)`                                                                  | OIDC client secret.                                                                      |
+| `global.oidc.sessionSecret`         | string | `(required)`                                                                  | Secret used to sign OIDC sessions.                                                       |
+| `global.redis.deploy`               | bool   | `false`                                                                       | Deploy the bundled Redis instance.                                                       |
+| `global.redis.isCluster`            | bool   | `true`                                                                        | Indicates whether the Redis target is a cluster.                                         |
+| `global.redis.prefix`               | string | `"mcpx-hive"`                                                                 | Prefix for keys created in Redis.                                                        |
+| `global.redis.url`                  | string | `""`                                                                          | External Redis URL when `deploy` is `false` (e.g., `redis://redis-endpoint:redis-port`). |
+| `ingress.enabled`                   | bool   | `true`                                                                        | Enable ingress resources.                                                                |
+| `ingress.annotations`               | object | `{}`                                                                          | Extra annotations added to ingress resources.                                            |
+| `ingress.domains.controller[].host` | string | `(derived from controller_domain)`                                            | Hostname routed to the controller service.                                               |
+| `ingress.domains.router[].host`     | string | `(derived from router_domain)`                                                | Hostname routed to the router service.                                                   |
+| `ingress.domains.ui[].host`         | string | `(derived from ui_domain)`                                                    | Hostname routed to the UI service.                                                       |
+| `router.replicaCount`               | int    | `1`                                                                           | Number of router pods to run.                                                            |
+| `router.image.repository`           | string | `us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-router` | Router image repository; override to test custom builds.                                 |
+| `router.image.tag`                  | string | `"" (Chart AppVersion)`                                                       | Router image tag.                                                                        |
+| `mcpxUi.replicaCount`               | int    | `1`                                                                           | Number of UI pods.                                                                       |
+| `mcpxUi.image.repository`           | string | `REPLACE_ME/mcpx-ui`                                                          | UI image repository.                                                                     |
+| `mcpxUi.image.tag`                  | string | `"" (Chart AppVersion)`                                                       | UI image tag.                                                                            |
+| `mcpxUi.service.ports[].port`       | int    | `80`                                                                          | UI Service port (front-end).                                                             |
+| `mcpxUi.service.ports[].targetPort` | int    | `5173`                                                                        | UI container port (back-end).                                                            |
+| `mcpxUi.env.VITE_ENABLE_ENTERPRISE` | string | `"true"`                                                                      | Enables enterprise UI surfaces by default; override to disable.                          |
+| `mcpxUi.env.VITE_MCPX_SERVER_URL`   | string | `(derived)`                                                                   | Defaults to `https://<router_domain>` when not explicitly provided.                      |

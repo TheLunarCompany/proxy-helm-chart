@@ -2,21 +2,22 @@
 {{- $values := mergeOverwrite (deepCopy $defaults) .Values -}}
 {{- $ctx := dict "Values" $values "Chart" .Chart "Release" .Release "Capabilities" .Capabilities "Files" .Files "Template" .Template "Subcharts" .Subcharts -}}
 {{- with $ctx }}
-{{- if .Values.router.enabled }}
+{{- $root := . }}
+{{- if and .Values.mcpxUi.enabled .Values.mcpxUi.service }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.router.service.name }}
+  name: {{ .Values.mcpxUi.service.name }}
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: {{ include "mcpx-hive.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/component: router-service
+    app.kubernetes.io/component: mcpx-ui
     app.kubernetes.io/part-of: {{ include "mcpx-hive.name" . }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
   {{- $ann := dict }}
-  {{- if .Values.router.service.annotations }}
-    {{- $_ := merge $ann .Values.router.service.annotations }}
+  {{- if .Values.mcpxUi.service.annotations }}
+    {{- $_ := merge $ann .Values.mcpxUi.service.annotations }}
   {{- end }}
   {{- if .Values.ingress.gcp }}
     {{- if not (hasKey $ann "cloud.google.com/neg") }}
@@ -24,12 +25,12 @@ metadata:
     {{- end }}
     {{- $fullname := include "mcpx-hive.fullname" . }}
     {{- $uiPortName := "ui" }}
-    {{- $routerPortName := "mcpx-server" }}
-    {{- range .Values.router.service.ports }}
-    {{- if eq (toString .port) "5173" }}{{- $uiPortName = .name }}{{- end }}
-    {{- if eq (toString .port) "9000" }}{{- $routerPortName = .name }}{{- end }}
+    {{- range .Values.mcpxUi.service.ports }}
+      {{- if eq (toString .targetPort) (toString $root.Values.mcpxUi.containerPort) }}
+        {{- $uiPortName = .name | default "ui" }}
+      {{- end }}
     {{- end }}
-    {{- $_ := set $ann "cloud.google.com/backend-config" (printf "{\"ports\": {\"%s\": \"%s-websocket-backendconfig\", \"%s\": \"%s-backendconfig\"}}" $uiPortName $fullname $routerPortName $fullname) }}
+    {{- $_ := set $ann "cloud.google.com/backend-config" (printf "{\"ports\": {\"%s\": \"%s-websocket-backendconfig\"}}" $uiPortName $fullname) }}
   {{- else if .Values.ingress.aws }}
     {{- if not (hasKey $ann "service.beta.kubernetes.io/aws-load-balancer-type") }}
       {{- $_ := set $ann "service.beta.kubernetes.io/aws-load-balancer-type" "nlb" }}
@@ -53,16 +54,17 @@ metadata:
     {{- toYaml $ann | nindent 4 }}
   {{- end }}
 spec:
-  {{- $svcType := .Values.router.service.type }}
-  {{- if .Values.ingress.aws }}
+  {{- $svcType := .Values.mcpxUi.service.type }}
+  {{- if .Values.ingress.gcp }}
+  {{- $svcType = "ClusterIP" }}
+  {{- else if .Values.ingress.aws }}
   {{- $svcType = "NodePort" }}
   {{- end }}
   type: {{ $svcType }}
   ports:
-    {{- toYaml .Values.router.service.ports | nindent 4 }}
+    {{- toYaml .Values.mcpxUi.service.ports | nindent 4 }}
   selector:
-    # This must match the labels on your router pod
     app.kubernetes.io/name: {{ include "mcpx-hive.name" . }}
-    app.kubernetes.io/component: router
+    app.kubernetes.io/component: mcpx-ui
 {{- end }}
 {{- end }}
