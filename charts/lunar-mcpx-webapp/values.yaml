@@ -207,11 +207,11 @@ controller:
   # -- Set pod resource requests & limits
   resources:
     limits:
-      cpu: "500m"
-      memory: 512Mi
+      cpu: "200m"
+      memory: 256Mi
     requests:
-      cpu: "500m"
-      memory: 512Mi
+      cpu: "100m"
+      memory: 128Mi
 
   # -- extraEnvVars An array to add extra env vars
   # e.g:
