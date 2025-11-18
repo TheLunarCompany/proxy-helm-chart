@@ -366,8 +366,6 @@ ingress:
       - mcpx-admin.example.com
     auth:
       - mcpx-auth.example.com
-    controller:
-      - mcpx-controller.example.com
     ui:
       - mcpx-ui.example.com
     router:

@@ -54,12 +54,12 @@ spec:
                   fieldPath: metadata.namespace
             - name: RELEASE_NAMESPACE
               value: "{{ .Release.Namespace }}"
-            - name: UI_SERVICE_DNS
+            - name: UI_SERVICE_NAME
               value: "{{ include "lunar-mcpx-webapp.fullname" . }}-ui"
-            - name: UI_TARGET_PORT
-              value: "5173"
             - name: MCPX_TARGET_PORT
               value: "9000"
+            - name: WEBSERVER_SERVICE_NAME
+              value: "{{ include "lunar-mcpx-webapp.fullname" . }}-webserver"
           {{- if .Values.ingress.enabled }}
             - name: ROUTER_DOMAIN
               value: "https://{{ first .Values.ingress.domains.router }}"

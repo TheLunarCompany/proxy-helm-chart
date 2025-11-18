@@ -45,6 +45,10 @@ ingress:
       - mcpx-admin.example.com
     auth:
       - mcpx-auth.example.com
+    ui:
+      - mcpx-ui.example.com
+    router:
+      - mcpx.example.com
 
 postgres:
   enabled: false
