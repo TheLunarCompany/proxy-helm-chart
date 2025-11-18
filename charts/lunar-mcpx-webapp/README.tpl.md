@@ -40,7 +40,6 @@ Required service versions:
 |:---------------------:|:-----------------------------------------------------------------------------------------:|
 |    SESSION_SECRET     |    random string, can be generated on Unix system by running 'openssl rand -base64 32'    |
 | SESSION_COOKIE_DOMAIN |                                        example.com                                        |
-| CONTROLLER_API_TOKEN  |                                   MCPX Controller Token                                   |
 |     DATABASE_URL      | postgres://{{ USER }}:{{ PASS }}@{{ HOST }}:{{ PORT }}/{{ DATABASE }}?schema={{ SCHEMA }} |
 |       REDIS_URL       |                               redis://{{ HOST }}:{{ PORT }}                               |
 |   REDIS_IS_CLUSTER    |                                   boolean (true\|false)                                   |
