@@ -71,7 +71,6 @@ It is possible to supply this variables using several different techniques:
       ```bash
       kubectl create secret generic mcpx-webapp-global -n {{ mcpx_namespace }} \
         --from-literal=SESSION_SECRET="$(openssl rand -base64 32)" \
-        --from-literal=CONTROLLER_API_TOKEN="{{ secure string }}" \
         --from-literal=DATABASE_URL="postgres://{{ USER }}:{{ PASS }}@{{ HOST }}:{{ PORT }}/{{ DATABASE }}?schema={{ SCHEMA }}" \
         --from-literal=REDIS_URL="redis://{{ HOST }}:{{ PORT }}" \
         --from-literal=REDIS_IS_CLUSTER="{{ boolean (true or false) }}"
