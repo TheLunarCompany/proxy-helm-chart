@@ -369,7 +369,7 @@ ingress:
     ui:
       - mcpx-ui.example.com
     router:
-      - mcpx-router.example.com
+      - mcpx.example.com
 
   # -- Provision cloud-specific ingress resources and configuration.
   # Available options: "manual", "gce"

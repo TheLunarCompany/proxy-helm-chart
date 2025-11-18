@@ -57,7 +57,7 @@ spec:
         paths:
           - backend:
               service:
-                name: {{ $xfullname }}-router
+                name: {{ $xfullname }}-router-ui
                 port:
                   number: 80
             path: /
