@@ -61,6 +61,9 @@ spec:
             - name: WEBSERVER_SERVICE_NAME
               value: "{{ include "lunar-mcpx-webapp.fullname" . }}-webserver"
           {{- if .Values.ingress.enabled }}
+            {{ $hivedomain := (rest (splitList "." (first .Values.ingress.domains.auth))) | join "." -}}
+            - name: HIVE_DOMAIN
+              value: "{{ $hivedomain }}"
             - name: ROUTER_DOMAIN
               value: "https://{{ first .Values.ingress.domains.router }}"
             - name: UI_DOMAIN
