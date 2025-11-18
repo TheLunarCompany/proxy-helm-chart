@@ -69,7 +69,7 @@ spec:
             - name: MCPX_KIND
               value: "MCPx"
             - name: HUB_WS_URL
-              value: http://{{ include "lunar-mcpx-webapp.fullname" . }}-hub
+              value: ws://{{ include "lunar-mcpx-webapp.fullname" . }}-hub
             - name: UI_SERVICE_DNS
               value: "{{ include "lunar-mcpx-webapp.fullname" . }}-ui"
             - name: UI_TARGET_PORT
