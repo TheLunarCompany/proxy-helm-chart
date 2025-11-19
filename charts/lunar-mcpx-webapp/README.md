@@ -46,15 +46,16 @@ Required service versions:
 
 #### Required OIDC environment variables with sensitive data
 
-|              Variable               |                                                       Value                                                       |
-|:-----------------------------------:|:-----------------------------------------------------------------------------------------------------------------:|
-|           OIDC_CLIENT_ID            |                                 |        
-|         OIDC_CLIENT_SECRET          |                                 |
-|             OIDC_ISSUER             |                                 |
-|          OIDC_REDIRECT_URI          |                                 |
-|            OIDC_JWKS_URI            |                                 |
-|            OIDC_AUDIENCE            |                                 |
-|   OIDC_POST_LOGOUT_REDIRECT_URI     |                                 |
+|           Variable            | Value |
+|:-----------------------------:|:-----:|
+|        OIDC_CLIENT_ID         |       |
+|      OIDC_CLIENT_SECRET       |       |
+|          OIDC_ISSUER          |       |
+|       OIDC_REDIRECT_URI       |       |
+|         OIDC_JWKS_URI         |       |
+|         OIDC_AUDIENCE         |       |
+| OIDC_POST_LOGOUT_REDIRECT_URI |       |
+|       OIDC_ISSUER_URL         |       |
 
 #### Optional environmental variables
 
@@ -149,11 +150,11 @@ Please reffer to [examples/values-override](examples/values-override) directory 
 
 Minimal deployment with embedded Postgresql and Redis
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.6.2 --set postgres.enabled=true --set redis.enabled=true
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.7.0 --set postgres.enabled=true --set redis.enabled=true
 ```
 
 Alternatively, you may work with a separate values file to handle values override just like any other Helm chart:
 
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.6.2  -f ./values-override.yaml
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.7.0  -f ./values-override.yaml
 ```
