@@ -42,6 +42,23 @@ auth:
     - name: OIDC_POST_LOGOUT_REDIRECT_URI
       value: ""
 
+router:
+  extraEnvVars:
+    - name: OIDC_CLIENT_ID
+      value: ""
+    - name: OIDC_CLIENT_SECRET
+      value: ""
+    - name: OIDC_ISSUER
+      value: ""
+    - name: OIDC_REDIRECT_URI
+      value: ""
+    - name: OIDC_JWKS_URI
+      value: ""
+    - name: OIDC_AUDIENCE
+      value: ""
+    - name: OIDC_POST_LOGOUT_REDIRECT_URI
+      value: ""
+
 ingress:
   annotations:
     kubernetes.io/ingress.global-static-ip-name: mcpx-lunar-mcpx-webapp
@@ -54,6 +71,10 @@ ingress:
       - mcpx-admin.example.com
     auth:
       - mcpx-auth.example.com
+    ui:
+      - mcpx-ui.example.com
+    router:
+      - mcpx.example.com
 
 postgres:
   enabled: true

@@ -1,0 +1,122 @@
+{{- if .Values.controller.enabled | default true }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-controller
+  labels:
+    name: {{ include "lunar-mcpx-webapp.fullname" . }}-controller
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-controller
+spec:
+  replicas: {{ .Values.controller.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ include "lunar-mcpx-webapp.fullname" . }}-controller
+      {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "lunar-mcpx-webapp.fullname" . }}-controller
+        {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "lunar-mcpx-webapp.fullname" . }}-controller
+      automountServiceAccountToken: true
+      securityContext:
+        fsGroup: 2000
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+        - name: mcpx-controller-container
+          image: "{{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          ports:
+            - containerPort: 8080
+          resources:
+            {{- toYaml .Values.controller.resources | nindent 12 }}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            runAsUser: 1000
+            runAsGroup: 1000
+          envFrom:
+            - secretRef:
+                name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
+          {{- with .Values.global.extraEnvFromSecrets }}
+          {{- range $.Values.global.extraEnvFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.controller.extraEnvFromSecrets }}
+          {{- range $.Values.controller.extraEnvFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+          {{- end }}
+          {{- end }}
+          env:
+
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "8080"
+            - name: KUBERNETES_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: RELEASE_NAMESPACE
+              value: "{{ .Release.Namespace }}"
+            - name: MCPX_API_VERSION
+              value: "hive.lunar.dev/v1alpha1"
+            - name: MCPX_KIND
+              value: "MCPx"
+            - name: HUB_WS_URL
+              value: ws://{{ include "lunar-mcpx-webapp.fullname" . }}-hub
+            - name: UI_SERVICE_NAME
+              value: "{{ include "lunar-mcpx-webapp.fullname" . }}-ui"
+          {{- if .Values.ingress.enabled }}
+            - name: ROUTER_DOMAIN
+              value: "https://{{ first .Values.ingress.domains.router }}"
+            - name: UI_DOMAIN
+              value: "https://{{ first .Values.ingress.domains.ui }}"
+          {{- end }}
+          {{- if .Values.global.extraEnvVars }}
+          {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.controller.extraEnvVars }}
+          {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.controller.extraEnvVars "context" $) | nindent 12 }}
+          {{- end }}
+
+          startupProbe:
+            successThreshold: 1
+            failureThreshold: 30
+            httpGet:
+              path: /health/live
+              port: 8080
+              scheme: HTTP
+            periodSeconds: 10
+          readinessProbe:
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              path: /health/live
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 10
+          livenessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /health/live
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 30
+
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range $.Values.global.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+  {{- end }}

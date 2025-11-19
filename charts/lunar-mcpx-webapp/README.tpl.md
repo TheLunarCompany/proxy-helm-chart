@@ -46,15 +46,16 @@ Required service versions:
 
 #### Required OIDC environment variables with sensitive data
 
-|              Variable               |                                                       Value                                                       |
-|:-----------------------------------:|:-----------------------------------------------------------------------------------------------------------------:|
-|           OIDC_CLIENT_ID            |                                 |        
-|         OIDC_CLIENT_SECRET          |                                 |
-|             OIDC_ISSUER             |                                 |
-|          OIDC_REDIRECT_URI          |                                 |
-|            OIDC_JWKS_URI            |                                 |
-|            OIDC_AUDIENCE            |                                 |
-|   OIDC_POST_LOGOUT_REDIRECT_URI     |                                 |
+|           Variable            | Value |
+|:-----------------------------:|:-----:|
+|        OIDC_CLIENT_ID         |       |
+|      OIDC_CLIENT_SECRET       |       |
+|          OIDC_ISSUER          |       |
+|       OIDC_REDIRECT_URI       |       |
+|         OIDC_JWKS_URI         |       |
+|         OIDC_AUDIENCE         |       |
+| OIDC_POST_LOGOUT_REDIRECT_URI |       |
+|       OIDC_ISSUER_URL         |       |
 
 #### Optional environmental variables
 

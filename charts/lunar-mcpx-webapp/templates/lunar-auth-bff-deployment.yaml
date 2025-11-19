@@ -84,6 +84,8 @@ spec:
             - name: PORT
               value: "3000"
           {{- if .Values.ingress.enabled }}
+            - name: JWT_ISSUER
+              value: "https://{{ first .Values.ingress.domains.auth }}"
             - name: CORS_ALLOWED_ORIGINS
               value: "https://{{ first .Values.ingress.domains.admin }}"
           {{- end }}

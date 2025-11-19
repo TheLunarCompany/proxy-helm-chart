@@ -190,6 +190,130 @@ auth:
   #   - secret_2
   extraEnvFromSecrets: []
 
+
+controller:
+  image:
+    # -- Lunar mcpx-hive-controller image repository
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-controller
+    # -- Lunar mcpx-hive-controller image pull policy
+    pullPolicy: IfNotPresent
+    # -- Lunar mcpx-hive-controller image tag
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+  # -- number of replicas to run
+  replicaCount: 1
+
+  # -- Set pod resource requests & limits
+  resources:
+    limits:
+      cpu: "200m"
+      memory: 256Mi
+    requests:
+      cpu: "100m"
+      memory: 128Mi
+
+  # -- extraEnvVars An array to add extra env vars
+  # e.g:
+  # extraEnvVars:
+  #   - name: FOO
+  #     value: "bar"
+  #   - name: FOO2
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: SECRET_NAME
+  #         key: KEY
+  extraEnvVars: []
+
+  # -- extraEnvFromSecrets An array of secret names to add as extra env vars
+  # extraEnvFromSecrets:
+  #   - secret_1
+  #   - secret_2
+  extraEnvFromSecrets: []
+
+
+router:
+  image:
+    # -- Lunar mcpx-hive-router image repository
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-router
+    # -- Lunar mcpx-hive-router image pull policy
+    pullPolicy: IfNotPresent
+    # -- Lunar mcpx-hive-router image tag
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+  # -- number of replicas to run
+  replicaCount: 1
+
+  # -- Set pod resource requests & limits
+  resources:
+    limits:
+      cpu: "200m"
+      memory: 256Mi
+    requests:
+      cpu: "100m"
+      memory: 128Mi
+
+  # -- extraEnvVars An array to add extra env vars
+  # e.g:
+  # extraEnvVars:
+  #   - name: FOO
+  #     value: "bar"
+  #   - name: FOO2
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: SECRET_NAME
+  #         key: KEY
+  extraEnvVars: []
+
+  # -- extraEnvFromSecrets An array of secret names to add as extra env vars
+  # extraEnvFromSecrets:
+  #   - secret_1
+  #   - secret_2
+  extraEnvFromSecrets: []
+
+
+ui:
+  image:
+    # -- Lunar mcpx-ui image repository
+    repository: us-central1-docker.pkg.dev/prj-common-442813/mcpx/mcpx-ui
+    # -- Lunar mcpx-ui image pull policy
+    pullPolicy: IfNotPresent
+    # -- Lunar mcpx-ui image tag
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+  # -- number of replicas to run
+  replicaCount: 1
+
+  # -- Set pod resource requests & limits
+  resources:
+    limits:
+      cpu: "150m"
+      memory: 256Mi
+    requests:
+      cpu: "150m"
+      memory: 256Mi
+
+  # -- extraEnvVars An array to add extra env vars
+  # e.g:
+  # extraEnvVars:
+  #   - name: FOO
+  #     value: "bar"
+  #   - name: FOO2
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: SECRET_NAME
+  #         key: KEY
+  extraEnvVars: []
+
+  # -- extraEnvFromSecrets An array of secret names to add as extra env vars
+  # extraEnvFromSecrets:
+  #   - secret_1
+  #   - secret_2
+  extraEnvFromSecrets: []
+
+
 jobs:
   image:
     # -- Lunar mcpx-jobs image repository
@@ -242,6 +366,10 @@ ingress:
       - mcpx-admin.example.com
     auth:
       - mcpx-auth.example.com
+    ui:
+      - mcpx-ui.example.com
+    router:
+      - mcpx.example.com
 
   # -- Provision cloud-specific ingress resources and configuration.
   # Available options: "manual", "gce"
