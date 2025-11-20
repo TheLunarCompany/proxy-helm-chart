@@ -1018,6 +1018,17 @@ entries:
     - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/lunar-proxy-v0.8.7/lunar-proxy-v0.8.7.tgz
     version: v0.8.7
   - apiVersion: v2
+    appVersion: v0.7.1
+    created: "2025-11-20T10:19:36.758365569Z"
+    description: A Helm chart for Kubernetes
+    digest: a77867ff3a25b6c2293bca955bd410376efacb7c18182cbad3601847ef5dc3f4
+    icon: https://storage.googleapis.com/lunar-webapp-assets/favicon/apple-touch-icon.png
+    name: lunar-proxy
+    type: application
+    urls:
+    - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/lunar-proxy-v0.7.1/lunar-proxy-v0.7.1.tgz
+    version: v0.7.1
+  - apiVersion: v2
     appVersion: v0.1.7
     created: "2025-07-14T12:24:14.791997217Z"
     description: A Helm chart for Kubernetes
@@ -1156,4 +1167,4 @@ entries:
     urls:
     - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/mcpx-hive-v0.1.0/mcpx-hive-v0.1.0.tgz
     version: v0.1.0
-generated: "2025-11-19T15:04:01.475902478Z"
+generated: "2025-11-20T10:19:36.758559409Z"
