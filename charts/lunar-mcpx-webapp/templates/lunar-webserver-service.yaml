@@ -15,6 +15,10 @@ spec:
       protocol: TCP
       port: 80
       targetPort: 3000
+    - name: webserver4000
+      protocol: TCP
+      port: 4000
+      targetPort: 4000
   sessionAffinity: ClientIP
   type: ClusterIP
   selector:
