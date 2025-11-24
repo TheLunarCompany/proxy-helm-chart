@@ -12,8 +12,9 @@ on:
         type: string
       mcpx-version:
         description: "MCPX version to deploy"
-        required: true
+        required: false
         type: string
+        default: ""
 
 run-name: Helm Chart Release - lunar-mcpx-webapp version '${{ inputs.version }}' chart-version '${{ inputs.chart-version }}' by @${{ github.actor || github.event.client_payload.AUTHOR }}
 
@@ -69,10 +70,13 @@ jobs:
 
       # Update Chart.yaml
       - name: Update Chart.yaml
+        shell: bash
         run: |
           sed -Ei.bak "s/(version: ).*/\1\"${{ env.chart_version }}\"/" charts/lunar-mcpx-webapp/Chart.yaml
           sed -Ei.bak "s/(appVersion: ).*/\1\"${{ inputs.version }}\"/" charts/lunar-mcpx-webapp/Chart.yaml
-          sed -i.bak '/repository: .*mcpx-ui/,/tag: ""/s/tag: ""/tag: "${{ inputs.mcpx-version }}"/' charts/lunar-mcpx-webapp/values.yaml
+          if [ "x${{ inputs.mcpx-version }}" != "x" ]; then 
+            sed -i.bak '/repository: .*mcpx-ui/,/tag: ""/s/tag: ""/tag: "${{ inputs.mcpx-version }}"/' charts/lunar-mcpx-webapp/values.yaml
+          fi
 
       # Commit the updated README.md if there are any changes
       - name: Commit updates
