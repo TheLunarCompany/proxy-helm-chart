@@ -1,0 +1,101 @@
+name: MCPX Webapp Helm Chart Release
+on:
+  workflow_dispatch:
+    inputs:
+      version: # Effectively, the version of the Docker image tag
+        description: "Version to deploy"
+        required: true
+        type: string
+      chart-version: # Effectively, the version of the Helm chart. Overrides can be made for fixes in the chart with the suffix `-fix<number>`
+        description: "Chart version to package (optional, defaults to 'version')"
+        required: false
+        type: string
+      mcpx-version:
+        description: "MCPX version to deploy"
+        required: true
+        type: string
+
+run-name: Helm Chart Release - lunar-mcpx-webapp version '${{ inputs.version }}' chart-version '${{ inputs.chart-version }}' by @${{ github.actor || github.event.client_payload.AUTHOR }}
+
+jobs:
+  helm-chart:
+    permissions:
+      contents: write
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure Git
+        run: |
+          git config user.name "DevOps"
+          git config user.email "devops@lunar.dev"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+
+      - name: Filter out pre-release versions
+        run: |
+          if [[ "${{ inputs.version }}" == *-* ]]; then
+          echo "Suffix detected in version: ${{ inputs.version }}."
+            if [[ ! "${{ inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+-fix[0-9]*$ ]]; then
+              echo "Filtering out chart version: ${{ inputs.version }}."
+              exit 0
+            else
+              echo "Fix version detected: ${{ inputs.version }}."
+            fi
+          else
+            echo "Stable version detected: ${{ inputs.version }}."
+          fi
+
+      - name: Set Chart Version
+        id: set-chart-version
+        run: |
+          if [ -z "${{ inputs.chart-version }}" ]; then
+            echo "Using version input as chart-version."
+            echo "chart_version=${{ inputs.version }}" >> $GITHUB_ENV
+          else
+            echo "Using provided chart-version input."
+            echo "chart_version=${{ inputs.chart-version }}" >> $GITHUB_ENV
+          fi
+
+      # Render the README from the template using envsubst
+      - name: Render README from template
+        run: |
+          # Ensure the environment variable is exported so that envsubst can pick it up
+          export CHART_VERSION="${{ env.chart_version }}"
+          envsubst < charts/lunar-mcpx-webapp/README.tpl.md > charts/lunar-mcpx-webapp/README.md
+
+      # Update Chart.yaml
+      - name: Update Chart.yaml
+        run: |
+          sed -Ei.bak "s/(version: ).*/\1\"${{ env.chart_version }}\"/" charts/lunar-mcpx-webapp/Chart.yaml
+          sed -Ei.bak "s/(appVersion: ).*/\1\"${{ inputs.version }}\"/" charts/lunar-mcpx-webapp/Chart.yaml
+          sed -i.bak '/repository: .*mcpx-ui/,/tag: ""/s/tag: ""/tag: "${{ inputs.mcpx-version }}"/' charts/lunar-mcpx-webapp/values.yaml
+
+      # Commit the updated README.md if there are any changes
+      - name: Commit updates
+        run: |
+          git status
+          git diff 
+          git add charts/lunar-mcpx-webapp
+          if ! git diff --cached --quiet; then
+            git commit -m "Update lunar-mcpx-webapp chart version v${{ env.chart_version }}"
+            git push
+          else
+            echo "No changes in charts/lunar-mcpx-webapp to commit."
+          fi
+
+      - name: Package
+        run: |
+          rm -rf .cr-release-packages
+          mkdir -p .cr-release-packages
+          helm package "charts/lunar-mcpx-webapp" --version ${{ env.chart_version }} --app-version ${{ inputs.version }} --destination=.cr-release-packages
+
+      - name: Run chart-releaser
+        uses: helm/chart-releaser-action@v1.5.0
+        with:
+          skip_packaging: true
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

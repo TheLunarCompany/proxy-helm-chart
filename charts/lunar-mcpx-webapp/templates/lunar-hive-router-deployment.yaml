@@ -91,18 +91,14 @@ spec:
               path: /health
               port: 5173
               scheme: HTTP
-            initialDelaySeconds: 10
             periodSeconds: 10
-            timeoutSeconds: 10
           livenessProbe:
             failureThreshold: 10
             httpGet:
               path: /health
               port: 5173
               scheme: HTTP
-            initialDelaySeconds: 60
-            periodSeconds: 30
-            timeoutSeconds: 30
+            periodSeconds: 10
       volumes:
         - name: nginx-logs-volume
           emptyDir: {}
