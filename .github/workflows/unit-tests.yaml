@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        chart: [lunar-proxy, lunar-mcpx, lunar-mcpx-webapp, lunar-hive]
+        chart: [lunar-proxy, lunar-mcpx, lunar-mcpx-webapp]
 
     steps:
       - name: Check out repository
