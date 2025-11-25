@@ -371,6 +371,9 @@ ingress:
     router:
       - mcpx.example.com
 
+  https:
+    enabled: true
+
   # -- Provision cloud-specific ingress resources and configuration.
   # Available options: "manual", "gce"
   # - undef  - deploys generic ingress without any cloud-specific configuration. Use ingress.annotations to configure it
