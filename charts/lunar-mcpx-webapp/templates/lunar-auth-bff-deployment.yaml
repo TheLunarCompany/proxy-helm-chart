@@ -120,7 +120,7 @@ spec:
               path: /healthcheck
               port: 3000
               scheme: HTTP
-            initialDelaySeconds: 60
+            initialDelaySeconds: 10
             periodSeconds: 30
             timeoutSeconds: 30
 

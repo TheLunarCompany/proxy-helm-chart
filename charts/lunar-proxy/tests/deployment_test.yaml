@@ -33,4 +33,4 @@ tests:
     asserts:
       - equal:
           path: spec.template.spec.containers[0].image
-          value: "lunarapi/lunar-proxy:v0.8.25" # Hardcoded value from values.yaml. In reality `helm package` command in the CI pipeline would replace this with the actual appVersion
+          value: "lunarapi/lunar-proxy:0.7.1" # Hardcoded value from values.yaml. In reality `helm package` command in the CI pipeline would replace this with the actual appVersion

@@ -1,15 +1,7 @@
-name: Helm Chart Release
+name: MCPX Webapp Helm Chart Release
 on:
   workflow_dispatch:
     inputs:
-      chart-name:
-        description: "Chart name to release (e.g., lunar-proxy | lunar-mcpx | lunar-mcpx-webapp )"
-        required: true
-        type: choice
-        options:
-          - lunar-proxy
-          - lunar-mcpx
-          - lunar-mcpx-webapp
       version: # Effectively, the version of the Docker image tag
         description: "Version to deploy"
         required: true
@@ -18,8 +10,13 @@ on:
         description: "Chart version to package (optional, defaults to 'version')"
         required: false
         type: string
+      mcpx-version:
+        description: "MCPX version to deploy"
+        required: false
+        type: string
+        default: ""
 
-run-name: Helm Chart Release - ${{ inputs.chart-name }} version '${{ inputs.version }}' chart-version '${{ inputs.chart-version }}' by @${{ github.actor || github.event.client_payload.AUTHOR }}
+run-name: Helm Chart Release - lunar-mcpx-webapp version '${{ inputs.version }}' chart-version '${{ inputs.chart-version }}' by @${{ github.actor || github.event.client_payload.AUTHOR }}
 
 jobs:
   helm-chart:
@@ -69,32 +66,36 @@ jobs:
         run: |
           # Ensure the environment variable is exported so that envsubst can pick it up
           export CHART_VERSION="${{ env.chart_version }}"
-          envsubst < charts/${{ inputs.chart-name }}/README.tpl.md > charts/${{ inputs.chart-name }}/README.md
+          envsubst < charts/lunar-mcpx-webapp/README.tpl.md > charts/lunar-mcpx-webapp/README.md
 
       # Update Chart.yaml
       - name: Update Chart.yaml
+        shell: bash
         run: |
-          sed -Ei.bak "s/(version: ).*/\1\"${{ env.chart_version }}\"/" charts/${{ inputs.chart-name }}/Chart.yaml
-          sed -Ei.bak "s/(appVersion: ).*/\1\"${{ inputs.version }}\"/" charts/${{ inputs.chart-name }}/Chart.yaml
+          sed -Ei.bak "s/(version: ).*/\1\"${{ env.chart_version }}\"/" charts/lunar-mcpx-webapp/Chart.yaml
+          sed -Ei.bak "s/(appVersion: ).*/\1\"${{ inputs.version }}\"/" charts/lunar-mcpx-webapp/Chart.yaml
+          if [ "x${{ inputs.mcpx-version }}" != "x" ]; then 
+            sed -i.bak '/repository: .*mcpx-ui/,/tag: ""/s/tag: ""/tag: "${{ inputs.mcpx-version }}"/' charts/lunar-mcpx-webapp/values.yaml
+          fi
 
       # Commit the updated README.md if there are any changes
       - name: Commit updates
         run: |
           git status
           git diff 
-          git add charts/${{ inputs.chart-name }}
+          git add charts/lunar-mcpx-webapp
           if ! git diff --cached --quiet; then
-            git commit -m "Update ${{ inputs.chart-name }} chart version v${{ env.chart_version }}"
+            git commit -m "Update lunar-mcpx-webapp chart version v${{ env.chart_version }}"
             git push
           else
-            echo "No changes in charts/${{ inputs.chart-name }} to commit."
+            echo "No changes in charts/lunar-mcpx-webapp to commit."
           fi
 
       - name: Package
         run: |
           rm -rf .cr-release-packages
           mkdir -p .cr-release-packages
-          helm package "charts/${{ inputs.chart-name }}" --version v${{ env.chart_version }} --app-version v${{ inputs.version }} --destination=.cr-release-packages
+          helm package "charts/lunar-mcpx-webapp" --version ${{ env.chart_version }} --app-version ${{ inputs.version }} --destination=.cr-release-packages
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.5.0
