@@ -281,7 +281,7 @@ ui:
     pullPolicy: IfNotPresent
     # -- Lunar mcpx-ui image tag
     # Overrides the image tag whose default is the chart appVersion.
-    tag: ""
+    tag: "0.2.29-bc672e8"
 
   # -- number of replicas to run
   replicaCount: 1
