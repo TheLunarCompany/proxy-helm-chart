@@ -78,6 +78,24 @@ jobs:
             sed -i.bak '/repository: .*mcpx-ui/,/tag: ""/s/tag: ""/tag: "${{ inputs.mcpx-version }}"/' charts/lunar-mcpx-webapp/values.yaml
           fi
 
+      # Run tests
+      - name: Run tests
+        shell: bash
+        run: |
+          mkdir /tmp/{test,bin}
+          wget -O /tmp/bin/yq https://github.com/mikefarah/yq/releases/download/v4.49.2/yq_linux_amd64
+          chmod 777 /tmp/bin/yq
+          echo "Rendering chart"
+          helm template test ./charts/lunar-mcpx-webapp/ > /tmp/test/chart-rendered.yaml
+          cat /tmp/test/chart-rendered.yaml
+          echo "Trying to get images"
+          IMAGES=$(/tmp/bin/yq '. | select(.kind=="Deployment") | .spec.template.spec.containers[0].image' /tmp/test/chart-rendered.yaml  | grep -v '\---')
+          echo "IMAGES=${IMAGES}"
+          for IMAGE in ${IMAGES}; do
+            echo "Verifying Image ${IMAGE}
+            docker pull ${IMAGE}
+          done
+
       # Commit the updated README.md if there are any changes
       - name: Commit updates
         run: |
