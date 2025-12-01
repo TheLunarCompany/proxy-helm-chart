@@ -79,6 +79,11 @@ jobs:
           fi
 
       # Run tests
+      - name: Auth to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
       - name: Run tests
         shell: bash
         run: |
@@ -88,16 +93,15 @@ jobs:
           echo "Rendering chart"
           helm template test ./charts/lunar-mcpx-webapp/ > /tmp/test/chart-rendered.yaml
           cat /tmp/test/chart-rendered.yaml
-          echo "Trying to get images"
+          echo "Trying to pull images to make sure they are available in registry"
           IMAGES=$(/tmp/bin/yq '. | select(.kind=="Deployment") | .spec.template.spec.containers[0].image' /tmp/test/chart-rendered.yaml  | grep -v '\---')
           echo "IMAGES=${IMAGES}"
           for IMAGE in ${IMAGES}; do
             echo "Verifying Image ${IMAGE}"
+            gcloud auth configure-docker $(awk -F '/' {'print $1'} <<< ${IMAGE} ) --quiet
             docker pull ${IMAGE}
           done
-          
-          # TODO: TMP!
-          exit 1
+
       # Commit the updated README.md if there are any changes
       - name: Commit updates
         run: |
