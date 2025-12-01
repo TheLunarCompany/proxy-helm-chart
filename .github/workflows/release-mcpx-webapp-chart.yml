@@ -92,10 +92,12 @@ jobs:
           IMAGES=$(/tmp/bin/yq '. | select(.kind=="Deployment") | .spec.template.spec.containers[0].image' /tmp/test/chart-rendered.yaml  | grep -v '\---')
           echo "IMAGES=${IMAGES}"
           for IMAGE in ${IMAGES}; do
-            echo "Verifying Image ${IMAGE}
+            echo "Verifying Image ${IMAGE}"
             docker pull ${IMAGE}
           done
-
+          
+          # TODO: TMP!
+          exit 1
       # Commit the updated README.md if there are any changes
       - name: Commit updates
         run: |
