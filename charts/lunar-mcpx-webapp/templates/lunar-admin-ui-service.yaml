@@ -41,7 +41,7 @@ spec:
     unhealthyThreshold: 3
     type: HTTP
     requestPath: /healthcheck
-    port: 3000
+    port: 8080
 {{- end }}
 {{- end }}
 

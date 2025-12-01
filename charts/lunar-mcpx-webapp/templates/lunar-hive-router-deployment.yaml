@@ -22,12 +22,10 @@ spec:
         - name: mcpx-router-container
           image: "{{ .Values.router.image.repository }}:{{ .Values.router.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           ports:
-            - containerPort: 5173
+            - containerPort: 8080
               name: ui
             - containerPort: 9000
               name: mcpx-server
-            - containerPort: 3000
-              name: metrics
           resources:
             {{- toYaml .Values.router.resources | nindent 12 }}
           envFrom:
@@ -80,23 +78,23 @@ spec:
             successThreshold: 1
             failureThreshold: 30
             httpGet:
-              path: /health
-              port: 5173
+              path: /healthcheck
+              port: 8080
               scheme: HTTP
             periodSeconds: 10
           readinessProbe:
             successThreshold: 1
             failureThreshold: 3
             httpGet:
-              path: /health
-              port: 5173
+              path: /healthcheck
+              port: 8080
               scheme: HTTP
             periodSeconds: 10
           livenessProbe:
             failureThreshold: 10
             httpGet:
-              path: /health
-              port: 5173
+              path: /healthcheck
+              port: 8080
               scheme: HTTP
             periodSeconds: 10
       volumes:

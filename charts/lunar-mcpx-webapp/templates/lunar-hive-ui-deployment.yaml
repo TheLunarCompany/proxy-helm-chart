@@ -22,7 +22,7 @@ spec:
         - name: mcpx-ui-container
           image: "{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag }}"
           ports:
-            - containerPort: 5173
+            - containerPort: 8080
           resources:
             {{- toYaml .Values.ui.resources | nindent 12 }}
           envFrom:
@@ -43,6 +43,8 @@ spec:
           env:
             - name: VITE_ENABLE_ENTERPRISE
               value: "true"
+            - name: UI_PORT
+              value: "8080"
             - name: VITE_MCPX_SERVER_URL
               value: "https://{{ first .Values.ingress.domains.router }}"
           {{- if .Values.global.extraEnvVars }}
@@ -57,7 +59,7 @@ spec:
             failureThreshold: 30
             httpGet:
               path: /healthcheck
-              port: 5173
+              port: 8080
               scheme: HTTP
             periodSeconds: 10
           readinessProbe:
@@ -65,7 +67,7 @@ spec:
             failureThreshold: 3
             httpGet:
               path: /healthcheck
-              port: 5173
+              port: 8080
               scheme: HTTP
             initialDelaySeconds: 10
             periodSeconds: 10
@@ -74,7 +76,7 @@ spec:
             failureThreshold: 10
             httpGet:
               path: /healthcheck
-              port: 5173
+              port: 8080
               scheme: HTTP
             initialDelaySeconds: 60
             periodSeconds: 30

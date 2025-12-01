@@ -8,7 +8,7 @@ metadata:
     {{- if eq .Values.ingress.type "gce" }}
     cloud.google.com/backend-config: '{"ports": {
       "router80": "{{ include "lunar-mcpx-webapp.fullname" . }}-router",
-      "ui5173": "{{ include "lunar-mcpx-webapp.fullname" . }}-router"
+      "ui8080": "{{ include "lunar-mcpx-webapp.fullname" . }}-router"
     }}'
     {{- end }}
     {{- end }}
@@ -17,9 +17,9 @@ spec:
     - name: router80
       port: 80
       targetPort: 9000
-    - name: ui5173
-      port: 5173
-      targetPort: 5173
+    - name: ui8080
+      port: 8080
+      targetPort: 8080
   sessionAffinity: ClientIP
   type: ClusterIP
   selector:
@@ -47,8 +47,8 @@ spec:
     healthyThreshold: 1
     unhealthyThreshold: 3
     type: HTTP
-    requestPath: /health
-    port: 5173
+    requestPath: /healthcheck
+    port: 8080
 {{- end }}
 {{- end }}
 

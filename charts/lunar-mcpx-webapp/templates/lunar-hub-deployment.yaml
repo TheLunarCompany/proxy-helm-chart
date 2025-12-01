@@ -54,7 +54,7 @@ spec:
         - name: mcpx-hub-container
           image: "{{ .Values.hub.image.repository }}:{{ .Values.hub.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           ports:
-            - containerPort: 3000
+            - containerPort: 8080
           resources:
             {{- toYaml .Values.hub.resources | nindent 12 }}
           securityContext:
@@ -81,6 +81,8 @@ spec:
           env:
             - name: NODE_ENV
               value: "production"
+            - name: PORT
+              value: "8080"
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}
@@ -93,7 +95,7 @@ spec:
             failureThreshold: 30
             httpGet:
               path: /healthcheck
-              port: 3000
+              port: 8080
               scheme: HTTP
             periodSeconds: 10
           readinessProbe:
@@ -101,7 +103,7 @@ spec:
             failureThreshold: 3
             httpGet:
               path: /healthcheck
-              port: 3000
+              port: 8080
               scheme: HTTP
             initialDelaySeconds: 10
             periodSeconds: 10
@@ -110,7 +112,7 @@ spec:
             failureThreshold: 3
             httpGet:
               path: /healthcheck
-              port: 3000
+              port: 8080
               scheme: HTTP
             initialDelaySeconds: 30
             periodSeconds: 10

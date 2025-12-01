@@ -14,7 +14,7 @@ spec:
     - name: webserver80
       protocol: TCP
       port: 80
-      targetPort: 3000
+      targetPort: 8080
     - name: webserver4000
       protocol: TCP
       port: 4000
@@ -45,7 +45,7 @@ spec:
     unhealthyThreshold: 3
     type: HTTP
     requestPath: /healthcheck
-    port: 3000
+    port: 8080
 {{- end }}
 {{- end }}
 

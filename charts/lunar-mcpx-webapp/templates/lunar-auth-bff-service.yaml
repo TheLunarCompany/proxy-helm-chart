@@ -14,7 +14,7 @@ spec:
     - name: auth80
       protocol: TCP
       port: 80
-      targetPort: 3000
+      targetPort: 8080
   sessionAffinity: ClientIP
   type: ClusterIP
   selector:
@@ -41,7 +41,7 @@ spec:
     unhealthyThreshold: 3
     type: HTTP
     requestPath: /healthcheck
-    port: 3000
+    port: 8080
 {{- end }}
 {{- end }}
 

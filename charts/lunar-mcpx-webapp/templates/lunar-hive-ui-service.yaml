@@ -14,7 +14,7 @@ spec:
     - name: ui80
       protocol: TCP
       port: 80
-      targetPort: 5173
+      targetPort: 8080
   sessionAffinity: ClientIP
   type: ClusterIP
   selector:
@@ -41,7 +41,7 @@ spec:
     unhealthyThreshold: 3
     type: HTTP
     requestPath: /
-    port: 5173
+    port: 8080
 {{- end }}
 {{- end }}
 
