@@ -49,6 +49,8 @@ spec:
           env:
             - name: NODE_ENV
               value: "production"
+            - name: PORT
+              value: "8080"
           {{- if .Values.ingress.enabled }}
             - name: API_BASE_URL
               value: "https://{{ first .Values.ingress.domains.webserver }}"
