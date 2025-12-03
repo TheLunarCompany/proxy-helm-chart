@@ -1,4 +1,4 @@
-{{- if .Values.webserver.enabled | default true }}
+{{- if .Values.admin.enabled | default true }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -54,6 +54,8 @@ spec:
               value: "https://{{ first .Values.ingress.domains.webserver }}"
             - name: AUTH_BFF_URL
               value: "https://{{ first .Values.ingress.domains.auth }}"
+            - name: MCPX_UI_URL
+              value: "https://{{ first .Values.ingress.domains.ui }}"
             - name: DEFAULT_MCPX_TAG
               value: "{{ .Values.ui.image.tag }}"
             - name: DEFAULT_MCPX_REPO
