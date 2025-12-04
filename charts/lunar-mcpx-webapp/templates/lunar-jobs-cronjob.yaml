@@ -5,6 +5,12 @@ metadata:
   name: {{ include "lunar-mcpx-webapp.fullname" . }}-db-ses-rtn
   labels:
     service: {{ include "lunar-mcpx-webapp.fullname" . }}-db-ses-rtn
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.jobs.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   schedule: "0 */4 * * *"
   successfulJobsHistoryLimit: 3
@@ -17,6 +23,16 @@ spec:
         metadata:
           labels:
             service: {{ include "lunar-mcpx-webapp.fullname" . }}-db-ses-rtn
+            {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 12 }}
+            {{- with .Values.global.labels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.jobs.labels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.jobs.podLabels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
         spec:
           restartPolicy: OnFailure
           containers:
