@@ -1,4 +1,4 @@
-{{- if .Values.webserver.enabled | default true }}
+{{- if .Values.hub.enabled | default true }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,17 +6,41 @@ metadata:
   labels:
     name: {{ include "lunar-mcpx-webapp.fullname" . }}-hub
     app: {{ include "lunar-mcpx-webapp.fullname" . }}-hub
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.hub.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   replicas: {{ .Values.hub.replicaCount | default 1 }}
   selector:
     matchLabels:
       app: {{ include "lunar-mcpx-webapp.fullname" . }}-hub
       {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 6 }}
+      {{- with .Values.global.labels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.hub.labels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.hub.podLabels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
   template:
     metadata:
       labels:
         app: {{ include "lunar-mcpx-webapp.fullname" . }}-hub
         {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 8 }}
+        {{- with .Values.global.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.hub.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.hub.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       initContainers:
         - name: mcpx-hub-prisma-migration
