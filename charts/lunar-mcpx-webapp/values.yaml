@@ -26,7 +26,6 @@ global:
   #   - secret_2
   extraEnvFromSecrets: []
 
-
 webserver:
   image:
     # -- Lunar mcpx-webserver image repository
@@ -36,6 +35,8 @@ webserver:
     # -- Lunar mcpx-webserver image tag
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
+
+  nodeSelector: {}
 
   # -- number of replicas to run
   replicaCount: 1
@@ -67,7 +68,6 @@ webserver:
   #   - secret_2
   extraEnvFromSecrets: []
 
-
 hub:
   image:
     # -- Lunar mcpx-webserver image repository
@@ -77,6 +77,8 @@ hub:
     # -- Lunar mcpx-webserver image tag
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
+
+  nodeSelector: {}
 
   # -- number of replicas to run
   replicaCount: 1
@@ -107,7 +109,6 @@ hub:
   #   - secret_1
   #   - secret_2
   extraEnvFromSecrets: []
-
 
 admin:
   image:
@@ -119,6 +120,8 @@ admin:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+  nodeSelector: {}
+
   # -- number of replicas to run
   replicaCount: 1
 
@@ -148,7 +151,6 @@ admin:
   #   - secret_1
   #   - secret_2
   extraEnvFromSecrets: []
-
 
 auth:
   image:
@@ -160,6 +162,8 @@ auth:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+  nodeSelector: {}
+
   # -- number of replicas to run
   replicaCount: 1
 
@@ -189,7 +193,6 @@ auth:
   #   - secret_1
   #   - secret_2
   extraEnvFromSecrets: []
-
 
 controller:
   image:
@@ -201,6 +204,8 @@ controller:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+  nodeSelector: {}
+
   # -- number of replicas to run
   replicaCount: 1
 
@@ -230,7 +235,6 @@ controller:
   #   - secret_1
   #   - secret_2
   extraEnvFromSecrets: []
-
 
 router:
   image:
@@ -242,6 +246,8 @@ router:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+  nodeSelector: {}
+
   # -- number of replicas to run
   replicaCount: 1
 
@@ -272,7 +278,6 @@ router:
   #   - secret_2
   extraEnvFromSecrets: []
 
-
 ui:
   image:
     # -- Lunar mcpx-ui image repository
@@ -282,6 +287,8 @@ ui:
     # -- Lunar mcpx-ui image tag
     # Overrides the image tag whose default is the chart appVersion.
     tag: "0.2.29-bc672e8"
+
+  nodeSelector: {}
 
   # -- number of replicas to run
   replicaCount: 1
@@ -312,7 +319,6 @@ ui:
   #   - secret_1
   #   - secret_2
   extraEnvFromSecrets: []
-
 
 jobs:
   image:
@@ -351,7 +357,6 @@ jobs:
   #   - secret_2
   extraEnvFromSecrets: []
 
-
 ingress:
   # -- Enable or disable Ingress for mcpx-webapp services
   enabled: true
@@ -379,7 +384,6 @@ ingress:
 
   # -- GCP-specific configuration. Used only when ingress.type = gce
   gce: {}
-
 
 postgres:
   # -- Enable or disable embedded Postgresql StatefulSet
