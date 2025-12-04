@@ -3,6 +3,15 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "lunar-mcpx-webapp.fullname" . }}-postgres
+  labels:
+    name: {{ include "lunar-mcpx-webapp.fullname" . }}-postgres
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-postgres
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.postgres.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   ports:
     - name: postgres
@@ -13,4 +22,13 @@ spec:
   selector:
     app: {{ include "lunar-mcpx-webapp.fullname" . }}-postgres
     {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 4 }}
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.postgres.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.postgres.podLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   {{- end }}
