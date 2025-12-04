@@ -36,6 +36,8 @@ webserver:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
 
   # -- number of replicas to run
@@ -78,6 +80,8 @@ hub:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
 
   # -- number of replicas to run
@@ -120,6 +124,8 @@ admin:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
 
   # -- number of replicas to run
@@ -162,6 +168,8 @@ auth:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
 
   # -- number of replicas to run
@@ -204,6 +212,8 @@ controller:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
 
   # -- number of replicas to run
@@ -246,6 +256,8 @@ router:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
 
   # -- number of replicas to run
@@ -288,6 +300,8 @@ ui:
     # Overrides the image tag whose default is the chart appVersion.
     tag: "0.2.29-bc672e8"
 
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
 
   # -- number of replicas to run
