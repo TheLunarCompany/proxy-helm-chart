@@ -3,6 +3,15 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "lunar-mcpx-webapp.fullname" . }}-redis
+  labels:
+    name: {{ include "lunar-mcpx-webapp.fullname" . }}-redis
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-redis
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.redis.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   ports:
     - name: redis
@@ -13,4 +22,13 @@ spec:
   selector:
     app: {{ include "lunar-mcpx-webapp.fullname" . }}-redis
     {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 4 }}
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.redis.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.redis.podLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   {{- end }}
