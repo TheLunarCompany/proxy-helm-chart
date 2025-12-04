@@ -15,3 +15,4 @@
 
 # Values.yaml with data
 *.tmp.yaml
+settings.local.json
