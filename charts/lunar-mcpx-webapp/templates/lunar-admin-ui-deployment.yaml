@@ -47,8 +47,21 @@ spec:
           image: "{{ .Values.admin.image.repository }}:{{ .Values.admin.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           ports:
             - containerPort: 3000
+          {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
-            {{- toYaml .Values.admin.resources | nindent 12 }}
+            {{- if .Values.global.manageResources.limits }}
+            limits:
+              {{- with .Values.admin.resources.limits }}
+              {{- toYaml . | nindent 14 }}
+              {{- end }}
+            {{- end }}
+            {{- if .Values.global.manageResources.requests }}
+            requests:
+              {{- with .Values.admin.resources.requests }}
+                {{- toYaml . | nindent 14 }}
+                {{- end }}
+            {{- end }}
+          {{- end }}
           securityContext:
             readOnlyRootFilesystem: true
             runAsNonRoot: true

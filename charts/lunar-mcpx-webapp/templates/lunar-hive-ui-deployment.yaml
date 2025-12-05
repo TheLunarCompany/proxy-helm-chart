@@ -47,8 +47,21 @@ spec:
           image: "{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag }}"
           ports:
             - containerPort: 5173
+          {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
-            {{- toYaml .Values.ui.resources | nindent 12 }}
+            {{- if .Values.global.manageResources.limits }}
+            limits:
+              {{- with .Values.ui.resources.limits }}
+              {{- toYaml . | nindent 14 }}
+              {{- end }}
+            {{- end }}
+            {{- if .Values.global.manageResources.requests }}
+            requests:
+              {{- with .Values.ui.resources.requests }}
+                {{- toYaml . | nindent 14 }}
+                {{- end }}
+            {{- end }}
+          {{- end }}
           envFrom:
             - secretRef:
                 name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
