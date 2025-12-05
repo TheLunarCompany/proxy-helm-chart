@@ -52,8 +52,21 @@ spec:
               name: mcpx-server
             - containerPort: 3000
               name: metrics
+          {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
-            {{- toYaml .Values.router.resources | nindent 12 }}
+            {{- if .Values.global.manageResources.limits }}
+            limits:
+              {{- with .Values.router.resources.limits }}
+              {{- toYaml . | nindent 14 }}
+              {{- end }}
+            {{- end }}
+            {{- if .Values.global.manageResources.requests }}
+            requests:
+              {{- with .Values.router.resources.requests }}
+                {{- toYaml . | nindent 14 }}
+                {{- end }}
+            {{- end }}
+          {{- end }}
           envFrom:
             - secretRef:
                 name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded

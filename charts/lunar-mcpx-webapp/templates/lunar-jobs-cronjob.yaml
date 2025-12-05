@@ -40,8 +40,21 @@ spec:
               image: "{{ .Values.jobs.image.repository }}:{{ .Values.jobs.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
               args:
                 - clean-terminated-sessions
+              {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
               resources:
-                {{- toYaml .Values.jobs.resources | nindent 16 }}
+                {{- if .Values.global.manageResources.limits }}
+                limits:
+                  {{- with .Values.jobs.resources.limits }}
+                  {{- toYaml . | nindent 18 }}
+                  {{- end }}
+                {{- end }}
+                {{- if .Values.global.manageResources.requests }}
+                requests:
+                  {{- with .Values.jobs.resources.requests }}
+                    {{- toYaml . | nindent 18 }}
+                    {{- end }}
+                {{- end }}
+              {{- end }}
               envFrom:
                 - secretRef:
                     name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded

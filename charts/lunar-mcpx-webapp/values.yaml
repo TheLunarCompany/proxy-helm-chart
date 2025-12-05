@@ -32,6 +32,12 @@ global:
   #   label_2: value_2
   labels: {}
 
+  # -- manageResources flags that globally enables or disables resource specs
+  # It is highly recommended to always specify requests and limits for services
+  manageResources:
+    limits: true
+    requests: true
+
 webserver:
   image:
     # -- Lunar mcpx-webserver image repository
