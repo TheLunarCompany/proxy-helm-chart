@@ -504,6 +504,22 @@ ingress:
     router:
       - mcpx.example.com
 
+  # -- https variable controls settings related to certificates configuration on ingress
+  # Block 'tls' represents standard 'tls' block of ingress controller - https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
+  # Note: 'tls' is optional for following types of ingress controller:
+  #   nginx - tls configuration will be created, it will be referring secrets with patter tls-{{ domain name }}
+  #   gce   - tls configuration will be empty and not required
+  #
+  # https:
+  #   enabled: true
+  #   tls:
+  #    - hosts:
+  #        - mcpx-app.example.com
+  #      secretName: tls-mcpx-app.example.com
+  https:
+    enabled: true
+    tls: []
+
   # -- Provision cloud-specific ingress resources and configuration.
   # Available options: "manual", "gce"
   # - undef  - deploys generic ingress without any cloud-specific configuration. Use ingress.annotations to configure it

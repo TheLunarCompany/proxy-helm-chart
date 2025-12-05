@@ -1,0 +1,59 @@
+---
+global:
+  extraEnvVars:
+    - name: LOG_LEVEL
+      value: debug
+  extraEnvFromSecrets:
+    - mcpx-webapp-global
+
+webserver:
+  replicaCount: 2
+
+hub:
+  replicaCount: 2
+  extraEnvFromSecrets:
+    - mcpx-webapp-oidc
+
+admin:
+  replicaCount: 2
+
+auth:
+  replicaCount: 2
+  extraEnvFromSecrets:
+    - mcpx-webapp-oidc
+
+controller:
+  replicaCount: 2
+
+router:
+  replicaCount: 2
+  extraEnvFromSecrets:
+    - mcpx-webapp-oidc
+
+ui:
+  replicaCount: 2
+
+ingress:
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-nginx"
+    acme.cert-manager.io/http01-edit-in-place: "true"
+  type: nginx
+
+  domains:
+    webserver:
+      - mcpx-app.example.com
+    admin:
+      - mcpx-admin.example.com
+    auth:
+      - mcpx-auth.example.com
+    ui:
+      - mcpx-ui.example.com
+    router:
+      - mcpx.example.com
+
+postgres:
+  enabled: false
+
+redis:
+  enabled: false
