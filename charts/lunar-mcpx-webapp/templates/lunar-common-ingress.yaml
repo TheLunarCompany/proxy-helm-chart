@@ -113,7 +113,8 @@ spec:
 
   {{- if .Values.ingress.https.enabled }}
   {{- if .Values.ingress.https.tls }}
-  tls: {{- toYaml .Values.ingress.tls | nindent 4 }}
+  tls:
+    {{- toYaml .Values.ingress.https.tls | nindent 4 }}
   {{- else }}
   {{- if eq .Values.ingress.type "nginx" }}
   tls:
