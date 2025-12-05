@@ -6,17 +6,41 @@ metadata:
   labels:
     name: {{ include "lunar-mcpx-webapp.fullname" . }}-router
     app: {{ include "lunar-mcpx-webapp.fullname" . }}-router
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.router.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   replicas: {{ .Values.router.replicaCount | default 1 }}
   selector:
     matchLabels:
       app: {{ include "lunar-mcpx-webapp.fullname" . }}-router
       {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 6 }}
+      {{- with .Values.global.labels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.router.labels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.router.podLabels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
   template:
     metadata:
       labels:
         app: {{ include "lunar-mcpx-webapp.fullname" . }}-router
         {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 8 }}
+        {{- with .Values.global.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.router.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.router.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       containers:
         - name: mcpx-router-container
@@ -108,5 +132,9 @@ spec:
         {{- range $.Values.global.imagePullSecrets }}
         - name: {{ . }}
         {{- end }}
+      {{- end }}
+      {{- with .Values.router.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
       {{- end }}
   {{- end }}

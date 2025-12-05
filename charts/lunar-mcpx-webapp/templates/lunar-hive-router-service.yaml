@@ -3,6 +3,15 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "lunar-mcpx-webapp.fullname" . }}-router
+  labels:
+    name: {{ include "lunar-mcpx-webapp.fullname" . }}-router
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-router
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.router.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   annotations:
     {{- if .Values.ingress.enabled | default true }}
     {{- if eq .Values.ingress.type "gce" }}
@@ -25,8 +34,17 @@ spec:
   selector:
     app: {{ include "lunar-mcpx-webapp.fullname" . }}-router
     {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 4 }}
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.router.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.router.podLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 
----
+
 {{- if .Values.ingress.enabled | default true }}
 {{- if eq .Values.ingress.type "gce" }}
 ---

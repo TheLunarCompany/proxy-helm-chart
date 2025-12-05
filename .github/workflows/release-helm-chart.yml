@@ -9,7 +9,6 @@ on:
         options:
           - lunar-proxy
           - lunar-mcpx
-          - lunar-mcpx-webapp
       version: # Effectively, the version of the Docker image tag
         description: "Version to deploy"
         required: true
