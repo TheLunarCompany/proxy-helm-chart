@@ -22,5 +22,8 @@ version: "0.7.9"
 # follow Semantic Versioning. They should reflect the version the application is using.
 appVersion: "0.7.9-27ca3b1"
 
+annotations:
+  mcpxVersion: "0.2.31-a0e5569"
+
 # An icon can be provided for this chart, which will be displayed in the Chart Center.
 icon: https://storage.googleapis.com/lunar-webapp-assets/favicon/apple-touch-icon.png

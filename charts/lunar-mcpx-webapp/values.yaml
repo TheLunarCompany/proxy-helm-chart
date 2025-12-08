@@ -32,6 +32,9 @@ global:
   #   label_2: value_2
   labels: {}
 
+  # -- Override for MCPX image tag across components. Falls back to the chart mcpxVersion annotation then appVersion.
+  mcpxVersion: ""
+
   # -- manageResources flags that globally enables or disables resource specs
   # It is highly recommended to always specify requests and limits for services
   manageResources:
@@ -381,8 +384,7 @@ ui:
     # -- Lunar mcpx-ui image pull policy
     pullPolicy: IfNotPresent
     # -- Lunar mcpx-ui image tag
-    # Overrides the image tag whose default is the chart appVersion.
-    tag: "0.2.29-bc672e8"
+    tag: ""
 
   # -- NodeSelector to pin pods in deployment to certain set of nodes.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
@@ -439,6 +441,8 @@ jobs:
     # -- Lunar mcpx-jobs image tag
     # Overrides the image tag whose default is the chart appVersion.
     tag: "0.2.31-a0e5569"
+
+  nodeSelector: {}
 
   # -- Set pod resource requests & limits
   resources:
