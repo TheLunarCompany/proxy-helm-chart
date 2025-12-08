@@ -44,7 +44,7 @@ spec:
     spec:
       containers:
         - name: mcpx-ui-container
-          image: "{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag }}"
+          image: '{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) }}'
           ports:
             - containerPort: 5173
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}

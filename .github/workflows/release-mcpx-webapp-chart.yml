@@ -74,8 +74,8 @@ jobs:
         run: |
           sed -Ei.bak "s/(version: ).*/\1\"${{ env.chart_version }}\"/" charts/lunar-mcpx-webapp/Chart.yaml
           sed -Ei.bak "s/(appVersion: ).*/\1\"${{ inputs.version }}\"/" charts/lunar-mcpx-webapp/Chart.yaml
-          if [ "x${{ inputs.mcpx-version }}" != "x" ]; then 
-            sed -i.bak '/repository: .*mcpx-ui/,/tag: ""/s/tag: ""/tag: "${{ inputs.mcpx-version }}"/' charts/lunar-mcpx-webapp/values.yaml
+          if [ -n "${{ inputs.mcpx-version }}" ]; then
+            sed -Ei.bak "s/(mcpxVersion: ).*/\1\"${{ inputs.mcpx-version }}\"/" charts/lunar-mcpx-webapp/Chart.yaml
           fi
 
       # Commit the updated README.md if there are any changes
