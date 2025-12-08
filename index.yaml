@@ -46,6 +46,19 @@ entries:
     - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/lunar-mcpx-v0.1.0/lunar-mcpx-v0.1.0.tgz
     version: v0.1.0
   lunar-mcpx-webapp:
+  - annotations:
+      mcpxVersion: 0.2.31-a0e5569
+    apiVersion: v2
+    appVersion: 0.7.9-27ca3b1
+    created: "2025-12-08T07:57:42.990056584Z"
+    description: A Helm chart to deploy Lunar MCPX to Kubernetes
+    digest: a7716087a1081d429b1da801730fb055ebc5fa164c93ee7b465d86cd480020a0
+    icon: https://storage.googleapis.com/lunar-webapp-assets/favicon/apple-touch-icon.png
+    name: lunar-mcpx-webapp
+    type: application
+    urls:
+    - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/lunar-mcpx-webapp-0.7.10/lunar-mcpx-webapp-0.7.10.tgz
+    version: 0.7.10
   - apiVersion: v2
     appVersion: 0.7.9-27ca3b1
     created: "2025-12-07T12:01:38.971596764Z"
@@ -1266,4 +1279,4 @@ entries:
     urls:
     - https://github.com/TheLunarCompany/proxy-helm-chart/releases/download/mcpx-hive-v0.1.0/mcpx-hive-v0.1.0.tgz
     version: v0.1.0
-generated: "2025-12-07T12:01:38.971925027Z"
+generated: "2025-12-08T07:57:42.990376023Z"
