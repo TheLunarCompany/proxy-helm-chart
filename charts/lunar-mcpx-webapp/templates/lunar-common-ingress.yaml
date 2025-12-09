@@ -84,7 +84,7 @@ spec:
               service:
                 name: {{ $xfullname }}-router
                 port:
-                  number: 5173
+                  number: 8080
             path: /
             pathType: Prefix
     {{ else }}
