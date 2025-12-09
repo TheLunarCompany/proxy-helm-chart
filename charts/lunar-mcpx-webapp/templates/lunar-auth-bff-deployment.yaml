@@ -91,7 +91,7 @@ spec:
         - name: mcpx-auth-container
           image: "{{ .Values.auth.image.repository }}:{{ .Values.auth.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           ports:
-            - containerPort: 3000
+            - containerPort: 8080
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
             {{- if .Values.global.manageResources.limits }}
@@ -132,7 +132,7 @@ spec:
             - name: NODE_ENV
               value: "production"
             - name: PORT
-              value: "3000"
+              value: "8080"
           {{- if .Values.ingress.enabled }}
             - name: JWT_ISSUER
               value: "https://{{ first .Values.ingress.domains.auth }}"
@@ -151,7 +151,7 @@ spec:
             failureThreshold: 30
             httpGet:
               path: /healthcheck
-              port: 3000
+              port: 8080
               scheme: HTTP
             periodSeconds: 10
           readinessProbe:
@@ -159,7 +159,7 @@ spec:
             failureThreshold: 3
             httpGet:
               path: /healthcheck
-              port: 3000
+              port: 8080
               scheme: HTTP
             initialDelaySeconds: 10
             periodSeconds: 10
@@ -168,7 +168,7 @@ spec:
             failureThreshold: 10
             httpGet:
               path: /healthcheck
-              port: 3000
+              port: 8080
               scheme: HTTP
             initialDelaySeconds: 10
             periodSeconds: 30

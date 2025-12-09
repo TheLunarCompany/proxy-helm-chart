@@ -46,7 +46,7 @@ spec:
         - name: mcpx-admin-container
           image: "{{ .Values.admin.image.repository }}:{{ .Values.admin.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           ports:
-            - containerPort: 3000
+            - containerPort: 8080
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
             {{- if .Values.global.manageResources.limits }}
@@ -86,6 +86,10 @@ spec:
           env:
             - name: NODE_ENV
               value: "production"
+            - name: PORT
+              value: "8080"
+            - name: MCPX_UI_URL
+              value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-router:8080"
           {{- if .Values.ingress.enabled }}
             - name: API_BASE_URL
               value: "https://{{ first .Values.ingress.domains.webserver }}"
@@ -110,7 +114,7 @@ spec:
             failureThreshold: 30
             httpGet:
               path: /healthcheck
-              port: 3000
+              port: 8080
               scheme: HTTP
             periodSeconds: 10
           readinessProbe:
@@ -118,7 +122,7 @@ spec:
             failureThreshold: 3
             httpGet:
               path: /healthcheck
-              port: 3000
+              port: 8080
               scheme: HTTP
             periodSeconds: 10
             timeoutSeconds: 10
@@ -126,7 +130,7 @@ spec:
             failureThreshold: 3
             httpGet:
               path: /healthcheck
-              port: 3000
+              port: 8080
               scheme: HTTP
             periodSeconds: 10
             timeoutSeconds: 10

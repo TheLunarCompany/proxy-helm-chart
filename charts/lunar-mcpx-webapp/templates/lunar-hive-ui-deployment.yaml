@@ -46,7 +46,7 @@ spec:
         - name: mcpx-ui-container
           image: '{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) }}'
           ports:
-            - containerPort: 5173
+            - containerPort: 8080
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
             {{- if .Values.global.manageResources.limits }}
@@ -80,6 +80,8 @@ spec:
           env:
             - name: VITE_ENABLE_ENTERPRISE
               value: "true"
+            - name: UI_PORT
+              value: "8080"
             - name: VITE_MCPX_SERVER_URL
               value: "https://{{ first .Values.ingress.domains.router }}"
             - name: VITE_AUTH_BFF_URL
@@ -96,7 +98,7 @@ spec:
             failureThreshold: 30
             httpGet:
               path: /healthcheck
-              port: 5173
+              port: 8080
               scheme: HTTP
             periodSeconds: 10
           readinessProbe:
@@ -104,7 +106,7 @@ spec:
             failureThreshold: 3
             httpGet:
               path: /healthcheck
-              port: 5173
+              port: 8080
               scheme: HTTP
             initialDelaySeconds: 10
             periodSeconds: 10
@@ -113,7 +115,7 @@ spec:
             failureThreshold: 10
             httpGet:
               path: /healthcheck
-              port: 5173
+              port: 8080
               scheme: HTTP
             initialDelaySeconds: 60
             periodSeconds: 30

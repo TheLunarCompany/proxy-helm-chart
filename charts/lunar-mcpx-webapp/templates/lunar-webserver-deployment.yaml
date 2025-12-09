@@ -91,7 +91,7 @@ spec:
         - name: mcpx-webserver-container
           image: "{{ .Values.webserver.image.repository }}:{{ .Values.webserver.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           ports:
-            - containerPort: 3000
+            - containerPort: 8080
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
             {{- if .Values.global.manageResources.limits }}
@@ -131,8 +131,10 @@ spec:
           env:
             - name: NODE_ENV
               value: "production"
+            - name: PORT
+              value: "8080"
             - name: HIVE_CONTROLLER_URL
-              value: http://{{ include "lunar-mcpx-webapp.fullname" . }}-controller
+              value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-controller"
             - name: HIVE_DEFAULT_MCPX_IMAGE
               value: 'us-central1-docker.pkg.dev/prj-common-442813/mcpx/mcpx-server:{{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) }}'  
           {{- if .Values.ingress.enabled }}
@@ -151,7 +153,7 @@ spec:
             failureThreshold: 30
             httpGet:
               path: /healthcheck
-              port: 3000
+              port: 8080
               scheme: HTTP
             periodSeconds: 10
           readinessProbe:
@@ -159,7 +161,7 @@ spec:
             failureThreshold: 3
             httpGet:
               path: /healthcheck
-              port: 3000
+              port: 8080
               scheme: HTTP
             initialDelaySeconds: 10
             periodSeconds: 10
@@ -168,7 +170,7 @@ spec:
             failureThreshold: 10
             httpGet:
               path: /healthcheck
-              port: 3000
+              port: 8080
               scheme: HTTP
             initialDelaySeconds: 60
             periodSeconds: 30
