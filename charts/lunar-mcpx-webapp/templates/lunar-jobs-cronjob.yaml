@@ -5,6 +5,12 @@ metadata:
   name: {{ include "lunar-mcpx-webapp.fullname" . }}-db-ses-rtn
   labels:
     service: {{ include "lunar-mcpx-webapp.fullname" . }}-db-ses-rtn
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.jobs.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   schedule: "0 */4 * * *"
   successfulJobsHistoryLimit: 3
@@ -17,6 +23,16 @@ spec:
         metadata:
           labels:
             service: {{ include "lunar-mcpx-webapp.fullname" . }}-db-ses-rtn
+            {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 12 }}
+            {{- with .Values.global.labels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.jobs.labels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.jobs.podLabels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
         spec:
           restartPolicy: OnFailure
           containers:
@@ -24,8 +40,21 @@ spec:
               image: "{{ .Values.jobs.image.repository }}:{{ .Values.jobs.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
               args:
                 - clean-terminated-sessions
+              {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
               resources:
-                {{- toYaml .Values.jobs.resources | nindent 16 }}
+                {{- if .Values.global.manageResources.limits }}
+                limits:
+                  {{- with .Values.jobs.resources.limits }}
+                  {{- toYaml . | nindent 18 }}
+                  {{- end }}
+                {{- end }}
+                {{- if .Values.global.manageResources.requests }}
+                requests:
+                  {{- with .Values.jobs.resources.requests }}
+                    {{- toYaml . | nindent 18 }}
+                    {{- end }}
+                {{- end }}
+              {{- end }}
               envFrom:
                 - secretRef:
                     name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
@@ -54,4 +83,8 @@ spec:
             {{- range $.Values.global.imagePullSecrets }}
             - name: {{ . }}
             {{- end }}
+          {{- end }}
+          {{- with .Values.jobs.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
           {{- end }}

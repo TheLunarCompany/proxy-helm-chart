@@ -3,6 +3,15 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "lunar-mcpx-webapp.fullname" . }}-webserver
+  labels:
+    name: {{ include "lunar-mcpx-webapp.fullname" . }}-webserver
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-webserver
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.webserver.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   annotations:
     {{- if .Values.ingress.enabled | default true }}
     {{- if eq .Values.ingress.type "gce" }}
@@ -24,6 +33,15 @@ spec:
   selector:
     app: {{ include "lunar-mcpx-webapp.fullname" . }}-webserver
     {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 4 }}
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.webserver.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.webserver.podLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 
 
 {{- if .Values.ingress.enabled | default true }}

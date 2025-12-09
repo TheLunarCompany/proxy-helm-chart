@@ -8,6 +8,9 @@
                 "extraEnvVars": {
                     "type": "array"
                 },
+                "mcpxVersion": {
+                    "type": "string"
+                },
                 "imagePullSecrets": {
                     "type": "array"
                 }

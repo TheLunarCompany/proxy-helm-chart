@@ -26,6 +26,20 @@ global:
   #   - secret_2
   extraEnvFromSecrets: []
 
+  # Labels for all resources
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  labels: {}
+
+  # -- Override for MCPX image tag across components. Falls back to the chart mcpxVersion annotation then appVersion.
+  mcpxVersion: ""
+
+  # -- manageResources flags that globally enables or disables resource specs
+  # It is highly recommended to always specify requests and limits for services
+  manageResources:
+    limits: true
+    requests: true
 
 webserver:
   image:
@@ -36,6 +50,10 @@ webserver:
     # -- Lunar mcpx-webserver image tag
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
+
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  nodeSelector: {}
 
   # -- number of replicas to run
   replicaCount: 1
@@ -67,6 +85,17 @@ webserver:
   #   - secret_2
   extraEnvFromSecrets: []
 
+  # Labels for all application related resources
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  labels: {}
+
+  # Pod Labels
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  podLabels: {}
 
 hub:
   image:
@@ -78,6 +107,10 @@ hub:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  nodeSelector: {}
+
   # -- number of replicas to run
   replicaCount: 1
 
@@ -108,6 +141,17 @@ hub:
   #   - secret_2
   extraEnvFromSecrets: []
 
+  # Labels for all application related resources
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  labels: {}
+
+  # Pod Labels
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  podLabels: {}
 
 admin:
   image:
@@ -119,6 +163,10 @@ admin:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  nodeSelector: {}
+
   # -- number of replicas to run
   replicaCount: 1
 
@@ -149,6 +197,17 @@ admin:
   #   - secret_2
   extraEnvFromSecrets: []
 
+  # Labels for all application related resources
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  labels: {}
+
+  # Pod Labels
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  podLabels: {}
 
 auth:
   image:
@@ -160,6 +219,10 @@ auth:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  nodeSelector: {}
+
   # -- number of replicas to run
   replicaCount: 1
 
@@ -190,6 +253,17 @@ auth:
   #   - secret_2
   extraEnvFromSecrets: []
 
+  # Labels for all application related resources
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  labels: {}
+
+  # Pod Labels
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  podLabels: {}
 
 controller:
   image:
@@ -201,6 +275,10 @@ controller:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  nodeSelector: {}
+
   # -- number of replicas to run
   replicaCount: 1
 
@@ -231,6 +309,17 @@ controller:
   #   - secret_2
   extraEnvFromSecrets: []
 
+  # Labels for all application related resources
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  labels: {}
+
+  # Pod Labels
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  podLabels: {}
 
 router:
   image:
@@ -242,6 +331,10 @@ router:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  nodeSelector: {}
+
   # -- number of replicas to run
   replicaCount: 1
 
@@ -272,6 +365,17 @@ router:
   #   - secret_2
   extraEnvFromSecrets: []
 
+  # Labels for all application related resources
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  labels: {}
+
+  # Pod Labels
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  podLabels: {}
 
 ui:
   image:
@@ -280,8 +384,11 @@ ui:
     # -- Lunar mcpx-ui image pull policy
     pullPolicy: IfNotPresent
     # -- Lunar mcpx-ui image tag
-    # Overrides the image tag whose default is the chart appVersion.
-    tag: "0.2.29-bc672e8"
+    tag: ""
+
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  nodeSelector: {}
 
   # -- number of replicas to run
   replicaCount: 1
@@ -313,6 +420,17 @@ ui:
   #   - secret_2
   extraEnvFromSecrets: []
 
+  # Labels for all application related resources
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  labels: {}
+
+  # Pod Labels
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  podLabels: {}
 
 jobs:
   image:
@@ -322,7 +440,9 @@ jobs:
     pullPolicy: IfNotPresent
     # -- Lunar mcpx-jobs image tag
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "0.2.30"
+    tag: "0.2.31-a0e5569"
+
+  nodeSelector: {}
 
   # -- Set pod resource requests & limits
   resources:
@@ -351,6 +471,17 @@ jobs:
   #   - secret_2
   extraEnvFromSecrets: []
 
+  # Labels for all application related resources
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  labels: {}
+
+  # Pod Labels
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  podLabels: {}
 
 ingress:
   # -- Enable or disable Ingress for mcpx-webapp services
@@ -358,6 +489,12 @@ ingress:
 
   # -- Ingress annotations
   annotations: {}
+
+  # Labels for all application related resources
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  labels: {}
 
   domains:
     webserver:
@@ -371,6 +508,22 @@ ingress:
     router:
       - mcpx.example.com
 
+  # -- https variable controls settings related to certificates configuration on ingress
+  # Block 'tls' represents standard 'tls' block of ingress controller - https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
+  # Note: 'tls' is optional for following types of ingress controller:
+  #   nginx - tls configuration will be created, it will be referring secrets with patter tls-{{ domain name }}
+  #   gce   - tls configuration will be empty and not required
+  #
+  # https:
+  #   enabled: true
+  #   tls:
+  #    - hosts:
+  #        - mcpx-app.example.com
+  #      secretName: tls-mcpx-app.example.com
+  https:
+    enabled: true
+    tls: []
+
   # -- Provision cloud-specific ingress resources and configuration.
   # Available options: "manual", "gce"
   # - undef  - deploys generic ingress without any cloud-specific configuration. Use ingress.annotations to configure it
@@ -380,12 +533,23 @@ ingress:
   # -- GCP-specific configuration. Used only when ingress.type = gce
   gce: {}
 
-
 postgres:
   # -- Enable or disable embedded Postgresql StatefulSet
   # Warning: Do not use embedded Postgresql for production environments.
   # The purpose of embedded services is to provide a 'quick-start' option and for testing purposes.
   enabled: false
+
+  # Labels for all application related resources
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  labels: {}
+
+  # Pod Labels
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  podLabels: {}
 
   # -- Configure persistent storage
   # e.g.
@@ -409,6 +573,18 @@ redis:
   # Warning: Do not use embedded Redis for production environments.
   # The purpose of embedded services is to provide a 'quick-start' option and for testing purposes.
   enabled: false
+
+  # Labels for all application related resources
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  labels: {}
+
+  # Pod Labels
+  # labels:
+  #   label_1: value_1
+  #   label_2: value_2
+  podLabels: {}
 
   # -- Configure persistent storage
   # e.g.

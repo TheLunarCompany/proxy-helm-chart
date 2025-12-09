@@ -6,17 +6,41 @@ metadata:
   labels:
     name: {{ include "lunar-mcpx-webapp.fullname" . }}-controller
     app: {{ include "lunar-mcpx-webapp.fullname" . }}-controller
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.controller.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   replicas: {{ .Values.controller.replicaCount | default 1 }}
   selector:
     matchLabels:
       app: {{ include "lunar-mcpx-webapp.fullname" . }}-controller
       {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 6 }}
+      {{- with .Values.global.labels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.controller.labels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.controller.podLabels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
   template:
     metadata:
       labels:
         app: {{ include "lunar-mcpx-webapp.fullname" . }}-controller
         {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 8 }}
+        {{- with .Values.global.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.controller.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.controller.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ include "lunar-mcpx-webapp.fullname" . }}-controller
       automountServiceAccountToken: true
@@ -29,8 +53,21 @@ spec:
           image: "{{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           ports:
             - containerPort: 8080
+          {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
-            {{- toYaml .Values.controller.resources | nindent 12 }}
+            {{- if .Values.global.manageResources.limits }}
+            limits:
+              {{- with .Values.controller.resources.limits }}
+              {{- toYaml . | nindent 14 }}
+              {{- end }}
+            {{- end }}
+            {{- if .Values.global.manageResources.requests }}
+            requests:
+              {{- with .Values.controller.resources.requests }}
+                {{- toYaml . | nindent 14 }}
+                {{- end }}
+            {{- end }}
+          {{- end }}
           securityContext:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
@@ -118,5 +155,9 @@ spec:
         {{- range $.Values.global.imagePullSecrets }}
         - name: {{ . }}
         {{- end }}
+      {{- end }}
+      {{- with .Values.controller.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
       {{- end }}
   {{- end }}

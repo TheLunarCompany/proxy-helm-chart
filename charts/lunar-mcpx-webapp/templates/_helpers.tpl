@@ -31,6 +31,14 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
+Resolve MCPX version for UI and SERVER tag/env: global.mcpxVersion override falls back to chart mcpxVersion annotation.
+*/}}
+{{- define "lunar-mcpx-webapp.mcpxVersion" -}}
+{{- $global := .Values.global -}}
+{{- coalesce $global.mcpxVersion .Chart.Annotations.mcpxVersion -}}
+{{- end }}
+
+{{/*
 Common labels
 */}}
 {{- define "lunar-mcpx-webapp.labels" -}}

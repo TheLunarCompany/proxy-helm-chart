@@ -1,4 +1,4 @@
-{{- if .Values.webserver.enabled | default true }}
+{{- if .Values.admin.enabled | default true }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,25 +6,62 @@ metadata:
   labels:
     name: {{ include "lunar-mcpx-webapp.fullname" . }}-admin
     app: {{ include "lunar-mcpx-webapp.fullname" . }}-admin
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.admin.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   replicas: {{ .Values.admin.replicaCount | default 1 }}
   selector:
     matchLabels:
       app: {{ include "lunar-mcpx-webapp.fullname" . }}-admin
       {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 6 }}
+      {{- with .Values.global.labels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.admin.labels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.admin.podLabels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
   template:
     metadata:
       labels:
         app: {{ include "lunar-mcpx-webapp.fullname" . }}-admin
         {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 8 }}
+        {{- with .Values.global.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.admin.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.admin.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       containers:
         - name: mcpx-admin-container
           image: "{{ .Values.admin.image.repository }}:{{ .Values.admin.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           ports:
             - containerPort: 8080
+          {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
-            {{- toYaml .Values.admin.resources | nindent 12 }}
+            {{- if .Values.global.manageResources.limits }}
+            limits:
+              {{- with .Values.admin.resources.limits }}
+              {{- toYaml . | nindent 14 }}
+              {{- end }}
+            {{- end }}
+            {{- if .Values.global.manageResources.requests }}
+            requests:
+              {{- with .Values.admin.resources.requests }}
+                {{- toYaml . | nindent 14 }}
+                {{- end }}
+            {{- end }}
+          {{- end }}
           securityContext:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
@@ -58,8 +95,10 @@ spec:
               value: "https://{{ first .Values.ingress.domains.webserver }}"
             - name: AUTH_BFF_URL
               value: "https://{{ first .Values.ingress.domains.auth }}"
+            - name: MCPX_UI_URL
+              value: "https://{{ first .Values.ingress.domains.ui }}"
             - name: DEFAULT_MCPX_TAG
-              value: "{{ .Values.ui.image.tag }}"
+              value: '{{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) }}'
             - name: DEFAULT_MCPX_REPO
               value: "us-central1-docker.pkg.dev/prj-common-442813/mcpx/mcpx-server"
           {{- end }}
@@ -101,5 +140,9 @@ spec:
         {{- range $.Values.global.imagePullSecrets }}
         - name: {{ . }}
         {{- end }}
+      {{- end }}
+      {{- with .Values.admin.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
       {{- end }}
   {{- end }}

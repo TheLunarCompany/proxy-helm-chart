@@ -1,6 +1,7 @@
 {{- if .Values.ingress.enabled | default true }}
 {{- $xfullname := include "lunar-mcpx-webapp.fullname" . }}
 {{- if eq .Values.ingress.type "gce" }}
+{{- if .Values.ingress.https.enabled }}
 {{- range $key, $value := .Values.ingress.domains }}
 ---
 apiVersion: networking.gke.io/v1
@@ -16,12 +17,21 @@ spec:
     - {{ . }}
     {{- end }}
 {{- end }}
+{{- end }}
 
 ---
 apiVersion: networking.gke.io/v1beta1
 kind: FrontendConfig
 metadata:
   name: {{ include "lunar-mcpx-webapp.fullname" . }}
+  labels:
+    name: {{ include "lunar-mcpx-webapp.fullname" . }}
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.ingress.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   redirectToHttps:
     enabled: true
@@ -33,16 +43,31 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ include "lunar-mcpx-webapp.fullname" . }}
+  labels:
+    name: {{ include "lunar-mcpx-webapp.fullname" . }}
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.ingress.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   annotations:
     {{- if eq .Values.ingress.type "gce" }}
     kubernetes.io/ingress.class: "gce"
+    networking.gke.io/v1beta1.FrontendConfig: {{ include "lunar-mcpx-webapp.fullname" . }}
+    {{- if .Values.ingress.https.enabled }}
     networking.gke.io/managed-certificates:
       {{- $newList := list -}}
       {{- range $key, $value := .Values.ingress.domains -}}
       {{- $newList = append $newList (printf "%s-%s" $xfullname $key) -}}
       {{- end }}
       {{ join "," $newList }}
-    networking.gke.io/v1beta1.FrontendConfig: {{ include "lunar-mcpx-webapp.fullname" . }}
+    {{- end }}
+    {{- end }}
+    {{- if eq .Values.ingress.type "nginx" }}
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/affinity: cookie
+    nginx.ingress.kubernetes.io/affinity-mode: persistent
     {{- end }}
     {{- if .Values.ingress.annotations }}
     {{- toYaml .Values.ingress.annotations | nindent 4 }}
@@ -86,6 +111,22 @@ spec:
     {{- end }}
     {{- end }}
 
+  {{- if .Values.ingress.https.enabled }}
+  {{- if .Values.ingress.https.tls }}
+  tls:
+    {{- toYaml .Values.ingress.https.tls | nindent 4 }}
+  {{- else }}
+  {{- if eq .Values.ingress.type "nginx" }}
+  tls:
+    {{- range $key, $value := .Values.ingress.domains }}
+    {{- range $value }}
+    - hosts:
+      - {{ . }}
+      secretName: tls-{{ . }}
+    {{- end }}
+    {{- end }}
+  {{- end }}
+  {{- end }}
   {{- end }}
 
-
+  {{- end }}
