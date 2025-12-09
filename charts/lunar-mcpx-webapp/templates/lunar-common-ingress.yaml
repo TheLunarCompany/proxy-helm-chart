@@ -76,18 +76,6 @@ spec:
   rules:
     {{- range $key, $value := .Values.ingress.domains }}
     {{- range $value }}
-    {{- if eq $key "ui" }}
-    - host: {{ . }}
-      http:
-        paths:
-          - backend:
-              service:
-                name: {{ $xfullname }}-router
-                port:
-                  number: 5173
-            path: /
-            pathType: Prefix
-    {{ else }}
     - host: {{ . }}
       http:
         paths:
@@ -107,7 +95,6 @@ spec:
             path: /ui/v1
             pathType: Prefix
           {{- end }}
-    {{- end }}
     {{- end }}
     {{- end }}
 

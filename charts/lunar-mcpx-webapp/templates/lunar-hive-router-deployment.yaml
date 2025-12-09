@@ -46,12 +46,8 @@ spec:
         - name: mcpx-router-container
           image: "{{ .Values.router.image.repository }}:{{ .Values.router.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           ports:
-            - containerPort: 5173
-              name: ui
-            - containerPort: 9000
-              name: mcpx-server
-            - containerPort: 3000
-              name: metrics
+            - containerPort: 8080
+              name: router
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
             {{- if .Values.global.manageResources.limits }}
@@ -89,22 +85,17 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            - name: RELEASE_NAMESPACE
-              value: "{{ .Release.Namespace }}"
-            - name: UI_SERVICE_NAME
-              value: "{{ include "lunar-mcpx-webapp.fullname" . }}-ui"
-            - name: MCPX_TARGET_PORT
-              value: "9000"
-            - name: WEBSERVER_SERVICE_NAME
-              value: "{{ include "lunar-mcpx-webapp.fullname" . }}-webserver"
-          {{- if .Values.ingress.enabled }}
-            {{ $hivedomain := (rest (splitList "." (first .Values.ingress.domains.auth))) | join "." -}}
-            - name: HIVE_DOMAIN
-              value: "{{ $hivedomain }}"
-            - name: ROUTER_DOMAIN
-              value: "https://{{ first .Values.ingress.domains.router }}"
-            - name: UI_DOMAIN
+            - name: PORT
+              value: "8080"
+            - name: CORS_ORIGINS
               value: "https://{{ first .Values.ingress.domains.ui }}"
+            - name: WEBSERVER_URL
+              value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-webserver:4000"
+          {{- if .Values.ingress.enabled }}
+            - name: OIDC_JWKS_URI
+              value: "https://{{ first .Values.ingress.domains.auth }}/.well-known/jwks.json"
+            - name: AUTH_BFF_URL
+              value: "https://{{ first .Values.ingress.domains.auth }}"
           {{- end }}
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
@@ -117,23 +108,23 @@ spec:
             successThreshold: 1
             failureThreshold: 30
             httpGet:
-              path: /health
-              port: 5173
+              path: /healthcheck
+              port: 8080
               scheme: HTTP
             periodSeconds: 10
           readinessProbe:
             successThreshold: 1
             failureThreshold: 3
             httpGet:
-              path: /health
-              port: 5173
+              path: /healthcheck
+              port: 8080
               scheme: HTTP
             periodSeconds: 10
           livenessProbe:
             failureThreshold: 10
             httpGet:
-              path: /health
-              port: 5173
+              path: /healthcheck
+              port: 8080
               scheme: HTTP
             periodSeconds: 10
       volumes:
