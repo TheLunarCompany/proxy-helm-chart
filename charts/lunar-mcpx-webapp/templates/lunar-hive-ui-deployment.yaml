@@ -84,6 +84,8 @@ spec:
               value: "8080"
             - name: VITE_MCPX_SERVER_URL
               value: "https://{{ first .Values.ingress.domains.router }}"
+            - name: VITE_AUTH_BFF_URL
+              value: "https://{{ first .Values.ingress.domains.auth }}"
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}

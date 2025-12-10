@@ -323,11 +323,11 @@ controller:
 
 router:
   image:
-    # -- Lunar mcpx-hive-router image repository
-    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-router
-    # -- Lunar mcpx-hive-router image pull policy
+    # -- Lunar mcpx-router image repository
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-router
+    # -- Lunar mcpx-router image pull policy
     pullPolicy: IfNotPresent
-    # -- Lunar mcpx-hive-router image tag
+    # -- Lunar mcpx-router image tag
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
@@ -440,7 +440,7 @@ jobs:
     pullPolicy: IfNotPresent
     # -- Lunar mcpx-jobs image tag
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "0.2.31-a0e5569"
+    tag: ""
 
   nodeSelector: {}
 

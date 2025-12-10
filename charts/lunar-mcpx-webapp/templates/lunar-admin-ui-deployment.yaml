@@ -97,10 +97,6 @@ spec:
               value: "https://{{ first .Values.ingress.domains.auth }}"
             - name: MCPX_UI_URL
               value: "https://{{ first .Values.ingress.domains.ui }}"
-            - name: DEFAULT_MCPX_TAG
-              value: '{{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) }}'
-            - name: DEFAULT_MCPX_REPO
-              value: "us-central1-docker.pkg.dev/prj-common-442813/mcpx/mcpx-server"
           {{- end }}
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}

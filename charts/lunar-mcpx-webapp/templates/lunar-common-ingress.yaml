@@ -76,18 +76,6 @@ spec:
   rules:
     {{- range $key, $value := .Values.ingress.domains }}
     {{- range $value }}
-    {{- if eq $key "ui" }}
-    - host: {{ . }}
-      http:
-        paths:
-          - backend:
-              service:
-                name: {{ $xfullname }}-router
-                port:
-                  number: 8080
-            path: /
-            pathType: Prefix
-    {{ else }}
     - host: {{ . }}
       http:
         paths:
@@ -109,8 +97,6 @@ spec:
           {{- end }}
     {{- end }}
     {{- end }}
-    {{- end }}
-
   {{- if .Values.ingress.https.enabled }}
   {{- if .Values.ingress.https.tls }}
   tls:
