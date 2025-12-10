@@ -42,12 +42,12 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1002
+        runAsGroup: 1002
       serviceAccountName: {{ include "lunar-mcpx-webapp.fullname" . }}-controller
       automountServiceAccountToken: true
-      securityContext:
-        fsGroup: 2000
-        runAsNonRoot: true
-        runAsUser: 1000
       containers:
         - name: mcpx-controller-container
           image: "{{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
@@ -70,10 +70,7 @@ spec:
           {{- end }}
           securityContext:
             readOnlyRootFilesystem: true
-            runAsNonRoot: true
             allowPrivilegeEscalation: false
-            runAsUser: 1000
-            runAsGroup: 1000
           envFrom:
             - secretRef:
                 name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded

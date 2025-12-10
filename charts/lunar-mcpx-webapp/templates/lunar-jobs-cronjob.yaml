@@ -34,6 +34,10 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
         spec:
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1002
+            runAsGroup: 1002
           restartPolicy: OnFailure
           containers:
             - name: job-runner
@@ -55,6 +59,9 @@ spec:
                     {{- end }}
                 {{- end }}
               {{- end }}
+              securityContext:
+                readOnlyRootFilesystem: true
+                allowPrivilegeEscalation: false
               envFrom:
                 - secretRef:
                     name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
