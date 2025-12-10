@@ -135,8 +135,10 @@ spec:
               value: "8080"
             - name: HIVE_CONTROLLER_URL
               value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-controller"
-            - name: HIVE_DEFAULT_MCPX_IMAGE
-              value: 'us-central1-docker.pkg.dev/prj-common-442813/mcpx/mcpx-server:{{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) }}'  
+            - name: HIVE_DEFAULT_MCPX_IMAGE_REPO
+              value: 'us-central1-docker.pkg.dev/prj-common-442813/mcpx/mcpx-server'
+            - name: HIVE_DEFAULT_MCPX_IMAGE_TAG
+              value: {{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) }}
           {{- if .Values.ingress.enabled }}
             - name: CORS_ALLOWED_ORIGINS
               value: "https://{{ first .Values.ingress.domains.admin }}"
