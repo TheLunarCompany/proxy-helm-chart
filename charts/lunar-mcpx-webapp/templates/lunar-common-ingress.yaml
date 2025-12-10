@@ -96,7 +96,7 @@ spec:
             pathType: Prefix
           {{- end }}
     {{- end }}
-
+    {{- end }}
   {{- if .Values.ingress.https.enabled }}
   {{- if .Values.ingress.https.tls }}
   tls:

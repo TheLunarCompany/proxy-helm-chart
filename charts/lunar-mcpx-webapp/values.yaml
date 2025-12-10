@@ -440,7 +440,7 @@ jobs:
     pullPolicy: IfNotPresent
     # -- Lunar mcpx-jobs image tag
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "0.2.31-a0e5569"
+    tag: ""
 
   nodeSelector: {}
 
