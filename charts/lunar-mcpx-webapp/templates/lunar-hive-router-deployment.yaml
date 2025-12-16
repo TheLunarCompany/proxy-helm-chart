@@ -110,8 +110,6 @@ spec:
             httpGet:
               path: /healthcheck
               port: 8080
-              path: /healthcheck
-              port: 8080
               scheme: HTTP
             periodSeconds: 10
           readinessProbe:
@@ -120,15 +118,11 @@ spec:
             httpGet:
               path: /healthcheck
               port: 8080
-              path: /healthcheck
-              port: 8080
               scheme: HTTP
             periodSeconds: 10
           livenessProbe:
             failureThreshold: 10
             httpGet:
-              path: /healthcheck
-              port: 8080
               path: /healthcheck
               port: 8080
               scheme: HTTP
