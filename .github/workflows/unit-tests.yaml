@@ -27,3 +27,30 @@ jobs:
 
       - name: Run Helm unittest
         run: helm unittest ./charts/${{ matrix.chart }}
+
+  validate-crd-schema-version:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Validate CRD schema version matches values.yaml
+        run: |
+          CRD_VERSION=$(yq '.metadata.annotations["lunar.dev/schema-version"]' \
+            charts/lunar-mcpx-webapp/crds/crd-mcpx-instance.yaml)
+          VALUES_VERSION=$(yq '.controller.mcpxCRD.schemaExpectedVersion' \
+            charts/lunar-mcpx-webapp/values.yaml)
+
+          echo "CRD annotation: $CRD_VERSION"
+          echo "values.yaml default: $VALUES_VERSION"
+
+          if [ "$CRD_VERSION" != "$VALUES_VERSION" ]; then
+            echo "::error::CRD annotation lunar.dev/schema-version ($CRD_VERSION) != values.yaml controller.mcpxCRD.schemaExpectedVersion ($VALUES_VERSION)"
+            exit 1
+          fi
+          echo "Schema versions match: $CRD_VERSION"

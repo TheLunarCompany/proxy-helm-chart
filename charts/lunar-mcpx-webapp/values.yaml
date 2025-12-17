@@ -275,6 +275,13 @@ controller:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+  # -- mcpxCRD configuration for CRD schema version checks
+  mcpxCRD:
+    # -- Enable strict schema version checking
+    schemaVersionStrictCheck: true
+    # -- Expected CRD schema version
+    schemaExpectedVersion: "1"
+
   # -- NodeSelector to pin pods in deployment to certain set of nodes.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
