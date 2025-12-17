@@ -109,6 +109,10 @@ spec:
               value: ws://{{ include "lunar-mcpx-webapp.fullname" . }}-hub
             - name: UI_SERVICE_NAME
               value: "{{ include "lunar-mcpx-webapp.fullname" . }}-ui"
+            - name: MCPX_CRD_SCHEMA_VERSION_CHECK_STRICT
+              value: "{{ .Values.controller.mcpxCRD.schemaVersionStrictCheck | default true }}"
+            - name: MCPX_CRD_SCHEMA_EXPECTED_VERSION
+              value: "{{ .Values.controller.mcpxCRD.schemaExpectedVersion | default "1" }}"
           {{- if .Values.ingress.enabled }}
             - name: ROUTER_DOMAIN
               value: "https://{{ first .Values.ingress.domains.router }}"

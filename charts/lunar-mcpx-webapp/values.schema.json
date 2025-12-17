@@ -134,6 +134,27 @@
                 }
             }
         },
+        "controller": {
+            "type": "object",
+            "properties": {
+                "mcpxCRD": {
+                    "type": "object",
+                    "description": "Configuration for CRD schema version checks",
+                    "properties": {
+                        "schemaVersionStrictCheck": {
+                            "type": "boolean",
+                            "description": "Enable strict schema version checking",
+                            "default": true
+                        },
+                        "schemaExpectedVersion": {
+                            "type": "string",
+                            "description": "Expected CRD schema version",
+                            "default": "1"
+                        }
+                    }
+                }
+            }
+        },
         "webserver": {
             "type": "object",
             "properties": {
