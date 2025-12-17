@@ -5,6 +5,8 @@ metadata:
   labels:
     app: mcpx
     version: v1alpha1
+  annotations:
+    lunar.dev/schema-version: "1"
 spec:
   group: hive.lunar.dev
   names:
@@ -48,6 +50,19 @@ spec:
                 uiDomain:
                   type: string
                   description: "The domain for the user interface."
+                envFrom:
+                  type: array
+                  description: "List of sources to populate environment variables in the container."
+                  items:
+                    type: object
+                    properties:
+                      secretRef:
+                        type: object
+                        description: "Reference to a Secret to populate environment variables."
+                        properties:
+                          name:
+                            type: string
+                            description: "Name of the Secret."
             configMapName:
               type: string
               description: "Name of the ConfigMap containing MCPX configurations."
