@@ -6,7 +6,7 @@ metadata:
     app: mcpx
     version: v1alpha1
   annotations:
-    lunar.dev/schema-version: "1"
+    lunar.dev/schema-version: "2"
 spec:
   group: hive.lunar.dev
   names:
