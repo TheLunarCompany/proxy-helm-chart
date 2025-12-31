@@ -69,6 +69,10 @@ metadata:
     nginx.ingress.kubernetes.io/affinity: cookie
     nginx.ingress.kubernetes.io/affinity-mode: persistent
     {{- end }}
+    {{- if eq .Values.ingress.type "agic" }}
+    kubernetes.io/ingress.class: "azure/application-gateway"
+    appgw.ingress.kubernetes.io/ssl-redirect: "true"
+    {{- end }}
     {{- if .Values.ingress.annotations }}
     {{- toYaml .Values.ingress.annotations | nindent 4 }}
     {{- end }}
@@ -102,7 +106,7 @@ spec:
   tls:
     {{- toYaml .Values.ingress.https.tls | nindent 4 }}
   {{- else }}
-  {{- if eq .Values.ingress.type "nginx" }}
+  {{- if or (eq .Values.ingress.type "nginx") (eq .Values.ingress.type "agic") }}
   tls:
     {{- range $key, $value := .Values.ingress.domains }}
     {{- range $value }}

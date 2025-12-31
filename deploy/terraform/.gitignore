@@ -1,0 +1,8 @@
+*/*.retry
+*/.terraform/*
+*/*/.terraform/*
+.idea
+.terraform
+terraform.tfstate*
+kube_config
+.terraform.lock.hcl
