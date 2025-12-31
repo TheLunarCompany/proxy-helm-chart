@@ -1,0 +1,16 @@
+formatter: markdown table
+header-from: .terraform-docs-header.md
+sections:
+  hide-all: true
+  show:
+    - header
+    - inputs
+    - providers
+    - outputs
+sort:
+  enabled: true
+  by:
+    - required
+settings:
+  indent: 4
+  escape: false
