@@ -148,7 +148,7 @@ spec:
               value: "https://{{ first .Values.ingress.domains.webserver }}"
           {{- else }}
             - name: PUBLIC_URL
-              value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-webserver:4000"
+              value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-webserver:8080"
           {{- end }}
           
           {{- if .Values.global.extraEnvVars }}
