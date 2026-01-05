@@ -144,7 +144,10 @@ spec:
           {{- if .Values.ingress.enabled }}
             - name: CORS_ALLOWED_ORIGINS
               value: "https://{{ first .Values.ingress.domains.admin }}"
+            - name: PUBLIC_URL
+              value: "https://{{ first .Values.ingress.domains.webserver }}"
           {{- end }}
+          
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}
