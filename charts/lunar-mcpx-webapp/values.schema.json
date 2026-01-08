@@ -161,6 +161,21 @@
                 "extraEnvVars": {
                     "type": "array"
                 },
+                "sandboxAnalysis": {
+                    "type": "object",
+                    "description": "Sandbox Analysis LLM configuration. For API key, add a secret with SANDBOX_ANALYSIS_LLM_API_KEY to extraEnvFromSecrets",
+                    "properties": {
+                        "llmProvider": {
+                            "type": "string",
+                            "description": "LLM provider for sandbox analysis",
+                            "enum": ["openai", "google-gen-ai"]
+                        },
+                        "llmModel": {
+                            "type": "string",
+                            "description": "LLM model name for sandbox analysis"
+                        }
+                    }
+                },
                 "image": {
                     "type": "object",
                     "properties": {
