@@ -97,11 +97,11 @@ webserver:
   #   label_2: value_2
   podLabels: {}
 
-  # -- Sandbox Analysis LLM configuration for code analysis
+  # -- Sandbox Analysis LLM configuration
   # sandboxAnalysis:
   #   llmProvider: "openai"  # or "google-gen-ai"
   #   llmModel: "gpt-4"
-  # Note: For the API key (SANDBOX_ANALYSIS_LLM_API_KEY), add your secret to extraEnvFromSecrets
+  # Note: For the API key, add `SANDBOX_ANALYSIS_LLM_API_KEY` through a secret via `webserver.extraEnvFromSecrets`
   sandboxAnalysis: {}
 
 hub:

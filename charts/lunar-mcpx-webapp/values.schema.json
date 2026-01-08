@@ -1,226 +1,226 @@
 {
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "type": "object",
-    "properties": {
-        "global": {
-            "type": "object",
-            "properties": {
-                "extraEnvVars": {
-                    "type": "array"
-                },
-                "mcpxVersion": {
-                    "type": "string"
-                },
-                "imagePullSecrets": {
-                    "type": "array"
-                }
-            }
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "global": {
+      "type": "object",
+      "properties": {
+        "extraEnvVars": {
+          "type": "array"
         },
-        "hub": {
-            "type": "object",
-            "properties": {
-                "extraEnvVars": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "name": {
-                                "type": "string"
-                            },
-                            "value": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                },
-                "image": {
-                    "type": "object",
-                    "properties": {
-                        "pullPolicy": {
-                            "type": "string"
-                        },
-                        "repository": {
-                            "type": "string"
-                        },
-                        "tag": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "replicaCount": {
-                    "type": "integer"
-                },
-                "resources": {
-                    "type": "object",
-                    "properties": {
-                        "limits": {
-                            "type": "object",
-                            "properties": {
-                                "cpu": {
-                                    "type": "string"
-                                },
-                                "memory": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "requests": {
-                            "type": "object",
-                            "properties": {
-                                "cpu": {
-                                    "type": "string"
-                                },
-                                "memory": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        "mcpxVersion": {
+          "type": "string"
         },
-        "ingress": {
-            "type": "object",
-            "properties": {
-                "annotations": {
-                    "type": "object",
-                    "properties": {
-                        "kubernetes.io/ingress.global-static-ip-name": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "domains": {
-                    "type": "object",
-                    "properties": {
-                        "hub": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "webserver": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                },
-                "enabled": {
-                    "type": "boolean"
-                },
-                "gce": {
-                    "type": "object"
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "postgres": {
-            "type": "object",
-            "properties": {
-                "enabled": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "redis": {
-            "type": "object",
-            "properties": {
-                "enabled": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "controller": {
-            "type": "object",
-            "properties": {
-                "mcpxCRD": {
-                    "type": "object",
-                    "description": "Configuration for CRD schema version checks",
-                    "properties": {
-                        "schemaVersionStrictCheck": {
-                            "type": "boolean",
-                            "description": "Enable strict schema version checking",
-                            "default": true
-                        },
-                        "schemaExpectedVersion": {
-                            "type": "string",
-                            "description": "Expected CRD schema version",
-                            "default": "1"
-                        }
-                    }
-                }
-            }
-        },
-        "webserver": {
-            "type": "object",
-            "properties": {
-                "extraEnvVars": {
-                    "type": "array"
-                },
-                "sandboxAnalysis": {
-                    "type": "object",
-                    "description": "Sandbox Analysis LLM configuration. For API key, add a secret with SANDBOX_ANALYSIS_LLM_API_KEY to extraEnvFromSecrets",
-                    "properties": {
-                        "llmProvider": {
-                            "type": "string",
-                            "description": "LLM provider for sandbox analysis",
-                            "enum": ["openai", "google-gen-ai"]
-                        },
-                        "llmModel": {
-                            "type": "string",
-                            "description": "LLM model name for sandbox analysis"
-                        }
-                    }
-                },
-                "image": {
-                    "type": "object",
-                    "properties": {
-                        "pullPolicy": {
-                            "type": "string"
-                        },
-                        "repository": {
-                            "type": "string"
-                        },
-                        "tag": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "replicaCount": {
-                    "type": "integer"
-                },
-                "resources": {
-                    "type": "object",
-                    "properties": {
-                        "limits": {
-                            "type": "object",
-                            "properties": {
-                                "cpu": {
-                                    "type": "string"
-                                },
-                                "memory": {
-                                    "type": "string"
-                                }
-                            }
-                        },
-                        "requests": {
-                            "type": "object",
-                            "properties": {
-                                "cpu": {
-                                    "type": "string"
-                                },
-                                "memory": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        "imagePullSecrets": {
+          "type": "array"
         }
+      }
+    },
+    "hub": {
+      "type": "object",
+      "properties": {
+        "extraEnvVars": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "image": {
+          "type": "object",
+          "properties": {
+            "pullPolicy": {
+              "type": "string"
+            },
+            "repository": {
+              "type": "string"
+            },
+            "tag": {
+              "type": "string"
+            }
+          }
+        },
+        "replicaCount": {
+          "type": "integer"
+        },
+        "resources": {
+          "type": "object",
+          "properties": {
+            "limits": {
+              "type": "object",
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                }
+              }
+            },
+            "requests": {
+              "type": "object",
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "ingress": {
+      "type": "object",
+      "properties": {
+        "annotations": {
+          "type": "object",
+          "properties": {
+            "kubernetes.io/ingress.global-static-ip-name": {
+              "type": "string"
+            }
+          }
+        },
+        "domains": {
+          "type": "object",
+          "properties": {
+            "hub": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "webserver": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "gce": {
+          "type": "object"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "postgres": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "redis": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "controller": {
+      "type": "object",
+      "properties": {
+        "mcpxCRD": {
+          "type": "object",
+          "description": "Configuration for CRD schema version checks",
+          "properties": {
+            "schemaVersionStrictCheck": {
+              "type": "boolean",
+              "description": "Enable strict schema version checking",
+              "default": true
+            },
+            "schemaExpectedVersion": {
+              "type": "string",
+              "description": "Expected CRD schema version",
+              "default": "1"
+            }
+          }
+        }
+      }
+    },
+    "webserver": {
+      "type": "object",
+      "properties": {
+        "extraEnvVars": {
+          "type": "array"
+        },
+        "sandboxAnalysis": {
+          "type": "object",
+          "description": "Sandbox Analysis LLM configuration. For API key, add a secret with SANDBOX_ANALYSIS_LLM_API_KEY and list it in extraEnvFromSecrets",
+          "properties": {
+            "llmProvider": {
+              "type": "string",
+              "description": "LLM provider for Sandbox Analysis",
+              "enum": ["openai", "google-gen-ai"]
+            },
+            "llmModel": {
+              "type": "string",
+              "description": "LLM model name for Sandbox Analysis"
+            }
+          }
+        },
+        "image": {
+          "type": "object",
+          "properties": {
+            "pullPolicy": {
+              "type": "string"
+            },
+            "repository": {
+              "type": "string"
+            },
+            "tag": {
+              "type": "string"
+            }
+          }
+        },
+        "replicaCount": {
+          "type": "integer"
+        },
+        "resources": {
+          "type": "object",
+          "properties": {
+            "limits": {
+              "type": "object",
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                }
+              }
+            },
+            "requests": {
+              "type": "object",
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
     }
+  }
 }
