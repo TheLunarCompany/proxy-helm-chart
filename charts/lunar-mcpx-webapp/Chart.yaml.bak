@@ -15,7 +15,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: "0.7.29"
+version: "0.7.30"
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -23,7 +23,7 @@ version: "0.7.29"
 appVersion: "0.7.29"
 
 annotations:
-  mcpxVersion: "0.3.14"
+  mcpxVersion: "0.3.15"
 
 # An icon can be provided for this chart, which will be displayed in the Chart Center.
 icon: https://storage.googleapis.com/lunar-webapp-assets/favicon/apple-touch-icon.png

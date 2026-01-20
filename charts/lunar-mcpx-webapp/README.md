@@ -150,11 +150,11 @@ Please reffer to [examples/values-override](examples/values-override) directory 
 
 Minimal deployment with embedded Postgresql and Redis
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.7.29 --set postgres.enabled=true --set redis.enabled=true
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.7.30 --set postgres.enabled=true --set redis.enabled=true
 ```
 
 Alternatively, you may work with a separate values file to handle values override just like any other Helm chart:
 
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.7.29  -f ./values-override.yaml
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.7.30  -f ./values-override.yaml
 ```
