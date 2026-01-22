@@ -77,7 +77,7 @@ It is possible to supply this variables using several different techniques:
       ```
   - Create secret with OIDC variables:
     ```bash
-    kubectl create secret generic mcpx-webapp-oidc -n mcpx-webapp-staging \
+    kubectl create secret generic mcpx-webapp-oidc -n {{ mcpx_namespace }} \
         --from-literal=OIDC_CLIENT_ID="" \
         --from-literal=OIDC_CLIENT_SECRET="" \
         --from-literal=OIDC_ISSUER="" \
@@ -140,6 +140,18 @@ global:
 ### Ingress configuration
 Ingress configuration is heavily depends on the Kubernetes cluster configuration, cloud platform, network configuration, etc.
 Please reffer to [examples/values-override](examples/values-override) directory to find example applicable for your environment
+
+
+### Private Certificate Authorities
+For the cases when there is a requirement of using certificates issued by private CA, it is required to make this CA
+'trusted' to application by adding it as a Kubernetes secrets and configuring in `global.caCerts` section.
+
+To add CA cert as a secret one can use following command:
+```bash
+kubectl create secret generic {{ name_of_cert }} -n {{ mcpx_namespace }} --from-file=ca.crt={{ path/to/file }}
+```
+Note: In case when multiple CA certificates should be added, concat all of them in the same file and import as a single
+kubernetes secret
 
 #### GCP
 

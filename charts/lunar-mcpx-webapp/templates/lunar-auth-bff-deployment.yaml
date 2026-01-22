@@ -131,6 +131,12 @@ spec:
           env:
             - name: NODE_ENV
               value: "production"
+            {{- with .Values.global.caCerts }}
+            {{- with .secretName }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: /usr/local/share/ca-certificates/{{ . }}.crt
+            {{- end }}
+            {{- end }}
             - name: PORT
               value: "8080"
           {{- if .Values.ingress.enabled }}
@@ -173,6 +179,28 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 30
             timeoutSeconds: 30
+
+          {{- with .Values.global.caCerts }}
+          volumeMounts:
+          {{- with .secretName }}
+            - name: {{ . }}
+              mountPath: "/usr/local/share/ca-certificates/"
+              readOnly: true
+          {{- end }}
+          {{- end }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        {{- with .Values.global.caCerts }}
+        {{- with .secretName }}
+        - name: {{ . }}
+          secret:
+            secretName: {{ . }}
+            items:
+              - key: ca.crt
+                path: {{ . }}.crt
+        {{- end }}
+        {{- end }}
 
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:

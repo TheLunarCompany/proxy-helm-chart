@@ -1,0 +1,72 @@
+---
+global:
+  extraEnvVars:
+    - name: LOG_LEVEL
+      value: debug
+  extraEnvFromSecrets:
+    - mcpx-webapp-global
+  caCerts:
+    # Note: secret ca-example-com-1 should be created manually
+    secretName: ca-example-com-1
+
+webserver:
+  replicaCount: 2
+
+hub:
+  replicaCount: 2
+  extraEnvFromSecrets:
+    - mcpx-webapp-oidc
+
+admin:
+  replicaCount: 2
+
+auth:
+  replicaCount: 2
+  extraEnvFromSecrets:
+    - mcpx-webapp-oidc
+
+controller:
+  replicaCount: 2
+
+router:
+  replicaCount: 2
+  extraEnvFromSecrets:
+    - mcpx-webapp-oidc
+
+ui:
+  replicaCount: 2
+
+ingress:
+  annotations: {}
+  type: nginx
+
+  domains:
+    webserver:
+      - mcpx-app.example.com
+    admin:
+      - mcpx-admin.example.com
+    auth:
+      - mcpx-auth.example.com
+    ui:
+      - mcpx-ui.example.com
+    router:
+      - mcpx.example.com
+
+  https:
+    enabled: true
+    tls:
+      - hosts:
+          - mcpx-app.example.com
+          - mcpx-admin.example.com
+          - mcpx-auth.example.com
+          - mcpx-ui.example.com
+          - mcpx.example.com
+        # Note: secret tls-wildcard-example.com should be created manually
+        secretName: tls-wildcard-example.com
+
+
+postgres:
+  enabled: false
+
+redis:
+  enabled: false
