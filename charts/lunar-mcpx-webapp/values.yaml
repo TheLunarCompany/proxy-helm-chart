@@ -41,6 +41,13 @@ global:
     limits: true
     requests: true
 
+  # -- caCerts allows to configure additional Certificate Authorities (CA) from Kubernetes secrets
+  # In case of multiple private CAs should be trusted, make sure to concat all of them in to the same file
+  # caCerts:
+  #   secretName: ca-private-cert-1
+  caCerts: {}
+
+
 webserver:
   image:
     # -- Lunar mcpx-webserver image repository

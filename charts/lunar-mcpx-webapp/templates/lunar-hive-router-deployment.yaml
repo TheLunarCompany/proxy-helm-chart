@@ -81,6 +81,12 @@ spec:
           env:
             - name: NODE_ENV
               value: "production"
+            {{- with .Values.global.caCerts }}
+            {{- with .secretName }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: /usr/local/share/ca-certificates/{{ . }}.crt
+            {{- end }}
+            {{- end }}
             - name: KUBERNETES_NAMESPACE
               valueFrom:
                 fieldRef:
@@ -127,9 +133,30 @@ spec:
               port: 8080
               scheme: HTTP
             periodSeconds: 10
+
+          {{- with .Values.global.caCerts }}
+          volumeMounts:
+          {{- with .secretName }}
+            - name: {{ . }}
+              mountPath: "/usr/local/share/ca-certificates/"
+              readOnly: true
+          {{- end }}
+          {{- end }}
       volumes:
+        - name: tmp
+          emptyDir: {}
         - name: nginx-logs-volume
           emptyDir: {}
+        {{- with .Values.global.caCerts }}
+        {{- with .secretName }}
+        - name: {{ . }}
+          secret:
+            secretName: {{ . }}
+            items:
+              - key: ca.crt
+                path: {{ . }}.crt
+        {{- end }}
+        {{- end }}
 
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
