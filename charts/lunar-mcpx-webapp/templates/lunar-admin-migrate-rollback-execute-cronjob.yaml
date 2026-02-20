@@ -1,0 +1,10 @@
+---
+{{- include "lunar-mcpx-webapp.adminCronJob" (dict
+  "root" .
+  "jobName" "migrate-rollback-execute"
+  "command" (list "node" "dist/index.js" "migrate-rollback")
+  "extraEnv" (list
+    (dict "name" "ROLLBACK_DRY_RUN" "value" "false")
+    (dict "name" "ROLLBACK_MIGRATION_NAME" "value" .Values.jobs.admin.rollbackMigrationName)
+  )
+) }}
