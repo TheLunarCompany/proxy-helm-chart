@@ -1,0 +1,32 @@
+{{- if .Values.monitor.prometheus.enabled | default false }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-smon
+  labels:
+    name: {{ include "lunar-mcpx-webapp.fullname" . }}-smon
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-smon
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.postgres.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.monitor.prometheus.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  endpoints:
+    - honorLabels: true
+      port: metrics
+      interval: 30s
+      path: /metrics
+  jobLabel: mcpx-instances
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      type: mcpx-instance
+  {{- end }}
