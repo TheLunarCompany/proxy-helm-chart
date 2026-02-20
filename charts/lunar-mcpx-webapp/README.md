@@ -162,11 +162,11 @@ kubernetes secret
 
 Minimal deployment with embedded Postgresql and Redis
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.8.8 --set postgres.enabled=true --set redis.enabled=true
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.8.9 --set postgres.enabled=true --set redis.enabled=true
 ```
 
 Alternatively, you may work with a separate values file to handle values override just like any other Helm chart:
 
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.8.8  -f ./values-override.yaml
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.8.9  -f ./values-override.yaml
 ```
