@@ -158,6 +158,51 @@ kubernetes secret
 - [Minimal non-production configuration with GCE ingress controller](examples/values-override/gcp-nonprod-demo.yaml)
 - [Production-like configuration with external secrets and external databases](examples/values-override/gcp-prod.yaml)
 
+### Admin DB Migration Jobs
+
+This chart includes four **suspended CronJobs** for DB migration management. They never run automatically — admins create one-off jobs from them using `kubectl create job`.
+
+> **Warning:** These jobs interact directly with the database. Use with caution and only when instructed!
+
+| CronJob | Purpose |
+|:--------|:--------|
+| `<release>-migrate-status` | Shows the current state of all migrations |
+| `<release>-migrate-rollback-dry` | Dry-run rollback (no changes are made) |
+| `<release>-migrate-rollback-execute` | **Executes** a rollback — this will modify the database |
+| `<release>-migrate-resolve-failed` | Marks a failed migration as resolved so Prisma can move past it |
+
+In the examples below, `<release>` is the full CronJob name prefix — composed of your Helm release name and the chart name (e.g. `mcpx-webapp`). Run `kubectl get cronjobs -n <namespace> | grep migrate` to find the exact names.
+
+**Check migration status:**
+```bash
+kubectl create job migrate-status-$(date +%s) \
+  --from=cronjob/<release>-migrate-status -n <namespace>
+```
+
+**Dry-run a rollback (safe, no DB changes):**
+```bash
+kubectl create job rollback-dry-$(date +%s) \
+  --from=cronjob/<release>-migrate-rollback-dry -n <namespace>
+```
+
+**Execute a rollback:**
+```bash
+kubectl create job rollback-$(date +%s) \
+  --from=cronjob/<release>-migrate-rollback-execute -n <namespace>
+```
+
+**Resolve a failed migration (allows Prisma to proceed on next deploy):**
+```bash
+kubectl create job resolve-failed-$(date +%s) \
+  --from=cronjob/<release>-migrate-resolve-failed -n <namespace>
+```
+
+> **Rollback vs. Resolve-failed:**
+> - **Rollback** is for when a migration ran successfully but is causing issues — the app is misbehaving, or you need to revert to a previous version for any reason. Rollback undoes the migration's changes to the database.
+> - **Resolve-failed** is for when a migration ran and failed. A failed migration blocks all future migrations from running. Since we use a forward-rolling strategy (we never delete migrations, even bad ones), resolving marks the failed migration as acknowledged so the next release — which should contain the fix — can run its migrations normally.
+
+By default, rollback targets the latest applied migration and resolve-failed targets the latest failed migration. To target a specific migration, set `jobs.admin.rollbackMigrationName` or `jobs.admin.resolveMigrationName` via Helm values override, apply it, and then create the job.
+
 ### Installation
 
 Minimal deployment with embedded Postgresql and Redis

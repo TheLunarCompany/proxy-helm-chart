@@ -504,6 +504,16 @@ jobs:
   #   label_2: value_2
   podLabels: {}
 
+  # -- Admin job settings for DB migration management.
+  # See the "Admin DB Migration Jobs" section in README.md for usage.
+  admin:
+    # -- Target migration name for rollback. Leave empty unless explicitly instructed otherwise.
+    # When empty, rollback targets the latest applied migration.
+    rollbackMigrationName: ""
+    # -- Target migration name for resolve-failed. Leave empty unless explicitly instructed otherwise.
+    # When empty, resolves the latest failed migration.
+    resolveMigrationName: ""
+
 ingress:
   # -- Enable or disable Ingress for mcpx-webapp services
   enabled: true

@@ -134,6 +134,27 @@
         }
       }
     },
+    "jobs": {
+      "type": "object",
+      "properties": {
+        "admin": {
+          "type": "object",
+          "description": "Admin job settings for DB migration management",
+          "properties": {
+            "rollbackMigrationName": {
+              "type": "string",
+              "description": "Target migration name for rollback. Leave empty unless explicitly instructed otherwise. When empty, rollback targets the latest applied migration.",
+              "default": ""
+            },
+            "resolveMigrationName": {
+              "type": "string",
+              "description": "Target migration name for resolve-failed. Leave empty unless explicitly instructed otherwise. When empty, resolves the latest failed migration.",
+              "default": ""
+            }
+          }
+        }
+      }
+    },
     "controller": {
       "type": "object",
       "properties": {

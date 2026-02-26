@@ -1,0 +1,9 @@
+---
+{{- include "lunar-mcpx-webapp.adminCronJob" (dict
+  "root" .
+  "jobName" "migrate-resolve-failed"
+  "command" (list "node" "dist/index.js" "migrate-resolve-failed")
+  "extraEnv" (list
+    (dict "name" "RESOLVE_MIGRATION_NAME" "value" .Values.jobs.admin.resolveMigrationName)
+  )
+) }}
