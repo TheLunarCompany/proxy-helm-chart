@@ -633,3 +633,17 @@ redis:
   #   size: 20Gi
   persistence:
     enabled: true
+
+monitor:
+  prometheus:
+    # -- Enable or disable MPCX monitoring with Prometheus
+    # Important: in order for this to work, make sure that Prometheus CRDs are installed,
+    # specifically 'monitoring.coreos.com/v1' API should be available
+    enabled: false
+
+    # -- Extra labels for ServiceMonitor resource to be able to be discovered by 'Prometheus' resource
+    # Optional when 'serviceMonitorSelector: {}'
+    # labels:
+    #   label_1: value_1
+    #   label_2: value_2
+    labels: {}
