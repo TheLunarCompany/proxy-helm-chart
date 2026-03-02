@@ -155,6 +155,16 @@
         }
       }
     },
+    "hibernation": {
+      "type": "object",
+      "properties": {
+        "cronSchedule": {
+          "type": "string",
+          "description": "Cron schedule for the scheduled hibernation job. Leave empty to disable the CronJob.",
+          "default": ""
+        }
+      }
+    },
     "controller": {
       "type": "object",
       "properties": {

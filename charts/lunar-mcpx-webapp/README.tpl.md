@@ -203,6 +203,27 @@ kubectl create job resolve-failed-$(date +%s) \
 
 By default, rollback targets the latest applied migration and resolve-failed targets the latest failed migration. To target a specific migration, set `jobs.admin.rollbackMigrationName` or `jobs.admin.resolveMigrationName` via Helm values override, apply it, and then create the job.
 
+### Hibernation Cron Schedule
+
+Use `hibernation.cronSchedule` to control when the `hibernate-instances` CronJob runs.
+
+- Build/verify cron expressions with [crontab.guru](https://crontab.guru/).
+- Keep it empty to disable the CronJob:
+  ```yaml
+  hibernation:
+    cronSchedule: ""
+  ```
+- Example: run daily at 22:00
+  ```yaml
+  hibernation:
+    cronSchedule: "0 22 * * *"
+  ```
+- Example: every 5 minutes (testing)
+  ```yaml
+  hibernation:
+    cronSchedule: "*/5 * * * *"
+  ```
+
 ### Installation
 
 Minimal deployment with embedded Postgresql and Redis

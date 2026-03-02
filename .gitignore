@@ -16,3 +16,4 @@
 # Values.yaml with data
 *.tmp.yaml
 settings.local.json
+charts/**/test.yaml

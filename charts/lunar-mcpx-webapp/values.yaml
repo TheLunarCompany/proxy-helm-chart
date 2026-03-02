@@ -514,6 +514,11 @@ jobs:
     # When empty, resolves the latest failed migration.
     resolveMigrationName: ""
 
+hibernation:
+  # Cron schedule for the scheduled hibernation job (e.g. "0 22 * * *").
+  # Leave empty to disable the CronJob.
+  cronSchedule: ""
+
 ingress:
   # -- Enable or disable Ingress for mcpx-webapp services
   enabled: true

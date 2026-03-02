@@ -141,6 +141,10 @@ spec:
               value: "8080"
             - name: HIVE_CONTROLLER_URL
               value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-controller"
+            {{- if .Values.hibernation.cronSchedule }}
+            - name: HIBERNATION_ENABLED
+              value: "true"
+            {{- end }}
             {{- $webserverExtraEnvNames := list }}
             {{- range .Values.webserver.extraEnvVars }}
             {{- $webserverExtraEnvNames = append $webserverExtraEnvNames .name }}
