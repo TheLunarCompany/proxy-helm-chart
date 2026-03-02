@@ -1,0 +1,227 @@
+---
+global:
+  # appVersion: 0.8.4
+  # mcpxVersion: 0.3.23
+  extraEnvVars:
+    - name: LOG_LEVEL
+      value: debug
+    - name: SESSION_SECRET
+      value: "Eq9AIhWdD0uxWVSv5pmtTPVipZt/c9Q6GZqnQNhX5BE="
+    - name: SESSION_COOKIE_DOMAIN
+      value: "lunar.dev"
+
+hibernation:
+  cronSchedule: "*/5 * * * *"
+
+webserver:
+  image:
+    tag: 0.0.10-alpha.05
+  # extraEnvFromSecrets:
+  #   - mcpx-webapp-analysis-llm
+  extraEnvVars:
+    - name: ENABLE_AUTO_PROVISIONING
+      value: "true"
+    - name: MCPX_DEFAULT_IMAGE_REPO
+      value: "us-central1-docker.pkg.dev/prj-common-442813/mcpx-dev/mcpx-server"
+    - name: MCPX_DEFAULT_IMAGE_TAG
+      value: "0.3.34-alpha.10"
+    # - name: HIBERNATION_TIME
+    #   value: "14:45"
+
+admin:
+  # image:
+  #   tag: 0.0.10-alpha.06
+  extraEnvVars:
+    - name: SHOW_SUB_CATALOG
+      value: "true"
+    - name: SHOW_AGENTS_DEMO
+      value: "true"
+
+# hub:
+#   replicaCount: 2
+
+# router:
+#   image:
+#     tag: 0.0.10-alpha.01
+#   replicaCount: 2
+
+# controller:
+#   image:
+#     tag: 0.0.10-alpha.09
+#   # replicaCount: 2
+#   extraEnvVars:
+#     - name: ENABLE_OAUTH_TOKEN_PERSISTENCE
+#       value: "false"
+
+ui:
+  # replicaCount: 2
+  extraEnvVars:
+    - name: VITE_ENABLE_SAVED_SETUPS
+      value: "true"
+    - name: VITE_ENABLE_DYNAMIC_CAPABILITIES
+      value: "true"
+  image:
+    tag: 0.3.34-alpha.10
+    repository: us-central1-docker.pkg.dev/prj-common-442813/mcpx-dev/mcpx-ui
+
+auth:
+  # replicaCount: 2
+  extraEnvFromSecrets:
+    - mcpx-webapp-oidc
+
+postgres:
+  enabled: true
+
+redis:
+  enabled: true
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: mcpx-hive
+  type: gce
+
+  domains:
+    webserver:
+      - mcpx-webserver-sandbox2.lunar.dev
+    admin:
+      - mcpx-admin-sandbox2.lunar.dev
+    auth:
+      - mcpx-auth-sandbox2.lunar.dev
+    ui:
+      - mcpx-ui-sandbox2.lunar.dev
+    router:
+      - mcpx-sandbox2.lunar.dev
+# #
+# Sandbox3
+# ingress:
+#   enabled: true
+#   annotations:
+#     kubernetes.io/ingress.global-static-ip-name: mcpx-sandbox3
+#   type: gce
+
+#   domains:
+#     webserver:
+#       - mcpx-app-sandbox3.lunar.dev
+#     admin:
+#       - mcpx-admin-sandbox3.lunar.dev
+#     auth:
+#       - mcpx-auth-sandbox3.lunar.dev
+#     ui:
+#       - mcpx-ui-sandbox3.lunar.dev
+#     router:
+#       - mcpx-sandbox3.lunar.dev
+
+# Sandbox4
+# ingress:
+#   enabled: true
+#   annotations:
+#     kubernetes.io/ingress.global-static-ip-name: mcpx-sandbox4
+#   type: gce
+
+#   domains:
+#     webserver:
+#       - mcpx-app-sandbox4.lunar.dev
+#     admin:
+#       - mcpx-admin-sandbox4.lunar.dev
+#     auth:
+#       - mcpx-auth-sandbox4.lunar.dev
+#     ui:
+#       - mcpx-ui-sandbox4.lunar.dev
+#     router:
+#       - mcpx-sandbox4.lunar.dev
+#
+# PROD
+# Namespace: mcpx-webapp
+# ingress:
+#   enabled: true
+#   annotations:
+#     kubernetes.io/ingress.global-static-ip-name: lunar-mcpx-webapp
+#   type: gce
+
+#   domains:
+#     webserver:
+#       - mcpx-app-prod.lunar.dev
+#     admin:
+#       - mcpx-admin-prod.lunar.dev
+#     auth:
+#       - mcpx-auth-prod.lunar.dev
+#     ui:
+#       - mcpx-ui-prod.lunar.dev
+#     router:
+#       - mcpx-prod.lunar.dev
+# #
+# STG
+# Namespace: mcpx-webapp-prod
+# ingress:
+#   enabled: true
+#   annotations:
+#     kubernetes.io/ingress.global-static-ip-name: lunar-production-mcpx-webapp
+#   type: gce
+
+#   domains:
+#     webserver:
+#       - mcpx-app-stg.lunar.dev
+#     admin:
+#       - mcpx-admin-stg.lunar.dev
+#     auth:
+#       - mcpx-auth-stg.lunar.dev
+#     ui:
+#       - mcpx-ui-stg.lunar.dev
+#     router:
+#       - mcpx-stg.lunar.dev
+# Demo
+# ingress:
+#   enabled: true
+#   annotations:
+#     kubernetes.io/ingress.global-static-ip-name: enterprise-mcpx-demo
+#   type: gce
+
+#   domains:
+#     webserver:
+#       - mcpx-app-demo.lunar.dev
+#     admin:
+#       - mcpx-admin-demo.lunar.dev
+#     auth:
+#       - mcpx-auth-demo.lunar.dev
+#     ui:
+#       - mcpx-ui-demo.lunar.dev
+#     router:
+#       - mcpx-demo.lunar.dev
+# # PT
+# ingress:
+#   enabled: true
+#   annotations:
+#     kubernetes.io/ingress.global-static-ip-name: mcpx-webapp-pt
+#   type: gce
+
+#   domains:
+#     webserver:
+#       - mcpx-app-stg-pt.lunar.dev
+#     admin:
+#       - mcpx-admin-stg-pt.lunar.dev
+#     auth:
+#       - mcpx-auth-stg-pt.lunar.dev
+#     ui:
+#       - mcpx-ui-stg-pt.lunar.dev
+#     router:
+#       - mcpx-stg-pt.lunar.dev
+
+# CheckPoint
+# Namespacce: mcpx-checkpoint
+# ingress:
+#   enabled: true
+#   annotations:
+#     kubernetes.io/ingress.global-static-ip-name: checkpoint-mcpx-webapp2
+#   type: gce
+#   domains:
+#     webserver:
+#       - mcpx-app-checkpoint.lunar.dev
+#     admin:
+#       - mcpx-admin-checkpoint.lunar.dev
+#     auth:
+#       - mcpx-auth-checkpoint.lunar.dev
+#     ui:
+#       - mcpx-ui-checkpoint.lunar.dev
+#     router:
+#       - mcpx-checkpoint.lunar.dev
