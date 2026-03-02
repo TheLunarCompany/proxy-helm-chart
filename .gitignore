@@ -16,4 +16,4 @@
 # Values.yaml with data
 *.tmp.yaml
 settings.local.json
-charts/lunar-mcpx-webapp/test.yaml
+charts/**/test.yaml
