@@ -13,10 +13,11 @@ metadata:
     {{- end }}
 spec:
   schedule: "0 */4 * * *"
-  successfulJobsHistoryLimit: 3
+  successfulJobsHistoryLimit: 0
   failedJobsHistoryLimit: 3
   jobTemplate:
     spec:
+      ttlSecondsAfterFinished: 60
       backoffLimit: 3 # Retries 3 times before marking the job as failed
       activeDeadlineSeconds: 3600 # The job will be terminated after 1 hour
       template:
