@@ -312,10 +312,6 @@ controller:
       cpu: "100m"
       memory: 128Mi
 
-  # -- Router-only override for JWKS URI used for bearer token validation.
-  # If empty, defaults to the in-cluster auth service URL.
-  oidcJwksUri: ""
-
   # -- extraEnvVars An array to add extra env vars
   # e.g:
   # extraEnvVars:
@@ -371,6 +367,10 @@ router:
     requests:
       cpu: "100m"
       memory: 128Mi
+
+  # -- Router-only override for JWKS URI used for bearer token validation.
+  # If empty, defaults to the in-cluster auth service URL.
+  oidcJwksUri: ""
 
   # -- extraEnvVars An array to add extra env vars
   # e.g:
