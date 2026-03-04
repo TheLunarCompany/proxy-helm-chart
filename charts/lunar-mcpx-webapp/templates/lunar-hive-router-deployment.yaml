@@ -97,9 +97,10 @@ spec:
               value: "https://{{ first .Values.ingress.domains.ui }}"
             - name: WEBSERVER_URL
               value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-webserver:4000"
-          {{- if .Values.ingress.enabled }}
+            {{- $defaultOidcJwksUri := printf "http://%s-auth/.well-known/jwks.json" (include "lunar-mcpx-webapp.fullname" .) }}
             - name: OIDC_JWKS_URI
-              value: "https://{{ first .Values.ingress.domains.auth }}/.well-known/jwks.json"
+              value: {{ .Values.router.oidcJwksUri | default $defaultOidcJwksUri | quote }}
+          {{- if .Values.ingress.enabled }}
             - name: AUTH_BFF_URL
               value: "https://{{ first .Values.ingress.domains.auth }}"
           {{- end }}

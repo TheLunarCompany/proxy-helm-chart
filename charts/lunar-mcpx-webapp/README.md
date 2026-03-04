@@ -57,6 +57,8 @@ Required service versions:
 | OIDC_POST_LOGOUT_REDIRECT_URI |       |
 |       OIDC_ISSUER_URL         |       |
 
+Note: Router `OIDC_JWKS_URI` defaults to in-cluster auth service (`http://<release>-auth/.well-known/jwks.json`) and can be overridden with `router.oidcJwksUri`.
+
 #### Optional environmental variables
 
 
