@@ -145,6 +145,8 @@ spec:
             - name: HIBERNATION_ENABLED
               value: "true"
             {{- end }}
+            - name: WEBAPP_DEPLOYMENT_PREFIX
+              value: {{ include "lunar-mcpx-webapp.fullname" . | quote }}
             {{- $webserverExtraEnvNames := list }}
             {{- range .Values.webserver.extraEnvVars }}
             {{- $webserverExtraEnvNames = append $webserverExtraEnvNames .name }}
