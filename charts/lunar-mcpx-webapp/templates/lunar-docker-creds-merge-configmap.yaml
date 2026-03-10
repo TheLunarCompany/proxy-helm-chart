@@ -1,0 +1,45 @@
+{{- if .Values.controller.enabled | default true }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-docker-creds-merge
+  labels:
+    name: {{ include "lunar-mcpx-webapp.fullname" . }}-docker-creds-merge
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-docker-creds-merge
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+data:
+  merge-docker-creds.js: |
+    'use strict';
+    const fs = require('fs');
+    const path = require('path');
+
+    const CREDS_DIR = '/var/lunar/docker-setup/creds';
+    const OUT_DIR = '/root/.docker';
+
+    const secretDirs = fs
+      .readdirSync(CREDS_DIR)
+      .filter((d) => fs.statSync(path.join(CREDS_DIR, d)).isDirectory());
+
+    const merged = { auths: {} };
+
+    for (const dir of secretDirs) {
+      const configFile = path.join(CREDS_DIR, dir, 'config.json');
+      if (!fs.existsSync(configFile)) continue;
+
+      const config = JSON.parse(fs.readFileSync(configFile, 'utf8'));
+
+      Object.assign(merged.auths, config.auths ?? {});
+
+      if (config.credHelpers) {
+        merged.credHelpers = { ...(merged.credHelpers ?? {}), ...config.credHelpers };
+      }
+      if (config.credsStore && !merged.credsStore) {
+        merged.credsStore = config.credsStore;
+      }
+    }
+
+    fs.mkdirSync(OUT_DIR, { recursive: true });
+    fs.writeFileSync(path.join(OUT_DIR, 'config.json'), JSON.stringify(merged));
+{{- end }}

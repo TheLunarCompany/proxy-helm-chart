@@ -128,6 +128,8 @@ spec:
           {{- if .Values.controller.mcpxImagePullSecrets }}
             - name: MCPX_IMAGE_PULL_SECRETS
               value: "{{ join "," .Values.controller.mcpxImagePullSecrets }}"
+            - name: MCPX_DOCKER_CREDS_MERGE_CONFIGMAP
+              value: "{{ include "lunar-mcpx-webapp.fullname" . }}-docker-creds-merge"
           {{- end }}
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
