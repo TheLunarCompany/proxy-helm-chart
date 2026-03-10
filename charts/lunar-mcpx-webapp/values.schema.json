@@ -168,6 +168,11 @@
     "controller": {
       "type": "object",
       "properties": {
+        "mcpxImagePullSecrets": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "docker-registry secret names injected as imagePullSecrets into every MCPX instance pod"
+        },
         "mcpxCRD": {
           "type": "object",
           "description": "Configuration for CRD schema version checks",

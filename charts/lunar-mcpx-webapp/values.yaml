@@ -289,6 +289,14 @@ controller:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+  # -- mcpxImagePullSecrets List of docker-registry secret names injected as imagePullSecrets
+  # into every MCPX instance pod created by the controller.
+  # Ops must pre-create these secrets in the MCPX namespace before referencing them here.
+  # e.g.
+  # mcpxImagePullSecrets:
+  #   - customer-private-registry-secret
+  mcpxImagePullSecrets: []
+
   # -- mcpxCRD configuration for CRD schema version checks
   mcpxCRD:
     # -- Enable strict schema version checking

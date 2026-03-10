@@ -125,6 +125,10 @@ spec:
             - name: UI_DOMAIN
               value: "https://{{ first .Values.ingress.domains.ui }}"
           {{- end }}
+          {{- if .Values.controller.mcpxImagePullSecrets }}
+            - name: MCPX_IMAGE_PULL_SECRETS
+              value: "{{ join "," .Values.controller.mcpxImagePullSecrets }}"
+          {{- end }}
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}
