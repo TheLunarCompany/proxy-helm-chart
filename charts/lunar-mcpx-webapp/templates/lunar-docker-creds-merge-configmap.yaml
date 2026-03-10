@@ -1,4 +1,4 @@
-{{- if .Values.controller.enabled | default true }}
+{{- if and (.Values.controller.enabled | default true) .Values.controller.mcpxImagePullSecrets }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

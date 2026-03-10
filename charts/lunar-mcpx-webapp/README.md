@@ -12,6 +12,31 @@ kubectl create ns {{ mcpx_namespace }}
 kubectl apply -f lunar-private-mcpx-registry.yaml -n {{ mcpx_namespace }}
 ```
 
+#### Private Docker registries for MCP servers
+
+If your MCPX instances need to pull Docker-based MCP servers from a private registry, create a
+`docker-registry` secret in the MCPX namespace and reference it via `controller.mcpxImagePullSecrets`:
+
+```bash
+kubectl create secret docker-registry <secret-name> \
+  --docker-server=<registry-host> \
+  --docker-username=<username> \
+  --docker-password=<token> \
+  -n {{ mcpx_namespace }}
+```
+
+```yaml
+controller:
+  mcpxImagePullSecrets:
+    - <secret-name>
+```
+
+This does two things:
+- Adds the secret to `imagePullSecrets` on every MCPX pod so Kubernetes can pull the MCPX image itself (if hosted in the same registry).
+- Makes the registry credentials available to MCPX so it can pull and run Docker-based MCP servers from the private registry.
+
+Multiple secrets are supported and will be merged automatically.
+
 #### Required external services
 Lunar MCPX Webapps requires external Postresql and Redis servers in order to work. It is possible to deploy this chart with
 embedded services by setting up following variables:
