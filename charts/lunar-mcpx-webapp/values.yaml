@@ -599,6 +599,9 @@ ingress:
   # -- Enable or disable Ingress for mcpx-webapp services
   enabled: true
 
+  # -- ingressClassName
+  ingressClassName: ""
+
   # -- Ingress annotations
   annotations: {}
 
