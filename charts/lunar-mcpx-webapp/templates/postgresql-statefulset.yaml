@@ -1,4 +1,5 @@
 {{- if .Values.postgres.enabled | default false }}
+{{- $tolerations := concat .Values.global.tolerations .Values.postgres.tolerations -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -67,6 +68,14 @@ spec:
             - name: data
               mountPath: /var/lib/postgresql/data/pgdata
             {{- end }}
+      {{- with .Values.postgres.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
   {{- if .Values.postgres.persistence.enabled | default false }}
   volumeClaimTemplates:
     - metadata:
