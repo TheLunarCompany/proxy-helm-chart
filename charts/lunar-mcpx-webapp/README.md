@@ -31,9 +31,7 @@ controller:
     - <secret-name>
 ```
 
-This does two things:
-- Adds the secret to `imagePullSecrets` on every MCPX pod so Kubernetes can pull the MCPX image itself (if hosted in the same registry).
-- Makes the registry credentials available to MCPX so it can pull and run Docker-based MCP servers from the private registry.
+This makes the registry credentials available inside each MCPX instance so it can pull and run Docker-based MCP servers from the private registry.
 
 Multiple secrets are supported and will be merged automatically.
 
