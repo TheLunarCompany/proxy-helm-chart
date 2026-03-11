@@ -1,4 +1,5 @@
 {{- if .Values.redis.enabled | default false }}
+{{- $tolerations := concat .Values.global.tolerations .Values.redis.tolerations -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -90,6 +91,14 @@ spec:
           configMap:
             name: {{ include "lunar-mcpx-webapp.fullname" . }}-redis-config
             defaultMode: 0644
+      {{- with .Values.redis.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
   {{- if .Values.redis.persistence.enabled | default false }}
   volumeClaimTemplates:
     - metadata:
