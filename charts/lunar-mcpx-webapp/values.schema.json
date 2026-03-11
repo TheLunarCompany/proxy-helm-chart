@@ -168,10 +168,10 @@
     "controller": {
       "type": "object",
       "properties": {
-        "mcpxImagePullSecrets": {
+        "mcpxDockerRegistrySecrets": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "docker-registry secret names injected as imagePullSecrets into every MCPX instance pod"
+          "description": "docker-registry secret names used for runtime Docker pulls inside every MCPX instance pod"
         },
         "mcpxCRD": {
           "type": "object",

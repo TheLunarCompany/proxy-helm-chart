@@ -1,4 +1,4 @@
-{{- if and (.Values.controller.enabled | default true) .Values.controller.mcpxImagePullSecrets }}
+{{- if and (.Values.controller.enabled | default true) .Values.controller.mcpxDockerRegistrySecrets }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -16,13 +16,19 @@ data:
     const path = require('path');
 
     const CREDS_DIR = '/var/lunar/docker-setup/creds';
-    const OUT_DIR = '/root/.docker';
+    const OUT_DIR = process.env.DOCKER_CONFIG || '/lunar/.docker';
+    const OUT_FILE = path.join(OUT_DIR, 'config.json');
 
     const secretDirs = fs
       .readdirSync(CREDS_DIR)
       .filter((d) => fs.statSync(path.join(CREDS_DIR, d)).isDirectory());
 
-    const merged = { auths: {} };
+    let merged = { auths: {} };
+
+    if (fs.existsSync(OUT_FILE)) {
+      merged = JSON.parse(fs.readFileSync(OUT_FILE, 'utf8'));
+      merged.auths = merged.auths ?? {};
+    }
 
     for (const dir of secretDirs) {
       const configFile = path.join(CREDS_DIR, dir, 'config.json');
@@ -41,5 +47,5 @@ data:
     }
 
     fs.mkdirSync(OUT_DIR, { recursive: true });
-    fs.writeFileSync(path.join(OUT_DIR, 'config.json'), JSON.stringify(merged));
+    fs.writeFileSync(OUT_FILE, JSON.stringify(merged));
 {{- end }}

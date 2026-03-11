@@ -125,10 +125,10 @@ spec:
             - name: UI_DOMAIN
               value: "https://{{ first .Values.ingress.domains.ui }}"
           {{- end }}
-          {{- if .Values.controller.mcpxImagePullSecrets }}
-            - name: MCPX_IMAGE_PULL_SECRETS
-              value: "{{ join "," .Values.controller.mcpxImagePullSecrets }}"
-            - name: MCPX_DOCKER_CREDS_MERGE_CONFIGMAP
+          {{- if .Values.controller.mcpxDockerRegistrySecrets }}
+            - name: MCPX_DOCKER_REGISTRY_SECRETS
+              value: "{{ join "," .Values.controller.mcpxDockerRegistrySecrets }}"
+            - name: MCPX_DOCKER_REGISTRY_MERGE_CONFIGMAP
               value: "{{ include "lunar-mcpx-webapp.fullname" . }}-docker-creds-merge"
           {{- end }}
           {{- if .Values.global.extraEnvVars }}

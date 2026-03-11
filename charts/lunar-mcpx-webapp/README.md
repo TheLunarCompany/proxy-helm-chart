@@ -15,7 +15,7 @@ kubectl apply -f lunar-private-mcpx-registry.yaml -n {{ mcpx_namespace }}
 #### Private Docker registries for MCP servers
 
 If your MCPX instances need to pull Docker-based MCP servers from a private registry, create a
-`docker-registry` secret in the MCPX namespace and reference it via `controller.mcpxImagePullSecrets`:
+`docker-registry` secret in the MCPX namespace and reference it via `controller.mcpxDockerRegistrySecrets`:
 
 ```bash
 kubectl create secret docker-registry <secret-name> \
@@ -27,7 +27,7 @@ kubectl create secret docker-registry <secret-name> \
 
 ```yaml
 controller:
-  mcpxImagePullSecrets:
+  mcpxDockerRegistrySecrets:
     - <secret-name>
 ```
 
