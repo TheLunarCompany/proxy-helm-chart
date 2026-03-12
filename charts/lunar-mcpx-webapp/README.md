@@ -54,7 +54,6 @@ Required service versions:
 |       OIDC_REDIRECT_URI       |       |
 |         OIDC_JWKS_URI         |       |
 |         OIDC_AUDIENCE         |       |
-| OIDC_POST_LOGOUT_REDIRECT_URI |       |
 |       OIDC_ISSUER_URL         |       |
 
 Note: Router `OIDC_JWKS_URI` defaults to in-cluster auth service (`http://<release>-auth/.well-known/jwks.json`) and can be overridden with `router.oidcJwksUri`.
@@ -86,7 +85,7 @@ It is possible to supply this variables using several different techniques:
         --from-literal=OIDC_REDIRECT_URI="" \
         --from-literal=OIDC_JWKS_URI="" \
         --from-literal=OIDC_AUDIENCE="" \
-        --from-literal=OIDC_POST_LOGOUT_REDIRECT_URI=""
+        --from-file=credentials.json="/path/to/service-account.json"
     ```
   - Specify pre-created secrets using `extraEnvFromSecrets` parameter:
     ```yaml
@@ -102,7 +101,15 @@ It is possible to supply this variables using several different techniques:
     auth:
       extraEnvFromSecrets:
         - mcpx-webapp-oidc
+      googleApplicationCredentials:
+        secretName: mcpx-webapp-oidc
     ```
+
+  - `auth.googleApplicationCredentials` is optional.
+    - Set `secretName` to mount a service account key as a file for `auth-bff`.
+    - The chart then sets `GOOGLE_APPLICATION_CREDENTIALS=/var/secrets/google/credentials.json`.
+    - Override `secretKey` if your secret stores the JSON under a different key name.
+    - Leave it unset to rely on ambient ADC / Workload Identity instead.
 
 - Using values-override.yaml file with plain-text value:
 ```yaml

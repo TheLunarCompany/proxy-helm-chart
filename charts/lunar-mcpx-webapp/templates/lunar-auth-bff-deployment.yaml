@@ -1,5 +1,7 @@
 {{- if .Values.auth.enabled | default true }}
 {{- $tolerations := concat .Values.global.tolerations .Values.auth.tolerations -}}
+{{- $googleCredentialsSecretName := .Values.auth.googleApplicationCredentials.secretName | default "" -}}
+{{- $googleCredentialsSecretKey := .Values.auth.googleApplicationCredentials.secretKey | default "credentials.json" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -140,6 +142,10 @@ spec:
             {{- end }}
             - name: PORT
               value: "8080"
+            {{- if $googleCredentialsSecretName }}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/var/secrets/google/credentials.json"
+            {{- end }}
           {{- if .Values.ingress.enabled }}
             - name: JWT_ISSUER
               value: "https://{{ first .Values.ingress.domains.auth }}"
@@ -181,11 +187,18 @@ spec:
             periodSeconds: 30
             timeoutSeconds: 30
 
-          {{- with .Values.global.caCerts }}
+          {{- if or (and .Values.global.caCerts .Values.global.caCerts.secretName) $googleCredentialsSecretName }}
           volumeMounts:
+          {{- with .Values.global.caCerts }}
           {{- with .secretName }}
             - name: {{ . }}
               mountPath: "/usr/local/share/ca-certificates/"
+              readOnly: true
+          {{- end }}
+          {{- end }}
+          {{- if $googleCredentialsSecretName }}
+            - name: google-application-credentials
+              mountPath: "/var/secrets/google"
               readOnly: true
           {{- end }}
           {{- end }}
@@ -201,6 +214,14 @@ spec:
               - key: ca.crt
                 path: {{ . }}.crt
         {{- end }}
+        {{- end }}
+        {{- if $googleCredentialsSecretName }}
+        - name: google-application-credentials
+          secret:
+            secretName: {{ $googleCredentialsSecretName }}
+            items:
+              - key: {{ $googleCredentialsSecretKey | quote }}
+                path: "credentials.json"
         {{- end }}
 
       {{- with .Values.global.imagePullSecrets }}
