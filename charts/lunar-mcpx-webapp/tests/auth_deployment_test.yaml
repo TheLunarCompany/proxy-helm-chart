@@ -1,0 +1,55 @@
+suite: Auth deployment
+templates:
+  - templates/lunar-auth-bff-deployment.yaml
+
+tests:
+  - it: should not render auth credential mounts by default
+    asserts:
+      - isNull:
+          path: spec.template.spec.containers[0].volumeMounts
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: GOOGLE_APPLICATION_CREDENTIALS
+
+  - it: should render Google ADC secret mount when configured
+    set:
+      auth.googleApplicationCredentials.secretName: mcpx-webapp-oidc
+      auth.googleApplicationCredentials.secretKey: credentials.json
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /var/secrets/google/credentials.json
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: google-application-credentials
+            mountPath: /var/secrets/google
+            readOnly: true
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: google-application-credentials
+            secret:
+              secretName: mcpx-webapp-oidc
+              items:
+                - key: credentials.json
+                  path: credentials.json
+
+  - it: should still render CA mounts independently
+    set:
+      global.caCerts.secretName: ca-example-com-1
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: NODE_EXTRA_CA_CERTS
+            value: /usr/local/share/ca-certificates/ca-example-com-1.crt
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: ca-example-com-1
+            mountPath: /usr/local/share/ca-certificates/
+            readOnly: true
