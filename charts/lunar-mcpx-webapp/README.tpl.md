@@ -255,6 +255,10 @@ This is separate from the chart image pull secret above. The chart image pull se
 Kubernetes to pull Lunar images for this deployment, while `controller.mcpxRuntimeAuth` is used at
 runtime inside each MCPX instance pod.
 
+Each runtime auth setting accepts one secret per config type. That single secret can still contain
+multiple registries or indexes inside the native config format, which matches how Docker, npm, and
+uv expect these files to be managed.
+
 For Docker-based MCP servers, create a `docker-registry` secret:
 
 ```bash
@@ -288,27 +292,23 @@ kubectl create secret generic <netrc-secret-name> \
 ```yaml
 controller:
   mcpxRuntimeAuth:
-    dockerConfigSecrets:
-      - <secret-name>
-    npmrcSecrets:
-      - <npm-secret-name>
-    uvConfigSecrets:
-      - <uv-config-secret-name>
-    netrcSecrets:
-      - <netrc-secret-name>
+    dockerConfigSecret: <secret-name>
+    npmrcSecret: <npm-secret-name>
+    uvConfigSecret: <uv-config-secret-name>
+    netrcSecret: <netrc-secret-name>
 ```
 
-`dockerConfigSecrets` must reference `kubernetes.io/dockerconfigjson` secrets and are merged into
-the Docker config used for Docker-based MCP servers.
+`dockerConfigSecret` must reference a `kubernetes.io/dockerconfigjson` secret and is exposed
+through `DOCKER_CONFIG`. A single Docker config can include credentials for multiple registries.
 
-`npmrcSecrets` are concatenated in the configured order and exposed through `NPM_CONFIG_USERCONFIG`
-for npm and npx.
+`npmrcSecret` must contain a `.npmrc` key and is exposed through `NPM_CONFIG_USERCONFIG` for npm
+and npx. A single `.npmrc` can define multiple registries, scopes, and auth entries.
 
-`uvConfigSecrets` are concatenated in the configured order and exposed through `UV_CONFIG_FILE` for
-uv and uvx.
+`uvConfigSecret` must contain a `uv.toml` key and is exposed through `UV_CONFIG_FILE` for uv and
+uvx. A single `uv.toml` can define multiple indexes.
 
-`netrcSecrets` are concatenated in the configured order and exposed through `NETRC` for uv, uvx,
-and other tools that honor `.netrc`.
+`netrcSecret` must contain a `.netrc` key and is exposed through `NETRC` for uv, uvx, and other
+tools that honor `.netrc`. A single `.netrc` can contain credentials for multiple hosts.
 
 Make sure the referenced secrets already exist in the MCPX namespace before MCPX instances are
-created or restarted, and ensure the combined files are valid for the target tool.
+created or restarted.

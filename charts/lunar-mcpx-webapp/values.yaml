@@ -339,18 +339,17 @@ controller:
   # -- mcpxRuntimeAuth injects runtime auth/config files into each MCPX instance pod
   # created by the controller. Referenced secrets must already exist in the MCPX namespace.
   mcpxRuntimeAuth:
-    # -- dockerConfigSecrets List of kubernetes.io/dockerconfigjson secrets merged into
-    # the Docker config used by Docker-based MCP servers inside MCPX.
-    dockerConfigSecrets: []
-    # -- npmrcSecrets List of secrets containing a `.npmrc` key. Files are concatenated
-    # in the listed order and exposed to npm/npx as the user config.
-    npmrcSecrets: []
-    # -- uvConfigSecrets List of secrets containing a `uv.toml` key. Files are concatenated
-    # in the listed order and exposed to uv/uvx as the user config.
-    uvConfigSecrets: []
-    # -- netrcSecrets List of secrets containing a `.netrc` key. Files are concatenated
-    # in the listed order and exposed to uv/uvx through the NETRC environment variable.
-    netrcSecrets: []
+    # -- dockerConfigSecret Name of a kubernetes.io/dockerconfigjson secret exposed to
+    # Docker-based MCP servers inside MCPX via DOCKER_CONFIG.
+    dockerConfigSecret: ""
+    # -- npmrcSecret Name of a secret containing a `.npmrc` key exposed to npm/npx
+    # via NPM_CONFIG_USERCONFIG.
+    npmrcSecret: ""
+    # -- uvConfigSecret Name of a secret containing a `uv.toml` key exposed to uv/uvx
+    # via UV_CONFIG_FILE.
+    uvConfigSecret: ""
+    # -- netrcSecret Name of a secret containing a `.netrc` key exposed via NETRC.
+    netrcSecret: ""
 
   # -- mcpxCRD configuration for CRD schema version checks
   mcpxCRD:

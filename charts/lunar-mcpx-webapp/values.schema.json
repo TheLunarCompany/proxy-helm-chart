@@ -191,25 +191,21 @@
           "type": "object",
           "description": "Runtime auth/config files injected into each MCPX instance pod",
           "properties": {
-            "dockerConfigSecrets": {
-              "type": "array",
-              "items": { "type": "string" },
-              "description": "kubernetes.io/dockerconfigjson secrets merged into the Docker config used inside MCPX"
+            "dockerConfigSecret": {
+              "type": "string",
+              "description": "Name of a kubernetes.io/dockerconfigjson secret exposed to Docker inside MCPX"
             },
-            "npmrcSecrets": {
-              "type": "array",
-              "items": { "type": "string" },
-              "description": "Secrets containing a .npmrc key; files are concatenated and exposed to npm/npx"
+            "npmrcSecret": {
+              "type": "string",
+              "description": "Name of a secret containing a .npmrc key exposed to npm/npx"
             },
-            "uvConfigSecrets": {
-              "type": "array",
-              "items": { "type": "string" },
-              "description": "Secrets containing a uv.toml key; files are concatenated and exposed to uv/uvx"
+            "uvConfigSecret": {
+              "type": "string",
+              "description": "Name of a secret containing a uv.toml key exposed to uv/uvx"
             },
-            "netrcSecrets": {
-              "type": "array",
-              "items": { "type": "string" },
-              "description": "Secrets containing a .netrc key; files are concatenated and exposed through NETRC"
+            "netrcSecret": {
+              "type": "string",
+              "description": "Name of a secret containing a .netrc key exposed through NETRC"
             }
           }
         },
