@@ -1,5 +1,10 @@
 {{- if .Values.auth.enabled | default true }}
 {{- $tolerations := concat .Values.global.tolerations .Values.auth.tolerations -}}
+{{- $globalCaSecretName := .Values.global.caCerts.secretName | default "" -}}
+{{- $hasGlobalCaSecret := ne $globalCaSecretName "" -}}
+{{- $googleCredentialsSecretName := .Values.auth.googleApplicationCredentials.secretName | default "" -}}
+{{- $googleCredentialsSecretKey := .Values.auth.googleApplicationCredentials.secretKey | default "credentials.json" -}}
+{{- $hasGoogleCredentialsSecret := ne $googleCredentialsSecretName "" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -132,14 +137,16 @@ spec:
           env:
             - name: NODE_ENV
               value: "production"
-            {{- with .Values.global.caCerts }}
-            {{- with .secretName }}
+            {{- if $hasGlobalCaSecret }}
             - name: NODE_EXTRA_CA_CERTS
-              value: /usr/local/share/ca-certificates/{{ . }}.crt
-            {{- end }}
+              value: /usr/local/share/ca-certificates/{{ $globalCaSecretName }}.crt
             {{- end }}
             - name: PORT
               value: "8080"
+            {{- if $hasGoogleCredentialsSecret }}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/var/secrets/google/credentials.json"
+            {{- end }}
           {{- if .Values.ingress.enabled }}
             - name: JWT_ISSUER
               value: "https://{{ first .Values.ingress.domains.auth }}"
@@ -181,26 +188,37 @@ spec:
             periodSeconds: 30
             timeoutSeconds: 30
 
-          {{- with .Values.global.caCerts }}
+          {{- if or $hasGlobalCaSecret $hasGoogleCredentialsSecret }}
           volumeMounts:
-          {{- with .secretName }}
-            - name: {{ . }}
+          {{- if $hasGlobalCaSecret }}
+            - name: {{ $globalCaSecretName }}
               mountPath: "/usr/local/share/ca-certificates/"
+              readOnly: true
+          {{- end }}
+          {{- if $hasGoogleCredentialsSecret }}
+            - name: google-application-credentials
+              mountPath: "/var/secrets/google"
               readOnly: true
           {{- end }}
           {{- end }}
       volumes:
         - name: tmp
           emptyDir: {}
-        {{- with .Values.global.caCerts }}
-        {{- with .secretName }}
-        - name: {{ . }}
+        {{- if $hasGlobalCaSecret }}
+        - name: {{ $globalCaSecretName }}
           secret:
-            secretName: {{ . }}
+            secretName: {{ $globalCaSecretName }}
             items:
               - key: ca.crt
-                path: {{ . }}.crt
+                path: {{ $globalCaSecretName }}.crt
         {{- end }}
+        {{- if $hasGoogleCredentialsSecret }}
+        - name: google-application-credentials
+          secret:
+            secretName: {{ $googleCredentialsSecretName }}
+            items:
+              - key: {{ $googleCredentialsSecretKey | quote }}
+                path: "credentials.json"
         {{- end }}
 
       {{- with .Values.global.imagePullSecrets }}

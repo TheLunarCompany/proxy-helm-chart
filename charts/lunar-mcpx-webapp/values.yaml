@@ -307,6 +307,13 @@ auth:
   #   - secret_2
   extraEnvFromSecrets: []
 
+  # -- Optional secret-backed ADC file for auth-bff. When set, the chart mounts
+  # the secret key as `/var/secrets/google/credentials.json` and points
+  # `GOOGLE_APPLICATION_CREDENTIALS` to that path.
+  googleApplicationCredentials:
+    secretName: ""
+    secretKey: credentials.json
+
   # Labels for all application related resources
   # labels:
   #   label_1: value_1
