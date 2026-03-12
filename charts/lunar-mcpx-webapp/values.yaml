@@ -26,6 +26,14 @@ global:
   #   - secret_2
   extraEnvFromSecrets: []
 
+  # -- tolerations allow the scheduler to schedule pods with matching taints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  # tolerations:
+  #   - key: "example-key"
+  #     operator: "Exists"
+  #     effect: "NoSchedule"
+  tolerations: []
+
   # Labels for all resources
   # labels:
   #   label_1: value_1
@@ -61,6 +69,14 @@ webserver:
   # -- NodeSelector to pin pods in deployment to certain set of nodes.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
+
+  # -- tolerations allow the scheduler to schedule pods with matching taints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  # tolerations:
+  #   - key: "example-key"
+  #     operator: "Exists"
+  #     effect: "NoSchedule"
+  tolerations: []
 
   # -- number of replicas to run
   replicaCount: 1
@@ -125,6 +141,14 @@ hub:
   # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
 
+  # -- tolerations allow the scheduler to schedule pods with matching taints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  # tolerations:
+  #   - key: "example-key"
+  #     operator: "Exists"
+  #     effect: "NoSchedule"
+  tolerations: []
+
   # -- number of replicas to run
   replicaCount: 1
 
@@ -180,6 +204,14 @@ admin:
   # -- NodeSelector to pin pods in deployment to certain set of nodes.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
+
+  # -- tolerations allow the scheduler to schedule pods with matching taints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  # tolerations:
+  #   - key: "example-key"
+  #     operator: "Exists"
+  #     effect: "NoSchedule"
+  tolerations: []
 
   # -- number of replicas to run
   replicaCount: 1
@@ -237,6 +269,14 @@ auth:
   # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
 
+  # -- tolerations allow the scheduler to schedule pods with matching taints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  # tolerations:
+  #   - key: "example-key"
+  #     operator: "Exists"
+  #     effect: "NoSchedule"
+  tolerations: []
+
   # -- number of replicas to run
   replicaCount: 1
 
@@ -266,6 +306,13 @@ auth:
   #   - secret_1
   #   - secret_2
   extraEnvFromSecrets: []
+
+  # -- Optional secret-backed ADC file for auth-bff. When set, the chart mounts
+  # the secret key as `/var/secrets/google/credentials.json` and points
+  # `GOOGLE_APPLICATION_CREDENTIALS` to that path.
+  googleApplicationCredentials:
+    secretName: ""
+    secretKey: credentials.json
 
   # Labels for all application related resources
   # labels:
@@ -315,6 +362,14 @@ controller:
   # -- NodeSelector to pin pods in deployment to certain set of nodes.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
+
+  # -- tolerations allow the scheduler to schedule pods with matching taints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  # tolerations:
+  #   - key: "example-key"
+  #     operator: "Exists"
+  #     effect: "NoSchedule"
+  tolerations: []
 
   # -- number of replicas to run
   replicaCount: 1
@@ -371,6 +426,14 @@ router:
   # -- NodeSelector to pin pods in deployment to certain set of nodes.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
+
+  # -- tolerations allow the scheduler to schedule pods with matching taints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  # tolerations:
+  #   - key: "example-key"
+  #     operator: "Exists"
+  #     effect: "NoSchedule"
+  tolerations: []
 
   # -- number of replicas to run
   replicaCount: 1
@@ -431,6 +494,14 @@ ui:
   # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
 
+  # -- tolerations allow the scheduler to schedule pods with matching taints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  # tolerations:
+  #   - key: "example-key"
+  #     operator: "Exists"
+  #     effect: "NoSchedule"
+  tolerations: []
+
   # -- number of replicas to run
   replicaCount: 1
 
@@ -484,6 +555,14 @@ jobs:
     tag: ""
 
   nodeSelector: {}
+
+  # -- tolerations allow the scheduler to schedule pods with matching taints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  # tolerations:
+  #   - key: "example-key"
+  #     operator: "Exists"
+  #     effect: "NoSchedule"
+  tolerations: []
 
   # -- Set pod resource requests & limits
   resources:
@@ -543,6 +622,9 @@ ingress:
   # -- Enable or disable Ingress for mcpx-webapp services
   enabled: true
 
+  # -- ingressClassName
+  ingressClassName: ""
+
   # -- Ingress annotations
   annotations: {}
 
@@ -595,6 +677,18 @@ postgres:
   # The purpose of embedded services is to provide a 'quick-start' option and for testing purposes.
   enabled: false
 
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  nodeSelector: {}
+
+  # -- tolerations allow the scheduler to schedule pods with matching taints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  # tolerations:
+  #   - key: "example-key"
+  #     operator: "Exists"
+  #     effect: "NoSchedule"
+  tolerations: []
+
   # Labels for all application related resources
   # labels:
   #   label_1: value_1
@@ -629,6 +723,18 @@ redis:
   # Warning: Do not use embedded Redis for production environments.
   # The purpose of embedded services is to provide a 'quick-start' option and for testing purposes.
   enabled: false
+
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  nodeSelector: {}
+
+  # -- tolerations allow the scheduler to schedule pods with matching taints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  # tolerations:
+  #   - key: "example-key"
+  #     operator: "Exists"
+  #     effect: "NoSchedule"
+  tolerations: []
 
   # Labels for all application related resources
   # labels:

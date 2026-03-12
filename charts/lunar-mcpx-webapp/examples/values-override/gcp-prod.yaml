@@ -21,6 +21,9 @@ auth:
   replicaCount: 2
   extraEnvFromSecrets:
     - mcpx-webapp-oidc
+  # Optional if using GCP workspace for OIDC
+  # googleApplicationCredentials:
+  #   secretName: mcpx-webapp-oidc
 
 controller:
   replicaCount: 2

@@ -22,8 +22,6 @@ hub:
       value: ""
     - name: OIDC_AUDIENCE
       value: ""
-    - name: OIDC_POST_LOGOUT_REDIRECT_URI
-      value: ""
 
 auth:
   extraEnvVars:
@@ -39,8 +37,6 @@ auth:
       value: ""
     - name: OIDC_AUDIENCE
       value: ""
-    - name: OIDC_POST_LOGOUT_REDIRECT_URI
-      value: ""
 
 router:
   extraEnvVars:
@@ -55,8 +51,6 @@ router:
     - name: OIDC_JWKS_URI
       value: ""
     - name: OIDC_AUDIENCE
-      value: ""
-    - name: OIDC_POST_LOGOUT_REDIRECT_URI
       value: ""
 
 ingress:

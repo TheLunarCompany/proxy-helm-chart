@@ -79,6 +79,25 @@
         }
       }
     },
+    "auth": {
+      "type": "object",
+      "properties": {
+        "googleApplicationCredentials": {
+          "type": "object",
+          "description": "Optional secret-backed ADC file for auth-bff.",
+          "properties": {
+            "secretName": {
+              "type": "string",
+              "default": ""
+            },
+            "secretKey": {
+              "type": "string",
+              "default": "credentials.json"
+            }
+          }
+        }
+      }
+    },
     "ingress": {
       "type": "object",
       "properties": {

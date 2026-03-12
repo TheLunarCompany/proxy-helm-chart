@@ -7,6 +7,7 @@ Expects a dict with keys:
   - extraEnv: list of {name, value} maps for additional env vars
 */}}
 {{- define "lunar-mcpx-webapp.adminCronJob" -}}
+{{- $tolerations := concat .root.Values.global.tolerations .root.Values.jobs.tolerations -}}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -99,6 +100,10 @@ spec:
           {{- end }}
           {{- with .root.Values.jobs.nodeSelector }}
           nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $tolerations }}
+          tolerations:
             {{- toYaml . | nindent 12 }}
           {{- end }}
 {{- end }}

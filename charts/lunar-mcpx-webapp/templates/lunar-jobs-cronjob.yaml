@@ -1,3 +1,4 @@
+{{- $tolerations := concat .Values.global.tolerations .Values.jobs.tolerations -}}
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -87,6 +88,10 @@ spec:
           {{- end }}
           {{- with .Values.jobs.nodeSelector }}
           nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $tolerations }}
+          tolerations:
             {{- toYaml . | nindent 12 }}
           {{- end }}
 
@@ -182,6 +187,10 @@ spec:
           {{- end }}
           {{- with .Values.jobs.nodeSelector }}
           nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $tolerations }}
+          tolerations:
             {{- toYaml . | nindent 12 }}
           {{- end }}
 {{- end }}
