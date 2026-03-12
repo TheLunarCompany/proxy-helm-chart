@@ -342,6 +342,9 @@ controller:
     # -- dockerConfigSecret Name of a kubernetes.io/dockerconfigjson secret exposed to
     # Docker-based MCP servers inside MCPX via DOCKER_CONFIG.
     dockerConfigSecret: ""
+    # -- fsGroup Group ID used to read mounted MCPX runtime auth secrets.
+    # Defaults to the current Lunar MCPX image group.
+    fsGroup: 1002
     # -- npmrcSecret Name of a secret containing a `.npmrc` key exposed to npm/npx
     # via NPM_CONFIG_USERCONFIG.
     npmrcSecret: ""

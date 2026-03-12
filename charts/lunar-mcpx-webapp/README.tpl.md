@@ -301,6 +301,10 @@ controller:
 `dockerConfigSecret` must reference a `kubernetes.io/dockerconfigjson` secret and is exposed
 through `DOCKER_CONFIG`. A single Docker config can include credentials for multiple registries.
 
+`fsGroup` controls which group can read the mounted runtime auth secrets. The default `1002`
+matches the current Lunar MCPX image group and can be overridden if a custom MCPX image uses a
+different runtime group.
+
 `npmrcSecret` must contain a `.npmrc` key and is exposed through `NPM_CONFIG_USERCONFIG` for npm
 and npx. A single `.npmrc` can define multiple registries, scopes, and auth entries.
 

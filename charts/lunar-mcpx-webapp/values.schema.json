@@ -195,6 +195,11 @@
               "type": "string",
               "description": "Name of a kubernetes.io/dockerconfigjson secret exposed to Docker inside MCPX"
             },
+            "fsGroup": {
+              "type": "integer",
+              "description": "Group ID used to read mounted MCPX runtime auth secrets",
+              "default": 1002
+            },
             "npmrcSecret": {
               "type": "string",
               "description": "Name of a secret containing a .npmrc key exposed to npm/npx"
