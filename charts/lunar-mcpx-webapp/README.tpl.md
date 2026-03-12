@@ -238,3 +238,70 @@ Alternatively, you may work with a separate values file to handle values overrid
 ```bash
 helm install mcpx lunar/lunar-mcpx-webapp --version $CHART_VERSION  -f ./values-override.yaml
 ```
+
+### MCPX runtime auth
+
+If your MCPX instances need private registry or index credentials at runtime, pre-create the
+relevant secrets in the MCPX namespace and reference them through `controller.mcpxRuntimeAuth`.
+
+This is separate from the chart image pull secret above. The chart image pull secret is used by
+Kubernetes to pull Lunar images for this deployment, while `controller.mcpxRuntimeAuth` is used at
+runtime inside each MCPX instance pod.
+
+For Docker-based MCP servers, create a `docker-registry` secret:
+
+```bash
+kubectl create secret docker-registry <secret-name> \
+  --docker-server=<registry-host> \
+  --docker-username=<username> \
+  --docker-password=<token> \
+  -n {{ mcpx_namespace }}
+```
+
+For npm or npx, create a generic secret with a `.npmrc` key:
+
+```bash
+kubectl create secret generic <npm-secret-name> \
+  --from-file=.npmrc=<path/to/.npmrc> \
+  -n {{ mcpx_namespace }}
+```
+
+For uv or uvx, create generic secrets with `uv.toml` and `.netrc` keys as needed:
+
+```bash
+kubectl create secret generic <uv-config-secret-name> \
+  --from-file=uv.toml=<path/to/uv.toml> \
+  -n {{ mcpx_namespace }}
+
+kubectl create secret generic <netrc-secret-name> \
+  --from-file=.netrc=<path/to/.netrc> \
+  -n {{ mcpx_namespace }}
+```
+
+```yaml
+controller:
+  mcpxRuntimeAuth:
+    dockerConfigSecrets:
+      - <secret-name>
+    npmrcSecrets:
+      - <npm-secret-name>
+    uvConfigSecrets:
+      - <uv-config-secret-name>
+    netrcSecrets:
+      - <netrc-secret-name>
+```
+
+`dockerConfigSecrets` must reference `kubernetes.io/dockerconfigjson` secrets and are merged into
+the Docker config used for Docker-based MCP servers.
+
+`npmrcSecrets` are concatenated in the configured order and exposed through `NPM_CONFIG_USERCONFIG`
+for npm and npx.
+
+`uvConfigSecrets` are concatenated in the configured order and exposed through `UV_CONFIG_FILE` for
+uv and uvx.
+
+`netrcSecrets` are concatenated in the configured order and exposed through `NETRC` for uv, uvx,
+and other tools that honor `.netrc`.
+
+Make sure the referenced secrets already exist in the MCPX namespace before MCPX instances are
+created or restarted, and ensure the combined files are valid for the target tool.

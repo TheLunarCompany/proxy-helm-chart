@@ -125,11 +125,12 @@ spec:
             - name: UI_DOMAIN
               value: "https://{{ first .Values.ingress.domains.ui }}"
           {{- end }}
-          {{- if .Values.controller.mcpxDockerRegistrySecrets }}
-            - name: MCPX_DOCKER_REGISTRY_SECRETS
-              value: "{{ join "," .Values.controller.mcpxDockerRegistrySecrets }}"
-            - name: MCPX_DOCKER_REGISTRY_MERGE_CONFIGMAP
-              value: "{{ include "lunar-mcpx-webapp.fullname" . }}-docker-creds-merge"
+          {{- $runtimeAuth := .Values.controller.mcpxRuntimeAuth | default dict }}
+          {{- if or $runtimeAuth.dockerConfigSecrets $runtimeAuth.npmrcSecrets $runtimeAuth.uvConfigSecrets $runtimeAuth.netrcSecrets }}
+            - name: MCPX_RUNTIME_AUTH_CONFIGMAP
+              value: "{{ include "lunar-mcpx-webapp.fullname" . }}-mcpx-runtime-auth"
+            - name: MCPX_RUNTIME_AUTH
+              value: {{ $runtimeAuth | toJson | quote }}
           {{- end }}
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}

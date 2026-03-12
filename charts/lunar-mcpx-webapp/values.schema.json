@@ -168,10 +168,31 @@
     "controller": {
       "type": "object",
       "properties": {
-        "mcpxDockerRegistrySecrets": {
-          "type": "array",
-          "items": { "type": "string" },
-          "description": "docker-registry secret names used for runtime Docker pulls inside every MCPX instance pod"
+        "mcpxRuntimeAuth": {
+          "type": "object",
+          "description": "Runtime auth/config files injected into each MCPX instance pod",
+          "properties": {
+            "dockerConfigSecrets": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "kubernetes.io/dockerconfigjson secrets merged into the Docker config used inside MCPX"
+            },
+            "npmrcSecrets": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Secrets containing a .npmrc key; files are concatenated and exposed to npm/npx"
+            },
+            "uvConfigSecrets": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Secrets containing a uv.toml key; files are concatenated and exposed to uv/uvx"
+            },
+            "netrcSecrets": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Secrets containing a .netrc key; files are concatenated and exposed through NETRC"
+            }
+          }
         },
         "mcpxCRD": {
           "type": "object",

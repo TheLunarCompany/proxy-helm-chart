@@ -12,29 +12,6 @@ kubectl create ns {{ mcpx_namespace }}
 kubectl apply -f lunar-private-mcpx-registry.yaml -n {{ mcpx_namespace }}
 ```
 
-#### Private Docker registries for MCP servers
-
-If your MCPX instances need to pull Docker-based MCP servers from a private registry, create a
-`docker-registry` secret in the MCPX namespace and reference it via `controller.mcpxDockerRegistrySecrets`:
-
-```bash
-kubectl create secret docker-registry <secret-name> \
-  --docker-server=<registry-host> \
-  --docker-username=<username> \
-  --docker-password=<token> \
-  -n {{ mcpx_namespace }}
-```
-
-```yaml
-controller:
-  mcpxDockerRegistrySecrets:
-    - <secret-name>
-```
-
-This makes the registry credentials available inside each MCPX instance so it can pull and run Docker-based MCP servers from the private registry.
-
-Multiple secrets are supported and will be merged automatically.
-
 #### Required external services
 Lunar MCPX Webapps requires external Postresql and Redis servers in order to work. It is possible to deploy this chart with
 embedded services by setting up following variables:
@@ -77,7 +54,6 @@ Required service versions:
 |       OIDC_REDIRECT_URI       |       |
 |         OIDC_JWKS_URI         |       |
 |         OIDC_AUDIENCE         |       |
-| OIDC_POST_LOGOUT_REDIRECT_URI |       |
 |       OIDC_ISSUER_URL         |       |
 
 Note: Router `OIDC_JWKS_URI` defaults to in-cluster auth service (`http://<release>-auth/.well-known/jwks.json`) and can be overridden with `router.oidcJwksUri`.
@@ -109,7 +85,7 @@ It is possible to supply this variables using several different techniques:
         --from-literal=OIDC_REDIRECT_URI="" \
         --from-literal=OIDC_JWKS_URI="" \
         --from-literal=OIDC_AUDIENCE="" \
-        --from-literal=OIDC_POST_LOGOUT_REDIRECT_URI=""
+        --from-file=credentials.json="/path/to/service-account.json"
     ```
   - Specify pre-created secrets using `extraEnvFromSecrets` parameter:
     ```yaml
@@ -125,7 +101,15 @@ It is possible to supply this variables using several different techniques:
     auth:
       extraEnvFromSecrets:
         - mcpx-webapp-oidc
+      googleApplicationCredentials:
+        secretName: mcpx-webapp-oidc
     ```
+
+  - `auth.googleApplicationCredentials` is optional.
+    - Set `secretName` to mount a service account key as a file for `auth-bff`.
+    - The chart then sets `GOOGLE_APPLICATION_CREDENTIALS=/var/secrets/google/credentials.json`.
+    - Override `secretKey` if your secret stores the JSON under a different key name.
+    - Leave it unset to rely on ambient ADC / Workload Identity instead.
 
 - Using values-override.yaml file with plain-text value:
 ```yaml
@@ -253,11 +237,11 @@ Use `hibernation.cronSchedule` to control when the `hibernate-instances` CronJob
 
 Minimal deployment with embedded Postgresql and Redis
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.2 --set postgres.enabled=true --set redis.enabled=true
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.3 --set postgres.enabled=true --set redis.enabled=true
 ```
 
 Alternatively, you may work with a separate values file to handle values override just like any other Helm chart:
 
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.2  -f ./values-override.yaml
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.3  -f ./values-override.yaml
 ```

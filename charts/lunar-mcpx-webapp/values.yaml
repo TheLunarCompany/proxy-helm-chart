@@ -289,13 +289,21 @@ controller:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
-  # -- mcpxDockerRegistrySecrets List of docker-registry secret names used for
-  # runtime Docker pulls inside every MCPX instance pod created by the controller.
-  # Ops must pre-create these secrets in the MCPX namespace before referencing them here.
-  # e.g.
-  # mcpxDockerRegistrySecrets:
-  #   - customer-private-registry-secret
-  mcpxDockerRegistrySecrets: []
+  # -- mcpxRuntimeAuth injects runtime auth/config files into each MCPX instance pod
+  # created by the controller. Referenced secrets must already exist in the MCPX namespace.
+  mcpxRuntimeAuth:
+    # -- dockerConfigSecrets List of kubernetes.io/dockerconfigjson secrets merged into
+    # the Docker config used by Docker-based MCP servers inside MCPX.
+    dockerConfigSecrets: []
+    # -- npmrcSecrets List of secrets containing a `.npmrc` key. Files are concatenated
+    # in the listed order and exposed to npm/npx as the user config.
+    npmrcSecrets: []
+    # -- uvConfigSecrets List of secrets containing a `uv.toml` key. Files are concatenated
+    # in the listed order and exposed to uv/uvx as the user config.
+    uvConfigSecrets: []
+    # -- netrcSecrets List of secrets containing a `.netrc` key. Files are concatenated
+    # in the listed order and exposed to uv/uvx through the NETRC environment variable.
+    netrcSecrets: []
 
   # -- mcpxCRD configuration for CRD schema version checks
   mcpxCRD:
