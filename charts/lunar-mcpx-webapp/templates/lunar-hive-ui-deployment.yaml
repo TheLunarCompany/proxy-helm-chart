@@ -43,11 +43,33 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      {{- if .Capabilities.APIVersions.Has "security.openshift.io/v1" }}
+      initContainers:
+        - name: copy-ui-files
+          image: '{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) }}'
+          command:
+            - sh
+            - -c
+            - |
+              cp -r /lunar/packages/ui/* /ui-temp/ || true
+              ls -la /ui-temp/
+          volumeMounts:
+            - name: config-dir
+              mountPath: /ui-temp
+      volumes:
+        - name: config-dir
+          emptyDir: {}
+      {{- end }}
       containers:
         - name: mcpx-ui-container
           image: '{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) }}'
           ports:
             - containerPort: 8080
+          {{- if .Capabilities.APIVersions.Has "security.openshift.io/v1" }}
+          volumeMounts:
+            - name: config-dir
+              mountPath: /lunar/packages/ui
+          {{- end }}
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
             {{- if .Values.global.manageResources.limits }}
