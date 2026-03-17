@@ -3,9 +3,9 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" . }}-db-ses-rtn
+  name: {{ include "lunar-mcpx-webapp.cronJobBaseName" . }}-db-ses-rtn
   labels:
-    service: {{ include "lunar-mcpx-webapp.fullname" . }}-db-ses-rtn
+    service: {{ include "lunar-mcpx-webapp.cronJobBaseName" . }}-db-ses-rtn
     {{- with .Values.global.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -24,7 +24,7 @@ spec:
       template:
         metadata:
           labels:
-            service: {{ include "lunar-mcpx-webapp.fullname" . }}-db-ses-rtn
+            service: {{ include "lunar-mcpx-webapp.cronJobBaseName" . }}-db-ses-rtn
             {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 12 }}
             {{- with .Values.global.labels }}
             {{- toYaml . | nindent 12 }}
@@ -100,9 +100,9 @@ spec:
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" . }}-hibernate-instances
+  name: {{ include "lunar-mcpx-webapp.cronJobBaseName" . }}-hibernate-instances
   labels:
-    service: {{ include "lunar-mcpx-webapp.fullname" . }}-hibernate-instances
+    service: {{ include "lunar-mcpx-webapp.cronJobBaseName" . }}-hibernate-instances
     {{- with .Values.global.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -121,7 +121,7 @@ spec:
       template:
         metadata:
           labels:
-            service: {{ include "lunar-mcpx-webapp.fullname" . }}-hibernate-instances
+            service: {{ include "lunar-mcpx-webapp.cronJobBaseName" . }}-hibernate-instances
             {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 12 }}
             {{- with .Values.global.labels }}
             {{- toYaml . | nindent 12 }}
