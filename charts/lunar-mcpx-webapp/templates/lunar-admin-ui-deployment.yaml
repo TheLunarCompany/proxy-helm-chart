@@ -67,8 +67,10 @@ spec:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
             allowPrivilegeEscalation: false
+            {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
             runAsUser: 1000
             runAsGroup: 1000
+            {{- end }}
           envFrom:
             - secretRef:
                 name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
