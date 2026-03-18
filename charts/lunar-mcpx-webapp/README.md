@@ -254,7 +254,7 @@ The chart can deploy an embedded single-node ClickHouse instance for event store
    ```
 
 When enabled, the chart will:
-- Deploy a ClickHouse StatefulSet with a persistent volume (default 50Gi)
+- Deploy a ClickHouse StatefulSet with a persistent volume (default 10Gi)
 - Create a ClusterIP service on port 8123
 - Add a ClickHouse migration init container to both hub and webserver (runs after the Prisma migration)
 - Inject `CLICKHOUSE_URL` into hub and webserver main containers

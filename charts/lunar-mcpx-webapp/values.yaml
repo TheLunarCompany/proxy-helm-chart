@@ -778,15 +778,15 @@ clickhouse:
       - ReadWriteOnce
     storageClassName: ""
     size: 10Gi
-  # -- Resource defaults: CH docs recommend 4 CPU / 8Gi RAM as practical minimum for small workloads.
-  # Requests are set to half (2 CPU / 4Gi) for burst headroom.
+  # -- Resource defaults: CH docs recommend 4 CPU / 8Gi RAM as practical minimum.
+  # Limits set to 2x requests for burst headroom.
   resources:
     requests:
       memory: "4096Mi"
-      cpu: "2000m"
+      cpu: "4000m"
     limits:
       memory: "8192Mi"
-      cpu: "4000m"
+      cpu: "8000m"
 
 monitor:
   prometheus:
