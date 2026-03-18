@@ -1,0 +1,191 @@
+suite: ClickHouse StatefulSet
+templates:
+  - templates/clickhouse-statefulset.yaml
+
+tests:
+  - it: should not render when clickhouse is disabled
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render StatefulSet when clickhouse is enabled
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - equal:
+          path: spec.replicas
+          value: 1
+      - equal:
+          path: spec.serviceName
+          value: clickhouse
+
+  - it: should use correct image
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: clickhouse/clickhouse-server:24.8-alpine
+
+  - it: should reference credentials secret in envFrom
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: my-ch-secret
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].envFrom
+          content:
+            secretRef:
+              name: my-ch-secret
+
+  - it: should expose port 8123
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].ports
+          content:
+            containerPort: 8123
+
+  - it: should configure health probes on /ping
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].livenessProbe.httpGet.path
+          value: /ping
+      - equal:
+          path: spec.template.spec.containers[0].livenessProbe.httpGet.port
+          value: 8123
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+          value: /ping
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.port
+          value: 8123
+
+  - it: should mount persistent volume at /var/lib/clickhouse
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+      clickhouse.persistence.enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: data
+            mountPath: /var/lib/clickhouse
+
+  - it: should create volumeClaimTemplate with defaults
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+    asserts:
+      - equal:
+          path: spec.volumeClaimTemplates[0].metadata.name
+          value: data
+      - equal:
+          path: spec.volumeClaimTemplates[0].spec.accessModes
+          value:
+            - ReadWriteOnce
+      - equal:
+          path: spec.volumeClaimTemplates[0].spec.resources.requests.storage
+          value: 10Gi
+
+  - it: should allow overriding persistence size
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+      clickhouse.persistence.size: 100Gi
+    asserts:
+      - equal:
+          path: spec.volumeClaimTemplates[0].spec.resources.requests.storage
+          value: 100Gi
+
+  - it: should set storageClassName when provided
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+      clickhouse.persistence.storageClassName: premium-rwo
+    asserts:
+      - equal:
+          path: spec.volumeClaimTemplates[0].spec.storageClassName
+          value: premium-rwo
+
+  - it: should not set storageClassName when empty
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+    asserts:
+      - isNull:
+          path: spec.volumeClaimTemplates[0].spec.storageClassName
+
+  - it: should not create volumeClaimTemplate when persistence disabled
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+      clickhouse.persistence.enabled: false
+    asserts:
+      - isNull:
+          path: spec.volumeClaimTemplates
+
+  - it: should set default resource requests and limits
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].resources.requests.memory
+          value: 4096Mi
+      - equal:
+          path: spec.template.spec.containers[0].resources.requests.cpu
+          value: 2000m
+      - equal:
+          path: spec.template.spec.containers[0].resources.limits.memory
+          value: 8192Mi
+      - equal:
+          path: spec.template.spec.containers[0].resources.limits.cpu
+          value: 4000m
+
+  - it: should apply nodeSelector when set
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+      clickhouse.nodeSelector:
+        disktype: ssd
+    asserts:
+      - equal:
+          path: spec.template.spec.nodeSelector.disktype
+          value: ssd
+
+  - it: should merge global and clickhouse tolerations
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+      global.tolerations:
+        - key: "global-key"
+          operator: "Exists"
+          effect: "NoSchedule"
+      clickhouse.tolerations:
+        - key: "ch-key"
+          operator: "Exists"
+          effect: "NoSchedule"
+    asserts:
+      - contains:
+          path: spec.template.spec.tolerations
+          content:
+            key: "global-key"
+            operator: "Exists"
+            effect: "NoSchedule"
+      - contains:
+          path: spec.template.spec.tolerations
+          content:
+            key: "ch-key"
+            operator: "Exists"
+            effect: "NoSchedule"

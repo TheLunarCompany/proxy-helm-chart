@@ -74,6 +74,14 @@ Renders a value that contains template.
 Usage:
 {{ include "lunar-mcpx-webapp.tplvalues.render" ( dict "value" .Values.path.to.the.Value "context" $) }}
 */}}
+{{/*
+ClickHouse connection URL built at runtime via K8s variable substitution.
+CLICKHOUSE_USER and CLICKHOUSE_PASSWORD must be available via envFrom.
+*/}}
+{{- define "lunar-mcpx-webapp.clickhouseUrl" -}}
+http://$(CLICKHOUSE_USER):$(CLICKHOUSE_PASSWORD)@{{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse:8123
+{{- end }}
+
 {{- define "lunar-mcpx-webapp.tplvalues.render" -}}
     {{- if typeIs "string" .value }}
         {{- tpl .value .context }}

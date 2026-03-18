@@ -1,0 +1,83 @@
+suite: Webserver deployment ClickHouse integration
+templates:
+  - templates/lunar-webserver-deployment.yaml
+
+tests:
+  - it: should not render clickhouse init container when disabled
+    asserts:
+      - lengthEqual:
+          path: spec.template.spec.initContainers
+          count: 1
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: mcpx-webserver-prisma-migration
+
+  - it: should add clickhouse migration init container when enabled
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+    asserts:
+      - lengthEqual:
+          path: spec.template.spec.initContainers
+          count: 2
+      - equal:
+          path: spec.template.spec.initContainers[1].name
+          value: mcpx-webserver-clickhouse-migration
+
+  - it: should reference credentials secret in init container envFrom
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: my-ch-secret
+    asserts:
+      - contains:
+          path: spec.template.spec.initContainers[1].envFrom
+          content:
+            secretRef:
+              name: my-ch-secret
+
+  - it: should run clickhouse migration script in init container
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.initContainers[1].args[1]
+          pattern: "node packages/toolkit-clickhouse/dist/bin/migrate.js"
+
+  - it: should add credentials secret to main container envFrom when enabled
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].envFrom
+          content:
+            secretRef:
+              name: ch-creds
+
+  - it: should not add credentials secret to main container envFrom when disabled
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].envFrom
+          content:
+            secretRef:
+              name: ch-creds
+
+  - it: should add CLICKHOUSE_URL env var to main container when enabled
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CLICKHOUSE_URL
+          any: true
+
+  - it: should not add CLICKHOUSE_URL env var when disabled
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CLICKHOUSE_URL
+          any: true
