@@ -107,7 +107,7 @@ spec:
             {{- end }}
           {{- end }}
           command: ["/bin/sh"]
-          args: ["-c", "cd /mcpx-webapp && CLICKHOUSE_URL={{ include "lunar-mcpx-webapp.clickhouseUrl" . }} node packages/toolkit-clickhouse/dist/bin/migrate.js"]
+          args: ["-c", "cd /mcpx-webapp && CLICKHOUSE_URL='{{ include "lunar-mcpx-webapp.clickhouseUrl" . }}' node packages/toolkit-clickhouse/dist/bin/migrate.js"]
           envFrom:
             - secretRef:
                 name: {{ .Values.clickhouse.credentialsSecret }}

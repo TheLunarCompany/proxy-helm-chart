@@ -51,11 +51,17 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ .Values.clickhouse.credentialsSecret }}
+          {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
+            {{- if .Values.global.manageResources.requests }}
             requests:
               {{- toYaml .Values.clickhouse.resources.requests | nindent 14 }}
+            {{- end }}
+            {{- if .Values.global.manageResources.limits }}
             limits:
               {{- toYaml .Values.clickhouse.resources.limits | nindent 14 }}
+            {{- end }}
+          {{- end }}
           ports:
             - containerPort: 8123
           volumeMounts:

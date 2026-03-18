@@ -153,6 +153,16 @@ tests:
           path: spec.template.spec.containers[0].resources.limits.cpu
           value: 8000m
 
+  - it: should not render resources when manageResources is disabled
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+      global.manageResources.limits: false
+      global.manageResources.requests: false
+    asserts:
+      - isNull:
+          path: spec.template.spec.containers[0].resources
+
   - it: should apply nodeSelector when set
     set:
       clickhouse.enabled: true
