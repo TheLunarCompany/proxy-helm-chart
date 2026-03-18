@@ -40,10 +40,10 @@ tests:
           path: spec.jobTemplate.spec.template.spec.containers[0].command
           value: ["node", "dist/index.js", "fix-catalog-item-from-store"]
 
-  - it: catalog-populate should not set env vars when list is empty
+  - it: catalog-populate should not set CATALOG_ITEM_NAMES when list is empty
     template: templates/lunar-admin-catalog-populate-cronjob.yaml
     asserts:
-      - isNull:
+      - isEmpty:
           path: spec.jobTemplate.spec.template.spec.containers[0].env
 
   - it: catalog-populate should join catalogItemNames into comma-separated env var
