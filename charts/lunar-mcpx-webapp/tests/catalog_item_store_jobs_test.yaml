@@ -1,0 +1,92 @@
+suite: Catalog Item Store Jobs
+templates:
+  - templates/lunar-admin-catalog-list-cronjob.yaml
+  - templates/lunar-admin-catalog-populate-cronjob.yaml
+  - templates/lunar-admin-catalog-fix-cronjob.yaml
+
+tests:
+  - it: all three jobs should be suspended CronJobs
+    asserts:
+      - isKind:
+          of: CronJob
+      - equal:
+          path: spec.suspend
+          value: true
+
+  - it: all three jobs should use the impossible Feb 31 schedule
+    asserts:
+      - equal:
+          path: spec.schedule
+          value: "0 0 31 2 *"
+
+  - it: catalog-list should run list-store-catalog-items command
+    template: templates/lunar-admin-catalog-list-cronjob.yaml
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].command
+          value: ["node", "dist/index.js", "list-store-catalog-items"]
+
+  - it: catalog-populate should run populate-catalog-item-from-store command
+    template: templates/lunar-admin-catalog-populate-cronjob.yaml
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].command
+          value: ["node", "dist/index.js", "populate-catalog-item-from-store"]
+
+  - it: catalog-fix should run fix-catalog-item-from-store command
+    template: templates/lunar-admin-catalog-fix-cronjob.yaml
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].command
+          value: ["node", "dist/index.js", "fix-catalog-item-from-store"]
+
+  - it: catalog-populate should not set CATALOG_ITEM_NAMES when list is empty
+    template: templates/lunar-admin-catalog-populate-cronjob.yaml
+    asserts:
+      - isEmpty:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+
+  - it: catalog-populate should join catalogItemNames into comma-separated env var
+    template: templates/lunar-admin-catalog-populate-cronjob.yaml
+    set:
+      jobs.admin.catalogItemStore.catalogItemNames:
+        - slack
+        - github
+        - linear
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: CATALOG_ITEM_NAMES
+            value: "slack,github,linear"
+
+  - it: catalog-fix should set both CATALOG_ITEM_NAMES and FORCE_OVERRIDE
+    template: templates/lunar-admin-catalog-fix-cronjob.yaml
+    set:
+      jobs.admin.catalogItemStore.catalogItemNames:
+        - slack
+        - redis
+      jobs.admin.catalogItemStore.forceOverride: true
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: CATALOG_ITEM_NAMES
+            value: "slack,redis"
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: FORCE_OVERRIDE
+            value: "true"
+
+  - it: catalog-fix should not set FORCE_OVERRIDE when empty
+    template: templates/lunar-admin-catalog-fix-cronjob.yaml
+    set:
+      jobs.admin.catalogItemStore.catalogItemNames:
+        - slack
+    asserts:
+      - notContains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: FORCE_OVERRIDE
+          any: true
