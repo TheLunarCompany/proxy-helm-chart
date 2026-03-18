@@ -126,6 +126,11 @@ spec:
             - name: UI_DOMAIN
               value: "https://{{ first .Values.ingress.domains.ui }}"
           {{- end }}
+          {{- $runtimeAuth := .Values.controller.mcpxRuntimeAuth | default dict }}
+          {{- if or $runtimeAuth.dockerConfigSecret $runtimeAuth.npmrcSecret $runtimeAuth.uvConfigSecret $runtimeAuth.netrcSecret }}
+            - name: MCPX_RUNTIME_AUTH_JSON
+              value: {{ $runtimeAuth | toJson | quote }}
+          {{- end }}
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}

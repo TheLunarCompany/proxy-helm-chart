@@ -187,6 +187,33 @@
     "controller": {
       "type": "object",
       "properties": {
+        "mcpxRuntimeAuth": {
+          "type": "object",
+          "description": "Runtime auth/config files injected into each MCPX instance pod",
+          "properties": {
+            "dockerConfigSecret": {
+              "type": "string",
+              "description": "Name of a kubernetes.io/dockerconfigjson secret exposed to Docker inside MCPX"
+            },
+            "fsGroup": {
+              "type": "integer",
+              "description": "Group ID used to read mounted MCPX runtime auth secrets",
+              "default": 1002
+            },
+            "npmrcSecret": {
+              "type": "string",
+              "description": "Name of a secret containing a .npmrc key exposed to npm/npx"
+            },
+            "uvConfigSecret": {
+              "type": "string",
+              "description": "Name of a secret containing a uv.toml key exposed to uv/uvx"
+            },
+            "netrcSecret": {
+              "type": "string",
+              "description": "Name of a secret containing a .netrc key exposed through NETRC"
+            }
+          }
+        },
         "mcpxCRD": {
           "type": "object",
           "description": "Configuration for CRD schema version checks",
