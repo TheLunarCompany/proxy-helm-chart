@@ -615,6 +615,19 @@ jobs:
     # When empty, resolves the latest failed migration.
     resolveMigrationName: ""
 
+    # -- Catalog Item Store jobs settings.
+    # See the "Catalog Item Store Jobs" section in README.md for usage.
+    catalogItemStore:
+      # -- Catalog item names for populate/fix jobs.
+      # Example:
+      #   catalogItemNames:
+      #     - slack
+      #     - github
+      #     - linear
+      catalogItemNames: []
+      # -- Set to true to force-override existing config in fix job. Default merges non-destructively.
+      forceOverride: false
+
 hibernation:
   # Cron schedule for the scheduled hibernation job (e.g. "0 22 * * *").
   # Leave empty to disable the CronJob.

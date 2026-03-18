@@ -1,0 +1,10 @@
+---
+{{- include "lunar-mcpx-webapp.adminCronJob" (dict
+  "root" .
+  "jobName" "catalog-fix"
+  "command" (list "node" "dist/index.js" "fix-catalog-item-from-store")
+  "extraEnv" (list
+    (dict "name" "CATALOG_ITEM_NAMES" "value" (.Values.jobs.admin.catalogItemStore.catalogItemNames | join ","))
+    (dict "name" "FORCE_OVERRIDE" "value" .Values.jobs.admin.catalogItemStore.forceOverride)
+  )
+) }}
