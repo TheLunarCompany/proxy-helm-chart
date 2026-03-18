@@ -128,7 +128,7 @@ spec:
           {{- end }}
           {{- $runtimeAuth := .Values.controller.mcpxRuntimeAuth | default dict }}
           {{- if or $runtimeAuth.dockerConfigSecret $runtimeAuth.npmrcSecret $runtimeAuth.uvConfigSecret $runtimeAuth.netrcSecret }}
-            - name: MCPX_RUNTIME_AUTH
+            - name: MCPX_RUNTIME_AUTH_JSON
               value: {{ $runtimeAuth | toJson | quote }}
           {{- end }}
           {{- if .Values.global.extraEnvVars }}
