@@ -237,11 +237,82 @@ Use `hibernation.cronSchedule` to control when the `hibernate-instances` CronJob
 
 Minimal deployment with embedded Postgresql and Redis
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.3 --set postgres.enabled=true --set redis.enabled=true
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.4 --set postgres.enabled=true --set redis.enabled=true
 ```
 
 Alternatively, you may work with a separate values file to handle values override just like any other Helm chart:
 
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.3  -f ./values-override.yaml
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.4  -f ./values-override.yaml
 ```
+
+### MCPX runtime auth
+
+If your MCPX instances need private registry or index credentials at runtime, pre-create the
+relevant secrets in the MCPX namespace and reference them through `controller.mcpxRuntimeAuth`.
+
+This is separate from the chart image pull secret above. The chart image pull secret is used by
+Kubernetes to pull Lunar images for this deployment, while `controller.mcpxRuntimeAuth` is used at
+runtime inside each MCPX instance pod.
+
+Each runtime auth setting accepts one secret per config type. That single secret can still contain
+multiple registries or indexes inside the native config format, which matches how Docker, npm, and
+uv expect these files to be managed.
+
+For Docker-based MCP servers, create a `docker-registry` secret:
+
+```bash
+kubectl create secret docker-registry <secret-name> \
+  --docker-server=<registry-host> \
+  --docker-username=<username> \
+  --docker-password=<token> \
+  -n {{ mcpx_namespace }}
+```
+
+For npm or npx, create a generic secret with a `.npmrc` key:
+
+```bash
+kubectl create secret generic <npm-secret-name> \
+  --from-file=.npmrc=<path/to/.npmrc> \
+  -n {{ mcpx_namespace }}
+```
+
+For uv or uvx, create generic secrets with `uv.toml` and `.netrc` keys as needed:
+
+```bash
+kubectl create secret generic <uv-config-secret-name> \
+  --from-file=uv.toml=<path/to/uv.toml> \
+  -n {{ mcpx_namespace }}
+
+kubectl create secret generic <netrc-secret-name> \
+  --from-file=.netrc=<path/to/.netrc> \
+  -n {{ mcpx_namespace }}
+```
+
+```yaml
+controller:
+  mcpxRuntimeAuth:
+    dockerConfigSecret: <secret-name>
+    npmrcSecret: <npm-secret-name>
+    uvConfigSecret: <uv-config-secret-name>
+    netrcSecret: <netrc-secret-name>
+```
+
+`dockerConfigSecret` must reference a `kubernetes.io/dockerconfigjson` secret and is exposed
+through `DOCKER_CONFIG`. A single Docker config can include credentials for multiple registries.
+
+`fsGroup` controls which group can read the mounted runtime auth secrets. The default `1002`
+matches the current Lunar MCPX image group and can be overridden if a custom MCPX image uses a
+different runtime group.
+
+`npmrcSecret` must contain a `.npmrc` key and is exposed through `NPM_CONFIG_USERCONFIG` for npm
+and npx. A single `.npmrc` can define multiple registries, scopes, and auth entries.
+
+`uvConfigSecret` must contain a `uv.toml` key and is exposed through `UV_CONFIG_FILE` for uv and
+uvx. A single `uv.toml` can define multiple indexes.
+
+`netrcSecret` must contain a `.netrc` key and is exposed through `NETRC` for uv, uvx, and other
+tools that honor `.netrc`. A single `.netrc` can contain credentials for multiple hosts.
+
+Make sure the referenced secrets already exist in the MCPX namespace before MCPX instances are
+created or restarted.
