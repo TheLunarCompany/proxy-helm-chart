@@ -3,7 +3,7 @@
 # fullnameOverride) exceeds 27 characters. Must be 27 characters or fewer.
 # Other resources are not affected by this value.
 cronJobBaseName: ""
-fullnameOverride: "a[wtrjg[0jaetrgwrgsaerstq3te]]"
+
 ## @section Global Section
 global:
   ## @param global.imagePullSecrets [default:\[lunar-private-mcpx-registry] Global Docker registry secret names as an array
