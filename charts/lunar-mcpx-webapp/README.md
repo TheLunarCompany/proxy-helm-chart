@@ -212,6 +212,60 @@ kubectl create job resolve-failed-$(date +%s) \
 
 By default, rollback targets the latest applied migration and resolve-failed targets the latest failed migration. To target a specific migration, set `jobs.admin.rollbackMigrationName` or `jobs.admin.resolveMigrationName` via Helm values override, apply it, and then create the job.
 
+### Catalog Item Store Jobs
+
+This chart includes three **suspended CronJobs** for managing catalog items from the built-in store. Like the migration jobs above, they never run automatically — admins create one-off jobs from them using `kubectl create job`.
+
+| CronJob | Purpose |
+|:--------|:--------|
+| `<release>-catalog-list` | Lists all store items and their status relative to the DB (already present, customized, missing, etc.) |
+| `<release>-catalog-populate` | Inserts new catalog items from the store into the DB |
+| `<release>-catalog-fix` | Updates existing DB catalog items with the latest store definitions |
+
+**List all store catalog items and their status:**
+```bash
+kubectl create job catalog-list-$(date +%s) \
+  --from=cronjob/<release>-catalog-list -n <namespace>
+```
+
+**Populate new catalog items from the store:**
+
+First, set `jobs.admin.catalogItemStore.catalogItemNames` to the desired items, apply the Helm values, then create the job:
+```yaml
+jobs:
+  admin:
+    catalogItemStore:
+      catalogItemNames:
+        - slack
+        - github
+        - linear
+```
+```bash
+kubectl create job catalog-populate-$(date +%s) \
+  --from=cronjob/<release>-catalog-populate -n <namespace>
+```
+
+**Fix (update) existing catalog items from the store:**
+
+Set `catalogItemNames` the same way. Optionally set `forceOverride` to `true` to replace DB config entirely instead of merging:
+```yaml
+jobs:
+  admin:
+    catalogItemStore:
+      catalogItemNames:
+        - slack
+        - github
+      forceOverride: true
+```
+```bash
+kubectl create job catalog-fix-$(date +%s) \
+  --from=cronjob/<release>-catalog-fix -n <namespace>
+```
+
+> **Merge vs. Force Override:**
+> - **Default (merge):** metadata fields (`displayName`, `description`, `repoUrl`, `docsUrl`) are overwritten from the store. For stdio config, `command` and `args` are overridden from the store; for env, only new keys are added — existing admin customizations are preserved. For remote config, `url` is overridden; for headers, only new keys are added.
+> - **Force override (`forceOverride: true`):** the entire config is replaced with the store template, discarding all admin customizations.
+
 ### Hibernation Cron Schedule
 
 Use `hibernation.cronSchedule` to control when the `hibernate-instances` CronJob runs.
@@ -237,13 +291,13 @@ Use `hibernation.cronSchedule` to control when the `hibernate-instances` CronJob
 
 Minimal deployment with embedded Postgresql and Redis
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.4 --set postgres.enabled=true --set redis.enabled=true
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.5 --set postgres.enabled=true --set redis.enabled=true
 ```
 
 Alternatively, you may work with a separate values file to handle values override just like any other Helm chart:
 
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.4  -f ./values-override.yaml
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.5  -f ./values-override.yaml
 ```
 
 ### MCPX runtime auth
