@@ -1,0 +1,16 @@
+hub:
+  staticOauth:
+    mapping:
+      github.com: github
+      api.github.com: github
+    providers:
+      github:
+        authMethod: device_flow
+        credentials:
+          clientId: "test-client-id"
+        scopes:
+          - repo
+        endpoints:
+          deviceAuthorizationUrl: "https://github.com/login/device/code"
+          tokenUrl: "https://github.com/login/oauth/access_token"
+          userVerificationUrl: "https://github.com/login/device"

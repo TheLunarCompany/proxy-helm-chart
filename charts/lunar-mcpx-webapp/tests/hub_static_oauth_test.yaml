@@ -22,15 +22,8 @@ tests:
           any: true
 
   - it: should render MCPX_STATIC_OAUTH_CONFIG with correct JSON when staticOauth is configured
-    set:
-      hub.staticOauth.mapping.github\.com: github
-      hub.staticOauth.mapping.api\.github\.com: github
-      hub.staticOauth.providers.github.authMethod: device_flow
-      hub.staticOauth.providers.github.credentials.clientId: "test-client-id"
-      hub.staticOauth.providers.github.scopes[0]: repo
-      hub.staticOauth.providers.github.endpoints.deviceAuthorizationUrl: "https://github.com/login/device/code"
-      hub.staticOauth.providers.github.endpoints.tokenUrl: "https://github.com/login/oauth/access_token"
-      hub.staticOauth.providers.github.endpoints.userVerificationUrl: "https://github.com/login/device"
+    values:
+      - hub_static_oauth_test_values.yaml
     asserts:
       - contains:
           path: spec.template.spec.containers[0].env
