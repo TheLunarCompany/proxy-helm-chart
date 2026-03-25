@@ -76,6 +76,10 @@
               }
             }
           }
+        },
+        "staticOauth": {
+          "type": "object",
+          "description": "Static OAuth configuration for MCP server authentication. Maps domains to OAuth providers with credentials."
         }
       }
     },

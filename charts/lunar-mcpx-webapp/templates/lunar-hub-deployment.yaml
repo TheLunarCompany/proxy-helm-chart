@@ -146,6 +146,10 @@ spec:
           {{- if .Values.hub.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.hub.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}
+          {{- if .Values.hub.staticOauth | default dict | keys }}
+            - name: MCPX_STATIC_OAUTH_CONFIG
+              value: {{ .Values.hub.staticOauth | toJson | quote }}
+          {{- end }}
 
           startupProbe:
             successThreshold: 1

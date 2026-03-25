@@ -179,6 +179,44 @@ hub:
   #   - secret_2
   extraEnvFromSecrets: []
 
+  # Static OAuth configuration for MCP server authentication.
+  # Maps domains to OAuth providers with credentials that are
+  # distributed to all connected mcpx instances.
+  #
+  # Example: Device flow (e.g. GitHub)
+  # staticOauth:
+  #   mapping:
+  #     github.com: github
+  #     api.github.com: github
+  #     api.githubcopilot.com: github
+  #   providers:
+  #     github:
+  #       authMethod: device_flow
+  #       credentials:
+  #         clientId: "<from your app>"
+  #       scopes:
+  #         - repo
+  #       endpoints:
+  #         deviceAuthorizationUrl: https://github.com/login/device/code
+  #         tokenUrl: https://github.com/login/oauth/access_token
+  #         userVerificationUrl: https://github.com/login/device
+  #
+  # Example: Client credentials flow
+  # staticOauth:
+  #   mapping:
+  #     api.example.com: my-provider
+  #   providers:
+  #     my-provider:
+  #       authMethod: client_credentials
+  #       credentials:
+  #         clientId: "..."
+  #         clientSecret: "..."
+  #       scopes:
+  #         - scope1
+  #         - scope2
+  #       tokenAuthMethod: client_secret_basic
+  staticOauth: {}
+
   # Labels for all application related resources
   # labels:
   #   label_1: value_1
