@@ -291,13 +291,13 @@ Use `hibernation.cronSchedule` to control when the `hibernate-instances` CronJob
 
 Minimal deployment with embedded Postgresql and Redis
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.5 --set postgres.enabled=true --set redis.enabled=true
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.6 --set postgres.enabled=true --set redis.enabled=true
 ```
 
 Alternatively, you may work with a separate values file to handle values override just like any other Helm chart:
 
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.5  -f ./values-override.yaml
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.6  -f ./values-override.yaml
 ```
 
 ### MCPX runtime auth
@@ -370,60 +370,3 @@ tools that honor `.netrc`. A single `.netrc` can contain credentials for multipl
 
 Make sure the referenced secrets already exist in the MCPX namespace before MCPX instances are
 created or restarted.
-
-### Static OAuth configuration
-
-Use `hub.staticOauth` to configure OAuth credentials that the Hub distributes to all connected
-MCPX instances. This is useful for MCP servers that require OAuth authentication (e.g. GitHub, Asana).
-
-Two auth methods are supported - depending on what the provider offers and supports:
-
-- **`device_flow`** — user authorizes via browser, only a client ID is needed.
-- **`client_credentials`** — traditional OAuth with client ID and secret.
-
-The `mapping` section maps domains to provider keys, and `providers` defines the credentials and
-endpoints for each provider. This allows you to match several related domains (e.g. `github.com`, `api.github.com`) to the same provider config.
-
-**Example: GitHub device flow**
-
-```yaml
-hub:
-  staticOauth:
-    mapping:
-      github.com: github
-      api.github.com: github
-      api.githubcopilot.com: github
-    providers:
-      github:
-        authMethod: device_flow
-        credentials:
-          clientId: "<from your app>"
-        scopes:
-          - repo
-        endpoints:
-          deviceAuthorizationUrl: https://github.com/login/device/code
-          tokenUrl: https://github.com/login/oauth/access_token
-          userVerificationUrl: https://github.com/login/device
-```
-
-**Example: Client credentials flow**
-
-```yaml
-hub:
-  staticOauth:
-    mapping:
-      api.example.com: my-provider
-    providers:
-      my-provider:
-        authMethod: client_credentials
-        credentials:
-          clientId: "..."
-          clientSecret: "..."
-        scopes:
-          - scope1
-          - scope2
-        tokenAuthMethod: client_secret_basic
-```
-
-Supported `tokenAuthMethod` values: `client_secret_basic`, `client_secret_post`,
-`client_secret_jwt`, `private_key_jwt`, `tls_client_auth`, `self_signed_tls_client_auth`.
