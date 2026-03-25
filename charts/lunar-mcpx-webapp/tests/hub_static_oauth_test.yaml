@@ -1,0 +1,32 @@
+suite: Hub static OAuth
+templates:
+  - templates/lunar-hub-deployment.yaml
+
+tests:
+  - it: should not render MCPX_STATIC_OAUTH_CONFIG by default
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MCPX_STATIC_OAUTH_CONFIG
+          any: true
+
+  - it: should not render MCPX_STATIC_OAUTH_CONFIG when staticOauth is empty
+    set:
+      hub.staticOauth: {}
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MCPX_STATIC_OAUTH_CONFIG
+          any: true
+
+  - it: should render MCPX_STATIC_OAUTH_CONFIG with correct JSON when staticOauth is configured
+    values:
+      - hub_static_oauth_test_values.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MCPX_STATIC_OAUTH_CONFIG
+            value: '{"mapping":{"api.github.com":"github","github.com":"github"},"providers":{"github":{"authMethod":"device_flow","credentials":{"clientId":"test-client-id"},"endpoints":{"deviceAuthorizationUrl":"https://github.com/login/device/code","tokenUrl":"https://github.com/login/oauth/access_token","userVerificationUrl":"https://github.com/login/device"},"scopes":["repo"]}}}'
