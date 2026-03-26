@@ -352,7 +352,6 @@ controller:
     netrcSecret: <netrc-secret-name>
 ```
 
-
 `dockerConfigSecret` must reference a `kubernetes.io/dockerconfigjson` secret and is exposed
 through `DOCKER_CONFIG`. A single Docker config can include credentials for multiple registries.
 
