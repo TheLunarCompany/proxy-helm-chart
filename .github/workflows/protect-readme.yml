@@ -1,0 +1,16 @@
+name: Protect README.md
+
+on:
+  pull_request:
+    paths:
+      - "charts/**/README.md"
+
+jobs:
+  fail-on-readme-change:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: README.md is auto-generated — edit README.tpl.md instead
+        run: |
+          echo "::error::README.md is auto-generated from README.tpl.md by the release workflow."
+          echo "::error::Do not edit README.md directly. Edit the corresponding README.tpl.md file instead."
+          exit 1
