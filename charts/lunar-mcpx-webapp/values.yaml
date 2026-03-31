@@ -392,6 +392,23 @@ controller:
     # -- netrcSecret Name of a secret containing a `.netrc` key exposed via NETRC.
     netrcSecret: ""
 
+  # -- mcpxNodeSelector NodeSelector applied to every MCPX instance pod created by the controller.
+  # Useful to constrain MCPX workloads to dedicated node pools (e.g. GPU nodes, spot nodes).
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  # mcpxNodeSelector:
+  #   cloud.google.com/gke-nodepool: mcpx-pool
+  mcpxNodeSelector: {}
+
+  # -- mcpxTolerations Tolerations applied to every MCPX instance pod created by the controller.
+  # Must match taints on the target nodes when mcpxNodeSelector targets tainted node pools.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  # mcpxTolerations:
+  #   - key: "dedicated"
+  #     operator: "Equal"
+  #     value: "mcpx"
+  #     effect: "NoSchedule"
+  mcpxTolerations: []
+
   # -- mcpxCRD configuration for CRD schema version checks
   mcpxCRD:
     # -- Enable strict schema version checking

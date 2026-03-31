@@ -131,6 +131,16 @@ spec:
             - name: MCPX_RUNTIME_AUTH_JSON
               value: {{ $runtimeAuth | toJson | quote }}
           {{- end }}
+          {{- $mcpxNodeSelector := .Values.controller.mcpxNodeSelector | default dict }}
+          {{- if $mcpxNodeSelector }}
+            - name: MCPX_NODE_SELECTOR
+              value: {{ $mcpxNodeSelector | toJson | quote }}
+          {{- end }}
+          {{- $mcpxTolerations := .Values.controller.mcpxTolerations | default list }}
+          {{- if $mcpxTolerations }}
+            - name: MCPX_TOLERATIONS
+              value: {{ $mcpxTolerations | toJson | quote }}
+          {{- end }}
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}
