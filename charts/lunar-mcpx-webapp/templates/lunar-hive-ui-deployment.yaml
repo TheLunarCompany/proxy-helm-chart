@@ -43,6 +43,10 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1002
+        runAsGroup: 1002
       containers:
         - name: mcpx-ui-container
           image: '{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) }}'
@@ -63,6 +67,9 @@ spec:
                 {{- end }}
             {{- end }}
           {{- end }}
+          securityContext:
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
           envFrom:
             - secretRef:
                 name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded

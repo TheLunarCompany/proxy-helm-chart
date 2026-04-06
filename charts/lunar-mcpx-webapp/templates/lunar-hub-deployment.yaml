@@ -43,6 +43,10 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1002
+        runAsGroup: 1002
       initContainers:
         - name: mcpx-hub-prisma-migration
           image: "{{ .Values.hub.image.repository }}:{{ .Values.hub.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
@@ -63,6 +67,9 @@ spec:
           {{- end }}
           command: ["/bin/sh"]
           args: ["-c", "cd /mcpx-webapp && npx prisma migrate deploy;"]
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
           envFrom:
             - secretRef:
                 name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
@@ -110,10 +117,7 @@ spec:
           {{- end }}
           securityContext:
             readOnlyRootFilesystem: true
-            runAsNonRoot: true
             allowPrivilegeEscalation: false
-            runAsUser: 1000
-            runAsGroup: 1000
           envFrom:
             - secretRef:
                 name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
