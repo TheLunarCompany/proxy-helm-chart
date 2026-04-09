@@ -26,6 +26,12 @@ global:
   #   - secret_2
   extraEnvFromSecrets: []
 
+  # -- encryptionKey is a base64-encoded 32-byte AES-256-GCM key used to encrypt target server
+  # initiation data at rest. Used by hub, webserver, and any service that clones or reads setups.
+  # Generate with: openssl rand -base64 32
+  # Required — services that touch encrypted target servers will fail if this is not set.
+  encryptionKey: ""
+
   # -- tolerations allow the scheduler to schedule pods with matching taints.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
   # tolerations:
@@ -178,11 +184,6 @@ hub:
   #   - secret_1
   #   - secret_2
   extraEnvFromSecrets: []
-
-  # -- encryptionKey is a base64-encoded 32-byte AES-256-GCM key used to encrypt target server
-  # initiation data at rest. Generate with: openssl rand -base64 32
-  # Required — the hub will fail to start if this is not set.
-  encryptionKey: ""
 
   # Static OAuth configuration for MCP server authentication.
   # Maps domains to OAuth providers with credentials that are
