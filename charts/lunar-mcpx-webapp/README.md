@@ -44,6 +44,12 @@ Required service versions:
 |       REDIS_URL       |                               redis://{{ HOST }}:{{ PORT }}                               |
 |   REDIS_IS_CLUSTER    |                                   boolean (true\|false)                                   |
 
+#### Required hub environment variables with sensitive data
+
+|    Variable    |                                       Value                                        |
+|:--------------:|:----------------------------------------------------------------------------------:|
+| ENCRYPTION_KEY | base64-encoded 32-byte AES-256-GCM key, generate with `openssl rand -base64 32` |
+
 #### Required OIDC environment variables with sensitive data
 
 |           Variable            | Value |
