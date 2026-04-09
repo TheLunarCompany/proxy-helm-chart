@@ -179,6 +179,11 @@ hub:
   #   - secret_2
   extraEnvFromSecrets: []
 
+  # -- encryptionKey is a base64-encoded 32-byte AES-256-GCM key used to encrypt target server
+  # initiation data at rest. Generate with: openssl rand -base64 32
+  # Required — the hub will fail to start if this is not set.
+  encryptionKey: ""
+
   # Static OAuth configuration for MCP server authentication.
   # Maps domains to OAuth providers with credentials that are
   # distributed to all connected mcpx instances.

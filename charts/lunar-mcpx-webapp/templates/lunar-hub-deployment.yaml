@@ -62,7 +62,8 @@ spec:
             {{- end }}
           {{- end }}
           command: ["/bin/sh"]
-          args: ["-c", "cd /mcpx-webapp && npx prisma migrate deploy;"]
+          {{- /* TODO: Remove the encryption backfill once all environments have been migrated and the initiation column is dropped. */}}
+          args: ["-c", "cd /mcpx-webapp && npx prisma migrate deploy && node packages/hub/dist/scripts/encrypt-target-server-initiations.js"]
           envFrom:
             - secretRef:
                 name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
