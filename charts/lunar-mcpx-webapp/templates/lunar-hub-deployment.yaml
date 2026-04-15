@@ -140,6 +140,8 @@ spec:
             {{- end }}
             - name: PORT
               value: "8080"
+            - name: HIVE_CONTROLLER_URL
+              value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-controller"
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}
