@@ -46,9 +46,11 @@ spec:
       serviceAccountName: {{ include "lunar-mcpx-webapp.fullname" . }}-controller
       automountServiceAccountToken: true
       securityContext:
-        fsGroup: 2000
         runAsNonRoot: true
+        {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
         runAsUser: 1000
+        fsGroup: 2000
+        {{- end }}
       containers:
         - name: mcpx-controller-container
           image: "{{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
@@ -73,8 +75,10 @@ spec:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
             allowPrivilegeEscalation: false
+            {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
             runAsUser: 1000
             runAsGroup: 1000
+            {{- end }}
           envFrom:
             - secretRef:
                 name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
