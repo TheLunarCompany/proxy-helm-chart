@@ -1,0 +1,7 @@
+---
+{{- include "lunar-mcpx-webapp.adminCronJob" (dict
+  "root" .
+  "jobName" "encrypt-initiations"
+  "command" (list "node" "dist/index.js" "encrypt-target-server-initiations")
+  "extraEnv" list
+) }}
