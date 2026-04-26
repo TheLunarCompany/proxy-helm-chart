@@ -1,0 +1,56 @@
+{{- if .Values.keycloak.enabled | default false }}
+{{- $xfullname := include "lunar-mcpx-webapp.fullname" . -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $xfullname }}-keycloak
+  labels:
+    name: {{ $xfullname }}-keycloak
+    app: {{ $xfullname }}-keycloak
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.keycloak.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- if .Values.ingress.enabled | default true }}
+    {{- if eq .Values.ingress.type "gce" }}
+    cloud.google.com/backend-config: '{"ports": {"keycloak80":"{{ $xfullname }}-keycloak"}}'
+    {{- end }}
+    {{- end }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ $xfullname }}-keycloak
+  ports:
+    - name: keycloak80
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+    - name: management
+      port: 9000
+      targetPort: 9000
+      protocol: TCP
+
+{{- if .Values.ingress.enabled | default true }}
+{{- if eq .Values.ingress.type "gce" }}
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: {{ $xfullname }}-keycloak
+spec:
+  timeoutSec: 86400
+  healthCheck:
+    checkIntervalSec: 30
+    timeoutSec: 10
+    healthyThreshold: 1
+    unhealthyThreshold: 3
+    type: HTTP
+    requestPath: /realms/master
+    port: 8080
+{{- end }}
+{{- end }}
+
+{{- end }}

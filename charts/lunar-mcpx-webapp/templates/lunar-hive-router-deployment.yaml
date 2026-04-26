@@ -99,6 +99,9 @@ spec:
             - name: WEBSERVER_URL
               value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-webserver:4000"
             {{- $defaultOidcJwksUri := printf "http://%s-auth/.well-known/jwks.json" (include "lunar-mcpx-webapp.fullname" .) }}
+            {{- if .Values.keycloak.enabled }}
+            {{- $defaultOidcJwksUri = printf "http://%s-keycloak/realms/%s/protocol/openid-connect/certs" (include "lunar-mcpx-webapp.fullname" .) (.Values.keycloak.realm | default "mcpx") }}
+            {{- end }}
             - name: OIDC_JWKS_URI
               value: {{ .Values.router.oidcJwksUri | default $defaultOidcJwksUri | quote }}
           {{- if .Values.ingress.enabled }}

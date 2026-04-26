@@ -43,6 +43,10 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
+      securityContext:
+        fsGroup: 1002
+      {{- end }}
       initContainers:
         - name: mcpx-ui-prepare-ui-files
           image: '{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) }}'
@@ -87,7 +91,6 @@ spec:
             {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
             runAsUser: 1002
             runAsGroup: 1002
-            fsGroup: 1002
             {{- end }}
           envFrom:
             - secretRef:

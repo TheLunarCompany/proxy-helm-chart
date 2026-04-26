@@ -1,0 +1,214 @@
+{{- if .Values.keycloak.enabled | default false }}
+{{- $tolerations := concat .Values.global.tolerations .Values.keycloak.tolerations -}}
+{{- $xfullname := include "lunar-mcpx-webapp.fullname" . -}}
+{{- $useEmbeddedPg := and (.Values.keycloak.database.useEmbedded | default true) (.Values.postgres.enabled | default false) -}}
+{{- $dbName := .Values.keycloak.database.name | default "keycloak" -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $xfullname }}-keycloak
+  labels:
+    name: {{ $xfullname }}-keycloak
+    app: {{ $xfullname }}-keycloak
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.keycloak.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ $xfullname }}-keycloak
+      {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 6 }}
+      {{- with .Values.global.labels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.keycloak.labels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.keycloak.podLabels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+  serviceName: keycloak
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ $xfullname }}-keycloak
+        {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 8 }}
+        {{- with .Values.global.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.keycloak.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.keycloak.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if $useEmbeddedPg }}
+      initContainers:
+        - name: create-keycloak-db
+          image: postgres:17.6
+          command:
+            - /bin/sh
+            - -c
+            - |
+              until pg_isready -h "$PG_HOST" -p "$PG_PORT" -U "$PGUSER"; do
+                echo "Waiting for PostgreSQL..."
+                sleep 2
+              done
+              psql -h "$PG_HOST" -p "$PG_PORT" -U "$PGUSER" \
+                -tc "SELECT 1 FROM pg_database WHERE datname='${KC_DB_NAME}'" | grep -q 1 || \
+                psql -h "$PG_HOST" -p "$PG_PORT" -U "$PGUSER" \
+                  -c "CREATE DATABASE \"${KC_DB_NAME}\";"
+              echo "Database '${KC_DB_NAME}' is ready."
+          env:
+            - name: PG_HOST
+              value: {{ printf "%s-postgres" $xfullname | quote }}
+            - name: PG_PORT
+              value: "5432"
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ printf "%s-postgres-env" $xfullname }}
+                  key: POSTGRES_USER
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ printf "%s-postgres-env" $xfullname }}
+                  key: POSTGRES_PASSWORD
+            - name: KC_DB_NAME
+              value: {{ $dbName | quote }}
+      {{- end }}
+      containers:
+        - name: keycloak
+          image: "{{ .Values.keycloak.image.repository }}:{{ .Values.keycloak.image.tag }}"
+          imagePullPolicy: {{ .Values.keycloak.image.pullPolicy }}
+          args: ["start"]
+          env:
+            - name: KC_HTTP_ENABLED
+              value: "true"
+            - name: KC_HTTP_PORT
+              value: "8080"
+            - name: KC_HOSTNAME_STRICT
+              value: "false"
+            - name: KC_HOSTNAME_STRICT_BACKCHANNEL
+              value: "false"
+            - name: KC_PROXY_HEADERS
+              value: "xforwarded"
+            - name: KC_HEALTH_ENABLED
+              value: "true"
+            {{- if .Values.ingress.domains.keycloak }}
+            - name: KC_HOSTNAME
+              value: "https://{{ first .Values.ingress.domains.keycloak }}"
+            {{- end }}
+            {{- if $useEmbeddedPg }}
+            - name: KC_DB
+              value: "postgres"
+            - name: KC_DB_URL
+              value: {{ printf "jdbc:postgresql://%s-postgres:5432/%s" $xfullname $dbName | quote }}
+            - name: KC_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ printf "%s-postgres-env" $xfullname }}
+                  key: POSTGRES_USER
+            - name: KC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ printf "%s-postgres-env" $xfullname }}
+                  key: POSTGRES_PASSWORD
+            {{- else if .Values.keycloak.database.host }}
+            - name: KC_DB
+              value: "postgres"
+            - name: KC_DB_URL
+              value: {{ printf "jdbc:postgresql://%s:%d/%s" .Values.keycloak.database.host (.Values.keycloak.database.port | default 5432 | int) $dbName | quote }}
+            {{- end }}
+            {{- if .Values.global.extraEnvVars }}
+            {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
+            {{- end }}
+            {{- if .Values.keycloak.extraEnvVars }}
+            {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.keycloak.extraEnvVars "context" $) | nindent 12 }}
+            {{- end }}
+          envFrom:
+            {{- if and (not $useEmbeddedPg) .Values.keycloak.database.secretName }}
+            - secretRef:
+                name: {{ .Values.keycloak.database.secretName | quote }}
+            {{- end }}
+            {{- with .Values.global.extraEnvFromSecrets }}
+            {{- range $.Values.global.extraEnvFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+            {{- end }}
+            {{- end }}
+            {{- with .Values.keycloak.extraEnvFromSecrets }}
+            {{- range $.Values.keycloak.extraEnvFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+            {{- end }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: management
+              containerPort: 9000
+          resources:
+            {{- toYaml .Values.keycloak.resources | nindent 12 }}
+          startupProbe:
+            httpGet:
+              path: /health/ready
+              port: 9000
+            failureThreshold: 60
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 9000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 9000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+          {{- if .Values.keycloak.persistence.enabled }}
+          volumeMounts:
+            - name: data
+              mountPath: /opt/keycloak/data
+          {{- end }}
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range $.Values.global.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+      {{- with .Values.keycloak.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  {{- if .Values.keycloak.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        {{- if .Values.keycloak.persistence.accessModes }}
+        accessModes: {{ .Values.keycloak.persistence.accessModes }}
+        {{- else }}
+        accessModes: ["ReadWriteOnce"]
+        {{- end }}
+        {{- if .Values.keycloak.persistence.storageClassName }}
+        storageClassName: {{ .Values.keycloak.persistence.storageClassName }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.keycloak.persistence.size | default "5Gi" }}
+  {{- end }}
+{{- end }}

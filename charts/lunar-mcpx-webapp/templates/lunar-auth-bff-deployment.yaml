@@ -49,6 +49,19 @@ spec:
         {{- end }}
     spec:
       initContainers:
+        {{- if .Values.keycloak.enabled }}
+        - name: wait-for-keycloak
+          image: curlimages/curl:8.7.1
+          command:
+            - /bin/sh
+            - -c
+            - |
+              until curl -sf "http://{{ include "lunar-mcpx-webapp.fullname" . }}-keycloak/realms/{{ .Values.keycloak.realm | default "mcpx" }}/.well-known/openid-configuration" > /dev/null 2>&1; do
+                echo "Waiting for Keycloak realm to be ready..."
+                sleep 5
+              done
+              echo "Keycloak realm is ready."
+        {{- end }}
         - name: mcpx-auth-prisma-migration
           image: "{{ .Values.auth.image.repository }}:{{ .Values.auth.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
@@ -124,6 +137,10 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
+            {{- if .Values.keycloak.enabled }}
+            - secretRef:
+                name: {{ include "lunar-mcpx-webapp.fullname" . }}-keycloak-oidc
+            {{- end }}
           {{- with .Values.global.extraEnvFromSecrets }}
           {{- range $.Values.global.extraEnvFromSecrets }}
             - secretRef:
@@ -151,7 +168,11 @@ spec:
             {{- end }}
           {{- if .Values.ingress.enabled }}
             - name: JWT_ISSUER
+              {{- if and .Values.keycloak.enabled .Values.ingress.domains.keycloak }}
+              value: "https://{{ first .Values.ingress.domains.keycloak }}/realms/{{ .Values.keycloak.realm | default "mcpx" }}"
+              {{- else }}
               value: "https://{{ first .Values.ingress.domains.auth }}"
+              {{- end }}
             - name: CORS_ALLOWED_ORIGINS
               value: "https://{{ first .Values.ingress.domains.admin }},https://{{ first .Values.ingress.domains.ui }},https://{{ first .Values.ingress.domains.router }}"
           {{- end }}

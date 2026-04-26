@@ -836,6 +836,108 @@ redis:
   persistence:
     enabled: true
 
+keycloak:
+  # -- Enable or disable an embedded Keycloak deployment for identity management.
+  # When enabled, a Keycloak instance is deployed and a post-install Job bootstraps
+  # an initial realm, OIDC client, role, and first user. Supply bootstrap admin credentials
+  # via extraEnvVars or extraEnvFromSecrets (KC_BOOTSTRAP_ADMIN_USERNAME / KC_BOOTSTRAP_ADMIN_PASSWORD).
+  # Warning: For production, configure an external database and enable persistence.
+  enabled: false
+
+  image:
+    repository: quay.io/keycloak/keycloak
+    tag: "26.1.4"
+    pullPolicy: IfNotPresent
+
+  # -- Keycloak realm created during post-install initialization.
+  realm: "mcpx"
+
+  # -- OIDC client ID created in the realm for the webapp.
+  clientId: "mcpx-webapp"
+
+  # -- Realm role created during post-install initialization and assigned to the bootstrap user.
+  # The bootstrap user is created in the realm with this role so they can log into the
+  # webapp immediately without any manual Keycloak console steps.
+  defaultRole: "mcpx-admin"
+
+  # -- OAuth2 client secret for the OIDC client registered in Keycloak.
+  # Required when keycloak.enabled=true.
+  # This secret is set on the Keycloak client during post-install initialization and is
+  # used to auto-generate the OIDC secret that the auth service reads at runtime.
+  clientSecret: ""
+
+  # -- OIDC claim and scope defaults written into the auto-generated OIDC secret.
+  # These mirror the keys in the manually-created mcpx-webapp-oidc secret used for
+  # other providers (e.g. Entra). Override if your realm maps claims differently.
+  oidc:
+    rolesClaim: "roles"
+    emailClaim: "email"
+    scopes: "openid profile email"
+
+  # -- Database configuration for Keycloak.
+  # By default Keycloak shares the chart's embedded PostgreSQL (requires postgres.enabled=true).
+  # A separate 'keycloak' database is created automatically in embedded postgres on first run.
+  # For external PostgreSQL set useEmbedded=false and provide host/port/name/secretName.
+  database:
+    # -- Reuse the chart's embedded PostgreSQL (requires postgres.enabled=true).
+    useEmbedded: true
+    # -- Database name (auto-created in embedded postgres; must exist for external).
+    name: keycloak
+    # -- External PostgreSQL host. Ignored when useEmbedded=true.
+    host: ""
+    # -- External PostgreSQL port. Ignored when useEmbedded=true.
+    port: 5432
+    # -- Secret with KC_DB_USERNAME and KC_DB_PASSWORD keys for external DB.
+    # Ignored when useEmbedded=true.
+    secretName: ""
+
+  # -- Set pod resource requests & limits
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
+
+  # -- Configure persistent storage for Keycloak data directory.
+  persistence:
+    enabled: false
+    size: 5Gi
+    # storageClassName: ""
+    # accessModes:
+    #   - ReadWriteOnce
+
+  # -- extraEnvVars An array to add extra env vars
+  # e.g:
+  # extraEnvVars:
+  #   - name: FOO
+  #     value: "bar"
+  #   - name: FOO2
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: SECRET_NAME
+  #         key: KEY
+  extraEnvVars: []
+
+  # -- extraEnvFromSecrets An array of secret names to add as extra env vars
+  # extraEnvFromSecrets:
+  #   - secret_1
+  #   - secret_2
+  extraEnvFromSecrets: []
+
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  nodeSelector: {}
+
+  # -- tolerations allow the scheduler to schedule pods with matching taints.
+  tolerations: []
+
+  # Labels for all application related resources
+  labels: {}
+
+  # Pod Labels
+  podLabels: {}
+
 monitor:
   prometheus:
     # -- Enable or disable MPCX monitoring with Prometheus

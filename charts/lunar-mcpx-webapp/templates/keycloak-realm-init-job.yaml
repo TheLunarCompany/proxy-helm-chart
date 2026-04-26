@@ -1,0 +1,267 @@
+{{- if .Values.keycloak.enabled | default false }}
+{{- $xfullname := include "lunar-mcpx-webapp.fullname" . -}}
+{{- $realm := .Values.keycloak.realm | default "mcpx" -}}
+{{- $clientId := .Values.keycloak.clientId | default "mcpx-webapp" -}}
+{{- $defaultRole := .Values.keycloak.defaultRole | default "mcpx-admin" -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $xfullname }}-keycloak-realm-init
+  labels:
+    name: {{ $xfullname }}-keycloak-realm-init
+    app: {{ $xfullname }}-keycloak
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.keycloak.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "10"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        app: {{ $xfullname }}-keycloak-realm-init
+        {{- with .Values.global.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: realm-init
+          image: curlimages/curl:8.7.1
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              KEYCLOAK_URL="http://{{ $xfullname }}-keycloak"
+              KEYCLOAK_MGMT_URL="http://{{ $xfullname }}-keycloak:9000"
+              REALM="{{ $realm }}"
+              CLIENT_ID="{{ $clientId }}"
+              DEFAULT_ROLE="{{ $defaultRole }}"
+
+              echo "==> Waiting for Keycloak at ${KEYCLOAK_MGMT_URL} ..."
+              until curl -sf "${KEYCLOAK_MGMT_URL}/health/ready" > /dev/null 2>&1; do
+                sleep 5
+              done
+              echo "==> Keycloak is ready."
+
+              echo "==> Obtaining admin token from master realm ..."
+              TOKEN_RESPONSE=$(curl -sf -X POST \
+                "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
+                -H "Content-Type: application/x-www-form-urlencoded" \
+                -d "client_id=admin-cli" \
+                -d "username=${KC_BOOTSTRAP_ADMIN_USERNAME}" \
+                -d "password=${KC_BOOTSTRAP_ADMIN_PASSWORD}" \
+                -d "grant_type=password")
+              TOKEN=$(echo "$TOKEN_RESPONSE" | grep -o '"access_token":"[^"]*"' | head -1 | cut -d'"' -f4)
+              if [ -z "$TOKEN" ]; then
+                echo "ERROR: Failed to obtain admin token."
+                exit 1
+              fi
+              echo "==> Admin token obtained."
+
+              echo "==> Creating realm '${REALM}' ..."
+              REALM_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+                -X POST "${KEYCLOAK_URL}/admin/realms" \
+                -H "Authorization: Bearer ${TOKEN}" \
+                -H "Content-Type: application/json" \
+                -d "{\"realm\":\"${REALM}\",\"enabled\":true,\"displayName\":\"MCPX\"}")
+              if [ "$REALM_STATUS" = "201" ]; then
+                echo "==> Realm '${REALM}' created."
+              elif [ "$REALM_STATUS" = "409" ]; then
+                echo "==> Realm '${REALM}' already exists, skipping."
+              else
+                echo "ERROR: Unexpected HTTP ${REALM_STATUS} creating realm."
+                exit 1
+              fi
+
+              echo "==> Creating OIDC client '${CLIENT_ID}' with provided secret ..."
+              CLIENT_PAYLOAD=$(cat <<PAYLOAD
+              {
+                "clientId": "${CLIENT_ID}",
+                "secret": "${OIDC_CLIENT_SECRET}",
+                "enabled": true,
+                "protocol": "openid-connect",
+                "publicClient": false,
+                "standardFlowEnabled": true,
+                "directAccessGrantsEnabled": true,
+                "serviceAccountsEnabled": false,
+                "redirectUris": ["*"],
+                "webOrigins": ["*"],
+                "attributes": {
+                  "post.logout.redirect.uris": "*"
+                }
+              }
+              PAYLOAD
+              )
+              CLIENT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+                -X POST "${KEYCLOAK_URL}/admin/realms/${REALM}/clients" \
+                -H "Authorization: Bearer ${TOKEN}" \
+                -H "Content-Type: application/json" \
+                -d "$CLIENT_PAYLOAD")
+              if [ "$CLIENT_STATUS" = "201" ]; then
+                echo "==> Client '${CLIENT_ID}' created."
+              elif [ "$CLIENT_STATUS" = "409" ]; then
+                echo "==> Client '${CLIENT_ID}' already exists, skipping creation."
+              else
+                echo "ERROR: Unexpected HTTP ${CLIENT_STATUS} creating client."
+                exit 1
+              fi
+
+              # Fetch UUID for subsequent mapper/role operations
+              CLIENT_UUID=$(curl -sf \
+                "${KEYCLOAK_URL}/admin/realms/${REALM}/clients?clientId=${CLIENT_ID}" \
+                -H "Authorization: Bearer ${TOKEN}" \
+                | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+              if [ -z "$CLIENT_UUID" ]; then
+                echo "ERROR: Could not retrieve UUID for client '${CLIENT_ID}'."
+                exit 1
+              fi
+              echo "==> Client UUID: ${CLIENT_UUID}"
+
+              echo "==> Configuring realm-roles protocol mapper (→ 'roles' claim) ..."
+              MAPPER_PAYLOAD=$(cat <<MPAYLOAD
+              {
+                "name": "realm-roles",
+                "protocol": "openid-connect",
+                "protocolMapper": "oidc-usermodel-realm-role-mapper",
+                "consentRequired": false,
+                "config": {
+                  "multivalued": "true",
+                  "claim.name": "roles",
+                  "jsonType.label": "String",
+                  "id.token.claim": "true",
+                  "access.token.claim": "true",
+                  "userinfo.token.claim": "true"
+                }
+              }
+              MPAYLOAD
+              )
+              MAPPER_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+                -X POST "${KEYCLOAK_URL}/admin/realms/${REALM}/clients/${CLIENT_UUID}/protocol-mappers/models" \
+                -H "Authorization: Bearer ${TOKEN}" \
+                -H "Content-Type: application/json" \
+                -d "$MAPPER_PAYLOAD")
+              if [ "$MAPPER_STATUS" = "201" ]; then
+                echo "==> Roles mapper created."
+              elif [ "$MAPPER_STATUS" = "409" ]; then
+                echo "==> Roles mapper already exists, skipping."
+              else
+                echo "ERROR: Unexpected HTTP ${MAPPER_STATUS} creating roles mapper."
+                exit 1
+              fi
+
+              echo "==> Creating realm role '${DEFAULT_ROLE}' ..."
+              ROLE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+                -X POST "${KEYCLOAK_URL}/admin/realms/${REALM}/roles" \
+                -H "Authorization: Bearer ${TOKEN}" \
+                -H "Content-Type: application/json" \
+                -d "{\"name\":\"${DEFAULT_ROLE}\",\"description\":\"MCPX admin role\"}")
+              if [ "$ROLE_STATUS" = "201" ]; then
+                echo "==> Role '${DEFAULT_ROLE}' created."
+              elif [ "$ROLE_STATUS" = "409" ]; then
+                echo "==> Role '${DEFAULT_ROLE}' already exists, skipping."
+              else
+                echo "ERROR: Unexpected HTTP ${ROLE_STATUS} creating role."
+                exit 1
+              fi
+
+              echo "==> Creating initial realm user '${KC_BOOTSTRAP_ADMIN_USERNAME}' ..."
+              USER_PAYLOAD=$(cat <<UPAYLOAD
+              {
+                "username": "${KC_BOOTSTRAP_ADMIN_USERNAME}",
+                "enabled": true,
+                "credentials": [{
+                  "type": "password",
+                  "value": "${KC_BOOTSTRAP_ADMIN_PASSWORD}",
+                  "temporary": false
+                }]
+              }
+              UPAYLOAD
+              )
+              USER_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+                -X POST "${KEYCLOAK_URL}/admin/realms/${REALM}/users" \
+                -H "Authorization: Bearer ${TOKEN}" \
+                -H "Content-Type: application/json" \
+                -d "$USER_PAYLOAD")
+              if [ "$USER_STATUS" = "201" ]; then
+                echo "==> User '${KC_BOOTSTRAP_ADMIN_USERNAME}' created in realm '${REALM}'."
+              elif [ "$USER_STATUS" = "409" ]; then
+                echo "==> User '${KC_BOOTSTRAP_ADMIN_USERNAME}' already exists, skipping creation."
+              else
+                echo "ERROR: Unexpected HTTP ${USER_STATUS} creating user."
+                exit 1
+              fi
+
+              echo "==> Assigning role '${DEFAULT_ROLE}' to user '${KC_BOOTSTRAP_ADMIN_USERNAME}' ..."
+              USER_UUID=$(curl -sf \
+                "${KEYCLOAK_URL}/admin/realms/${REALM}/users?username=${KC_BOOTSTRAP_ADMIN_USERNAME}&exact=true" \
+                -H "Authorization: Bearer ${TOKEN}" \
+                | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+              if [ -z "$USER_UUID" ]; then
+                echo "ERROR: Could not retrieve UUID for user '${KC_BOOTSTRAP_ADMIN_USERNAME}'."
+                exit 1
+              fi
+              ROLE_REP=$(curl -sf \
+                "${KEYCLOAK_URL}/admin/realms/${REALM}/roles/${DEFAULT_ROLE}" \
+                -H "Authorization: Bearer ${TOKEN}")
+              ASSIGN_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+                -X POST "${KEYCLOAK_URL}/admin/realms/${REALM}/users/${USER_UUID}/role-mappings/realm" \
+                -H "Authorization: Bearer ${TOKEN}" \
+                -H "Content-Type: application/json" \
+                -d "[${ROLE_REP}]")
+              if [ "$ASSIGN_STATUS" = "204" ]; then
+                echo "==> Role '${DEFAULT_ROLE}' assigned to user '${KC_BOOTSTRAP_ADMIN_USERNAME}'."
+              else
+                echo "ERROR: Unexpected HTTP ${ASSIGN_STATUS} assigning role."
+                exit 1
+              fi
+
+              echo ""
+              echo "==> Keycloak initialization complete."
+              echo "    Realm   : ${REALM}"
+              echo "    Client  : ${CLIENT_ID}"
+              echo "    Role    : ${DEFAULT_ROLE}"
+              echo "    User    : ${KC_BOOTSTRAP_ADMIN_USERNAME} (realm login ready)"
+              echo "    Admin UI: ${KEYCLOAK_URL}/admin"
+              echo ""
+              echo "    The bootstrap user can now log into the webapp directly and"
+              echo "    into the admin console to create additional users, configure"
+              echo "    identity providers, and set up SSO integrations."
+          envFrom:
+            - secretRef:
+                name: {{ printf "%s-keycloak-oidc" $xfullname | quote }}
+            {{- with .Values.global.extraEnvFromSecrets }}
+            {{- range $.Values.global.extraEnvFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+            {{- end }}
+            {{- end }}
+            {{- with .Values.keycloak.extraEnvFromSecrets }}
+            {{- range $.Values.keycloak.extraEnvFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+            {{- end }}
+            {{- end }}
+          {{- if or .Values.global.extraEnvVars .Values.keycloak.extraEnvVars }}
+          env:
+            {{- if .Values.global.extraEnvVars }}
+            {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
+            {{- end }}
+            {{- if .Values.keycloak.extraEnvVars }}
+            {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.keycloak.extraEnvVars "context" $) | nindent 12 }}
+            {{- end }}
+          {{- end }}
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range $.Values.global.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+{{- end }}
