@@ -1,0 +1,27 @@
+suite: HIVE_CONTROLLER_URL value
+templates:
+  - templates/lunar-hub-deployment.yaml
+  - templates/lunar-webserver-deployment.yaml
+
+tests:
+  - it: hub deployment sets HIVE_CONTROLLER_URL to controller service URL
+    template: templates/lunar-hub-deployment.yaml
+    release:
+      name: my-release
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: HIVE_CONTROLLER_URL
+            value: "http://my-release-lunar-mcpx-webapp-controller"
+
+  - it: webserver deployment sets HIVE_CONTROLLER_URL to controller service URL
+    template: templates/lunar-webserver-deployment.yaml
+    release:
+      name: my-release
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: HIVE_CONTROLLER_URL
+            value: "http://my-release-lunar-mcpx-webapp-controller"

@@ -44,6 +44,14 @@ Required service versions:
 |       REDIS_URL       |                               redis://{{ HOST }}:{{ PORT }}                               |
 |   REDIS_IS_CLUSTER    |                                   boolean (true\|false)                                   |
 
+#### Required encryption configuration
+
+|    Variable    |                                       Value                                        |
+|:--------------:|:----------------------------------------------------------------------------------:|
+| ENCRYPTION_KEY | base64-encoded 32-byte AES-256-GCM key, generate with `openssl rand -base64 32` |
+
+Used by hub, webserver, and any service that reads or clones setups. Set via `global.encryptionKey` — the value is injected into all services through the shared embedded secret.
+
 #### Required OIDC environment variables with sensitive data
 
 |           Variable            | Value |
@@ -212,6 +220,60 @@ kubectl create job resolve-failed-$(date +%s) \
 
 By default, rollback targets the latest applied migration and resolve-failed targets the latest failed migration. To target a specific migration, set `jobs.admin.rollbackMigrationName` or `jobs.admin.resolveMigrationName` via Helm values override, apply it, and then create the job.
 
+### Catalog Item Store Jobs
+
+This chart includes three **suspended CronJobs** for managing catalog items from the built-in store. Like the migration jobs above, they never run automatically — admins create one-off jobs from them using `kubectl create job`.
+
+| CronJob | Purpose |
+|:--------|:--------|
+| `<release>-catalog-list` | Lists all store items and their status relative to the DB (already present, customized, missing, etc.) |
+| `<release>-catalog-populate` | Inserts new catalog items from the store into the DB |
+| `<release>-catalog-fix` | Updates existing DB catalog items with the latest store definitions |
+
+**List all store catalog items and their status:**
+```bash
+kubectl create job catalog-list-$(date +%s) \
+  --from=cronjob/<release>-catalog-list -n <namespace>
+```
+
+**Populate new catalog items from the store:**
+
+First, set `jobs.admin.catalogItemStore.catalogItemNames` to the desired items, apply the Helm values, then create the job:
+```yaml
+jobs:
+  admin:
+    catalogItemStore:
+      catalogItemNames:
+        - slack
+        - github
+        - linear
+```
+```bash
+kubectl create job catalog-populate-$(date +%s) \
+  --from=cronjob/<release>-catalog-populate -n <namespace>
+```
+
+**Fix (update) existing catalog items from the store:**
+
+Set `catalogItemNames` the same way. Optionally set `forceOverride` to `true` to replace DB config entirely instead of merging:
+```yaml
+jobs:
+  admin:
+    catalogItemStore:
+      catalogItemNames:
+        - slack
+        - github
+      forceOverride: true
+```
+```bash
+kubectl create job catalog-fix-$(date +%s) \
+  --from=cronjob/<release>-catalog-fix -n <namespace>
+```
+
+> **Merge vs. Force Override:**
+> - **Default (merge):** metadata fields (`displayName`, `description`, `repoUrl`, `docsUrl`) are overwritten from the store. For stdio config, `command` and `args` are overridden from the store; for env, only new keys are added — existing admin customizations are preserved. For remote config, `url` is overridden; for headers, only new keys are added.
+> - **Force override (`forceOverride: true`):** the entire config is replaced with the store template, discarding all admin customizations.
+
 ### Hibernation Cron Schedule
 
 Use `hibernation.cronSchedule` to control when the `hibernate-instances` CronJob runs.
@@ -316,3 +378,60 @@ tools that honor `.netrc`. A single `.netrc` can contain credentials for multipl
 
 Make sure the referenced secrets already exist in the MCPX namespace before MCPX instances are
 created or restarted.
+
+### Static OAuth configuration
+
+Use `hub.staticOauth` to configure OAuth credentials that the Hub distributes to all connected
+MCPX instances. This is useful for MCP servers that require OAuth authentication (e.g. GitHub, Asana).
+
+Two auth methods are supported - depending on what the provider offers and supports:
+
+- **`device_flow`** — user authorizes via browser, only a client ID is needed.
+- **`client_credentials`** — traditional OAuth with client ID and secret.
+
+The `mapping` section maps domains to provider keys, and `providers` defines the credentials and
+endpoints for each provider. This allows you to match several related domains (e.g. `github.com`, `api.github.com`) to the same provider config.
+
+**Example: GitHub device flow**
+
+```yaml
+hub:
+  staticOauth:
+    mapping:
+      github.com: github
+      api.github.com: github
+      api.githubcopilot.com: github
+    providers:
+      github:
+        authMethod: device_flow
+        credentials:
+          clientId: "<from your app>"
+        scopes:
+          - repo
+        endpoints:
+          deviceAuthorizationUrl: https://github.com/login/device/code
+          tokenUrl: https://github.com/login/oauth/access_token
+          userVerificationUrl: https://github.com/login/device
+```
+
+**Example: Client credentials flow**
+
+```yaml
+hub:
+  staticOauth:
+    mapping:
+      api.example.com: my-provider
+    providers:
+      my-provider:
+        authMethod: client_credentials
+        credentials:
+          clientId: "..."
+          clientSecret: "..."
+        scopes:
+          - scope1
+          - scope2
+        tokenAuthMethod: client_secret_basic
+```
+
+Supported `tokenAuthMethod` values: `client_secret_basic`, `client_secret_post`,
+`client_secret_jwt`, `private_key_jwt`, `tls_client_auth`, `self_signed_tls_client_auth`.

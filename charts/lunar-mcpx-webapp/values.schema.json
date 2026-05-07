@@ -76,6 +76,10 @@
               }
             }
           }
+        },
+        "staticOauth": {
+          "type": "object",
+          "description": "Static OAuth configuration for MCP server authentication. Maps domains to OAuth providers with credentials."
         }
       }
     },
@@ -247,6 +251,25 @@
               "type": "string",
               "description": "Target migration name for resolve-failed. Leave empty unless explicitly instructed otherwise. When empty, resolves the latest failed migration.",
               "default": ""
+            },
+            "catalogItemStore": {
+              "type": "object",
+              "description": "Catalog Item Store jobs settings",
+              "properties": {
+                "catalogItemNames": {
+                  "type": "array",
+                  "description": "Catalog item names for populate/fix jobs.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": []
+                },
+                "forceOverride": {
+                  "type": "boolean",
+                  "description": "Set to true to force-override existing config in fix job. Default merges non-destructively.",
+                  "default": false
+                }
+              }
             }
           }
         }

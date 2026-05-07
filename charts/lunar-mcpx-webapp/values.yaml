@@ -26,6 +26,12 @@ global:
   #   - secret_2
   extraEnvFromSecrets: []
 
+  # -- encryptionKey is a base64-encoded 32-byte AES-256-GCM key used to encrypt target server
+  # initiation data at rest. Used by hub, webserver, and any service that clones or reads setups.
+  # Generate with: openssl rand -base64 32
+  # Required — services that touch encrypted target servers will fail if this is not set.
+  encryptionKey: ""
+
   # -- tolerations allow the scheduler to schedule pods with matching taints.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
   # tolerations:
@@ -178,6 +184,44 @@ hub:
   #   - secret_1
   #   - secret_2
   extraEnvFromSecrets: []
+
+  # Static OAuth configuration for MCP server authentication.
+  # Maps domains to OAuth providers with credentials that are
+  # distributed to all connected mcpx instances.
+  #
+  # Example: Device flow (e.g. GitHub)
+  # staticOauth:
+  #   mapping:
+  #     github.com: github
+  #     api.github.com: github
+  #     api.githubcopilot.com: github
+  #   providers:
+  #     github:
+  #       authMethod: device_flow
+  #       credentials:
+  #         clientId: "<from your app>"
+  #       scopes:
+  #         - repo
+  #       endpoints:
+  #         deviceAuthorizationUrl: https://github.com/login/device/code
+  #         tokenUrl: https://github.com/login/oauth/access_token
+  #         userVerificationUrl: https://github.com/login/device
+  #
+  # Example: Client credentials flow
+  # staticOauth:
+  #   mapping:
+  #     api.example.com: my-provider
+  #   providers:
+  #     my-provider:
+  #       authMethod: client_credentials
+  #       credentials:
+  #         clientId: "..."
+  #         clientSecret: "..."
+  #       scopes:
+  #         - scope1
+  #         - scope2
+  #       tokenAuthMethod: client_secret_basic
+  staticOauth: {}
 
   # Labels for all application related resources
   # labels:
@@ -353,6 +397,23 @@ controller:
     uvConfigSecret: ""
     # -- netrcSecret Name of a secret containing a `.netrc` key exposed via NETRC.
     netrcSecret: ""
+
+  # -- mcpxNodeSelector NodeSelector applied to every MCPX instance pod created by the controller.
+  # Useful to constrain MCPX workloads to dedicated node pools (e.g. GPU nodes, spot nodes).
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  # mcpxNodeSelector:
+  #   cloud.google.com/gke-nodepool: mcpx-pool
+  mcpxNodeSelector: {}
+
+  # -- mcpxTolerations Tolerations applied to every MCPX instance pod created by the controller.
+  # Must match taints on the target nodes when mcpxNodeSelector targets tainted node pools.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  # mcpxTolerations:
+  #   - key: "dedicated"
+  #     operator: "Equal"
+  #     value: "mcpx"
+  #     effect: "NoSchedule"
+  mcpxTolerations: []
 
   # -- mcpxCRD configuration for CRD schema version checks
   mcpxCRD:
@@ -614,6 +675,19 @@ jobs:
     # -- Target migration name for resolve-failed. Leave empty unless explicitly instructed otherwise.
     # When empty, resolves the latest failed migration.
     resolveMigrationName: ""
+
+    # -- Catalog Item Store jobs settings.
+    # See the "Catalog Item Store Jobs" section in README.md for usage.
+    catalogItemStore:
+      # -- Catalog item names for populate/fix jobs.
+      # Example:
+      #   catalogItemNames:
+      #     - slack
+      #     - github
+      #     - linear
+      catalogItemNames: []
+      # -- Set to true to force-override existing config in fix job. Default merges non-destructively.
+      forceOverride: false
 
 hibernation:
   # Cron schedule for the scheduled hibernation job (e.g. "0 22 * * *").

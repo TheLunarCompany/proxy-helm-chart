@@ -46,9 +46,11 @@ spec:
       serviceAccountName: {{ include "lunar-mcpx-webapp.fullname" . }}-controller
       automountServiceAccountToken: true
       securityContext:
-        fsGroup: 2000
         runAsNonRoot: true
+        {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
         runAsUser: 1000
+        fsGroup: 2000
+        {{- end }}
       containers:
         - name: mcpx-controller-container
           image: "{{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
@@ -73,8 +75,10 @@ spec:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
             allowPrivilegeEscalation: false
+            {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
             runAsUser: 1000
             runAsGroup: 1000
+            {{- end }}
           envFrom:
             - secretRef:
                 name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
@@ -130,6 +134,16 @@ spec:
           {{- if or $runtimeAuth.dockerConfigSecret $runtimeAuth.npmrcSecret $runtimeAuth.uvConfigSecret $runtimeAuth.netrcSecret }}
             - name: MCPX_RUNTIME_AUTH_JSON
               value: {{ $runtimeAuth | toJson | quote }}
+          {{- end }}
+          {{- $mcpxNodeSelector := .Values.controller.mcpxNodeSelector | default dict }}
+          {{- if $mcpxNodeSelector }}
+            - name: MCPX_NODE_SELECTOR
+              value: {{ $mcpxNodeSelector | toJson | quote }}
+          {{- end }}
+          {{- $mcpxTolerations := .Values.controller.mcpxTolerations | default list }}
+          {{- if $mcpxTolerations }}
+            - name: MCPX_TOLERATIONS
+              value: {{ $mcpxTolerations | toJson | quote }}
           {{- end }}
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}

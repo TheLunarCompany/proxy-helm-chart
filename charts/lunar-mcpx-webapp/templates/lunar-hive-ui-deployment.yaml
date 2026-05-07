@@ -43,6 +43,30 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      securityContext:
+        runAsNonRoot: true
+        {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
+        runAsUser: 1002
+        runAsGroup: 1002
+        fsGroup: 1002
+        {{- end }}
+      initContainers:
+        - name: mcpx-ui-prepare-ui-files
+          image: '{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) }}'
+          command:
+            - sh
+            - -c
+            - |
+                if [ ! -f /tmp/lunar/packages/ui/.copied ]; then
+                  echo "Copying files /lunar/packages/ui/* -> /tmp/lunar/packages/ui/"
+                  cp -r /lunar/packages/ui/* /tmp/lunar/packages/ui/ && touch /tmp/lunar/packages/ui/.copied
+                  ls -alh /tmp/lunar/packages/ui/
+                else
+                  echo 'Files already copied'
+                fi
+          volumeMounts:
+            - name: lunar-packages-ui
+              mountPath: /tmp/lunar/packages/ui/
       containers:
         - name: mcpx-ui-container
           image: '{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) }}'
@@ -63,6 +87,10 @@ spec:
                 {{- end }}
             {{- end }}
           {{- end }}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
           envFrom:
             - secretRef:
                 name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
@@ -121,6 +149,12 @@ spec:
             initialDelaySeconds: 60
             periodSeconds: 30
             timeoutSeconds: 30
+          volumeMounts:
+            - name: lunar-packages-ui
+              mountPath: /lunar/packages/ui
+      volumes:
+      - name: lunar-packages-ui
+        emptyDir: {}
 
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
