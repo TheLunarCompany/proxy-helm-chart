@@ -27,7 +27,7 @@ spec:
       {{- with .Values.clickhouse.podLabels }}
       {{- toYaml . | nindent 6 }}
       {{- end }}
-  serviceName: clickhouse
+  serviceName: {{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse
   # Single-node ClickHouse — deliberately not scaled; one replica handles event store analytics.
   replicas: 1
   template:
@@ -47,7 +47,8 @@ spec:
     spec:
       containers:
         - name: clickhouse
-          image: clickhouse/clickhouse-server:24.8-alpine
+          image: "{{ .Values.clickhouse.image.repository }}:{{ .Values.clickhouse.image.tag }}"
+          imagePullPolicy: {{ .Values.clickhouse.image.pullPolicy }}
           envFrom:
             - secretRef:
                 name: {{ .Values.clickhouse.credentialsSecret }}

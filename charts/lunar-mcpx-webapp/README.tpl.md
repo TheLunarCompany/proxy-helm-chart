@@ -295,6 +295,41 @@ Use `hibernation.cronSchedule` to control when the `hibernate-instances` CronJob
     cronSchedule: "*/5 * * * *"
   ```
 
+### ClickHouse (Event Store Analytics)
+
+The chart can deploy an embedded single-node ClickHouse instance for event store analytics. ClickHouse is cluster-internal only and is **not** exposed outside the cluster.
+
+#### Prerequisites
+
+1. Create a Kubernetes secret containing ClickHouse credentials:
+   ```bash
+   kubectl create secret generic ch-creds -n <namespace> \
+     --from-literal=CLICKHOUSE_USER=default \
+     --from-literal=CLICKHOUSE_PASSWORD='<strong-password>'
+   ```
+
+2. Enable ClickHouse and reference the secret in your values override:
+   ```yaml
+   clickhouse:
+     enabled: true
+     credentialsSecret: ch-creds
+   ```
+
+When enabled, the chart will:
+- Deploy a ClickHouse StatefulSet with a persistent volume (default 10Gi)
+- Create a ClusterIP service on port 8123
+- Add a ClickHouse migration init container to both hub and webserver (runs after the Prisma migration)
+- Inject `CLICKHOUSE_URL` into hub and webserver main containers
+
+If `clickhouse.enabled` is `true` but the credentials secret is missing or empty, `helm install` will fail with a schema validation error.
+
+#### REPL access (debugging)
+
+```bash
+kubectl exec -it <release>-clickhouse-0 -n <namespace> -- clickhouse-client \
+  --user <user> --password <password>
+```
+
 ### Installation
 
 Minimal deployment with embedded Postgresql and Redis

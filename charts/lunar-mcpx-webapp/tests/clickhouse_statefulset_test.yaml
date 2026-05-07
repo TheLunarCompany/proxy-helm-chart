@@ -20,9 +20,9 @@ tests:
           value: 1
       - equal:
           path: spec.serviceName
-          value: clickhouse
+          value: RELEASE-NAME-lunar-mcpx-webapp-clickhouse
 
-  - it: should use correct image
+  - it: should use default image
     set:
       clickhouse.enabled: true
       clickhouse.credentialsSecret: ch-creds
@@ -30,6 +30,24 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].image
           value: clickhouse/clickhouse-server:24.8-alpine
+      - equal:
+          path: spec.template.spec.containers[0].imagePullPolicy
+          value: IfNotPresent
+
+  - it: should allow overriding image repo, tag, and pullPolicy
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+      clickhouse.image.repository: my-mirror.example.com/clickhouse
+      clickhouse.image.tag: 24.9-alpine
+      clickhouse.image.pullPolicy: Always
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: my-mirror.example.com/clickhouse:24.9-alpine
+      - equal:
+          path: spec.template.spec.containers[0].imagePullPolicy
+          value: Always
 
   - it: should reference credentials secret in envFrom
     set:

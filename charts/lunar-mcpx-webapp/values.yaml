@@ -842,6 +842,13 @@ clickhouse:
   enabled: false
   # -- Name of the K8s secret containing CLICKHOUSE_USER and CLICKHOUSE_PASSWORD
   credentialsSecret: ""
+  image:
+    # -- ClickHouse image repository
+    repository: clickhouse/clickhouse-server
+    # -- ClickHouse image tag
+    tag: 24.8-alpine
+    # -- ClickHouse image pull policy
+    pullPolicy: IfNotPresent
   nodeSelector: {}
   tolerations: []
   labels: {}

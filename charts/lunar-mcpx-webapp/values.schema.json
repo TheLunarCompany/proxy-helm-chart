@@ -144,6 +144,18 @@
     "clickhouse": {
       "type": "object",
       "description": "Embedded ClickHouse for event store analytics",
+      "if": {
+        "properties": {
+          "enabled": { "const": true }
+        },
+        "required": ["enabled"]
+      },
+      "then": {
+        "properties": {
+          "credentialsSecret": { "minLength": 1 }
+        },
+        "required": ["credentialsSecret"]
+      },
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -152,8 +164,22 @@
         },
         "credentialsSecret": {
           "type": "string",
-          "description": "Name of the K8s secret containing CLICKHOUSE_USER and CLICKHOUSE_PASSWORD",
+          "description": "Name of the K8s secret containing CLICKHOUSE_USER and CLICKHOUSE_PASSWORD. Required when enabled is true.",
           "default": ""
+        },
+        "image": {
+          "type": "object",
+          "properties": {
+            "repository": {
+              "type": "string"
+            },
+            "tag": {
+              "type": "string"
+            },
+            "pullPolicy": {
+              "type": "string"
+            }
+          }
         },
         "nodeSelector": {
           "type": "object"
