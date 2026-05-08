@@ -1,0 +1,110 @@
+{{- if .Values.clickhouse.enabled | default false }}
+{{- $tolerations := concat .Values.global.tolerations .Values.clickhouse.tolerations -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse
+  labels:
+    name: {{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.clickhouse.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse
+      {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 6 }}
+      {{- with .Values.global.labels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.clickhouse.labels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.clickhouse.podLabels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+  serviceName: {{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse
+  # Single-node ClickHouse — deliberately not scaled; one replica handles event store analytics.
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse
+        {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 8 }}
+        {{- with .Values.global.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.clickhouse.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.clickhouse.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      containers:
+        - name: clickhouse
+          image: "{{ .Values.clickhouse.image.repository }}:{{ .Values.clickhouse.image.tag }}"
+          imagePullPolicy: {{ .Values.clickhouse.image.pullPolicy }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.clickhouse.credentialsSecret }}
+          {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
+          resources:
+            {{- if .Values.global.manageResources.requests }}
+            requests:
+              {{- toYaml .Values.clickhouse.resources.requests | nindent 14 }}
+            {{- end }}
+            {{- if .Values.global.manageResources.limits }}
+            limits:
+              {{- toYaml .Values.clickhouse.resources.limits | nindent 14 }}
+            {{- end }}
+          {{- end }}
+          ports:
+            - containerPort: 8123
+          volumeMounts:
+            {{- if .Values.clickhouse.persistence.enabled | default false }}
+            - name: data
+              mountPath: /var/lib/clickhouse
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: 8123
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: 8123
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+      {{- with .Values.clickhouse.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  {{- if .Values.clickhouse.persistence.enabled | default false }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          {{- toYaml .Values.clickhouse.persistence.accessModes | nindent 10 }}
+        {{- with .Values.clickhouse.persistence.storageClassName }}
+        storageClassName: {{ . }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.clickhouse.persistence.size }}
+  {{- end }}
+
+{{- end }}

@@ -836,6 +836,39 @@ redis:
   persistence:
     enabled: true
 
+clickhouse:
+  # -- Enable embedded ClickHouse for event store analytics.
+  # Requires a pre-existing K8s secret with CLICKHOUSE_USER and CLICKHOUSE_PASSWORD keys.
+  enabled: false
+  # -- Name of the K8s secret containing CLICKHOUSE_USER and CLICKHOUSE_PASSWORD
+  credentialsSecret: ""
+  image:
+    # -- ClickHouse image repository
+    repository: clickhouse/clickhouse-server
+    # -- ClickHouse image tag
+    tag: 24.8-alpine
+    # -- ClickHouse image pull policy
+    pullPolicy: IfNotPresent
+  nodeSelector: {}
+  tolerations: []
+  labels: {}
+  podLabels: {}
+  persistence:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: ""
+    size: 10Gi
+  # -- Resource defaults: CH docs recommend 4 CPU / 8Gi RAM as practical minimum.
+  # Limits set to 2x requests for burst headroom.
+  resources:
+    requests:
+      memory: "4096Mi"
+      cpu: "4000m"
+    limits:
+      memory: "8192Mi"
+      cpu: "8000m"
+
 monitor:
   prometheus:
     # -- Enable or disable MPCX monitoring with Prometheus

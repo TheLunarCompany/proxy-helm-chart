@@ -88,6 +88,34 @@ spec:
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.webserver.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}
 
+        {{- if .Values.clickhouse.enabled }}
+        - name: mcpx-webserver-clickhouse-migration
+          image: "{{ .Values.webserver.image.repository }}:{{ .Values.webserver.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
+          resources:
+            {{- if .Values.global.manageResources.limits }}
+            limits:
+              {{- with .Values.webserver.resources.limits }}
+              {{- toYaml . | nindent 14 }}
+              {{- end }}
+            {{- end }}
+            {{- if .Values.global.manageResources.requests }}
+            requests:
+              {{- with .Values.webserver.resources.requests }}
+                {{- toYaml . | nindent 14 }}
+                {{- end }}
+            {{- end }}
+          {{- end }}
+          command: ["/bin/sh"]
+          args: ["-c", "cd /mcpx-webapp && CLICKHOUSE_URL='{{ include "lunar-mcpx-webapp.clickhouseUrl" . }}' node packages/toolkit-clickhouse/dist/bin/migrate.js"]
+          envFrom:
+            - secretRef:
+                name: {{ .Values.clickhouse.credentialsSecret }}
+          env:
+            - name: NODE_ENV
+              value: "production"
+        {{- end }}
+
       containers:
         - name: mcpx-webserver-container
           image: "{{ .Values.webserver.image.repository }}:{{ .Values.webserver.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
@@ -131,6 +159,10 @@ spec:
                 name: {{ . }}
           {{- end }}
           {{- end }}
+          {{- if .Values.clickhouse.enabled }}
+            - secretRef:
+                name: {{ .Values.clickhouse.credentialsSecret }}
+          {{- end }}
           env:
             - name: NODE_ENV
               value: "production"
@@ -142,6 +174,10 @@ spec:
             {{- end }}
             - name: PORT
               value: "8080"
+            {{- if .Values.clickhouse.enabled }}
+            - name: CLICKHOUSE_URL
+              value: "{{ include "lunar-mcpx-webapp.clickhouseUrl" . }}"
+            {{- end }}
             - name: HIVE_CONTROLLER_URL
               value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-controller"
             {{- if .Values.hibernation.cronSchedule }}

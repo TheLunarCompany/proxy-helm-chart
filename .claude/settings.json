@@ -1,7 +1,5 @@
 {
   "permissions": {
-    "allow": [
-      "Read(//Users/eliavlavi/git/lunar-private/mcpx/packages/shared-model/src/config/**)"
-    ]
+    "allow": ["Bash(helm template:*)"]
   }
 }
