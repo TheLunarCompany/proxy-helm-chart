@@ -295,17 +295,52 @@ Use `hibernation.cronSchedule` to control when the `hibernate-instances` CronJob
     cronSchedule: "*/5 * * * *"
   ```
 
+### ClickHouse (Event Store Analytics)
+
+The chart can deploy an embedded single-node ClickHouse instance for event store analytics. ClickHouse is cluster-internal only and is **not** exposed outside the cluster.
+
+#### Prerequisites
+
+1. Create a Kubernetes secret containing ClickHouse credentials:
+   ```bash
+   kubectl create secret generic ch-creds -n <namespace> \
+     --from-literal=CLICKHOUSE_USER=default \
+     --from-literal=CLICKHOUSE_PASSWORD='<strong-password>'
+   ```
+
+2. Enable ClickHouse and reference the secret in your values override:
+   ```yaml
+   clickhouse:
+     enabled: true
+     credentialsSecret: ch-creds
+   ```
+
+When enabled, the chart will:
+- Deploy a ClickHouse StatefulSet with a persistent volume (default 10Gi)
+- Create a ClusterIP service on port 8123
+- Add a ClickHouse migration init container to both hub and webserver (runs after the Prisma migration)
+- Inject `CLICKHOUSE_URL` into hub and webserver main containers
+
+If `clickhouse.enabled` is `true` but the credentials secret is missing or empty, `helm install` will fail with a schema validation error.
+
+#### REPL access (debugging)
+
+```bash
+kubectl exec -it <release>-clickhouse-0 -n <namespace> -- clickhouse-client \
+  --user <user> --password <password>
+```
+
 ### Installation
 
 Minimal deployment with embedded Postgresql and Redis
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.30 --set postgres.enabled=true --set redis.enabled=true
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.31 --set postgres.enabled=true --set redis.enabled=true
 ```
 
 Alternatively, you may work with a separate values file to handle values override just like any other Helm chart:
 
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.30  -f ./values-override.yaml
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.31  -f ./values-override.yaml
 ```
 
 ### MCPX runtime auth
