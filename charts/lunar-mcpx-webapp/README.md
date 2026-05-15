@@ -334,13 +334,13 @@ kubectl exec -it <release>-clickhouse-0 -n <namespace> -- clickhouse-client \
 
 Minimal deployment with embedded Postgresql and Redis
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.32 --set postgres.enabled=true --set redis.enabled=true
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.33 --set postgres.enabled=true --set redis.enabled=true
 ```
 
 Alternatively, you may work with a separate values file to handle values override just like any other Helm chart:
 
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.32  -f ./values-override.yaml
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.33  -f ./values-override.yaml
 ```
 
 ### MCPX runtime auth
@@ -410,6 +410,8 @@ uvx. A single `uv.toml` can define multiple indexes.
 
 `netrcSecret` must contain a `.netrc` key and is exposed through `NETRC` for uv, uvx, and other
 tools that honor `.netrc`. A single `.netrc` can contain credentials for multiple hosts.
+
+`decodeBase64`, when set to `true`, treats the referenced runtime-auth secret values as base64-encoded and decodes them at pod startup via an init container. Use this for secret backends (e.g. AWS Secrets Manager) that cannot supply multi-line values cleanly.
 
 Make sure the referenced secrets already exist in the MCPX namespace before MCPX instances are
 created or restarted.
