@@ -338,6 +338,11 @@
             "netrcSecret": {
               "type": "string",
               "description": "Name of a secret containing a .netrc key exposed through NETRC"
+            },
+            "decodeBase64": {
+              "type": "boolean",
+              "default": false,
+              "description": "If true, runtime-auth secret values are expected to be base64-encoded and decoded at pod startup via an init container"
             }
           }
         },

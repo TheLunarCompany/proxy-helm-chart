@@ -411,6 +411,8 @@ uvx. A single `uv.toml` can define multiple indexes.
 `netrcSecret` must contain a `.netrc` key and is exposed through `NETRC` for uv, uvx, and other
 tools that honor `.netrc`. A single `.netrc` can contain credentials for multiple hosts.
 
+`decodeBase64`, when set to `true`, treats the referenced runtime-auth secret values as base64-encoded and decodes them at pod startup via an init container. Use this for secret backends (e.g. AWS Secrets Manager) that cannot supply multi-line values cleanly.
+
 Make sure the referenced secrets already exist in the MCPX namespace before MCPX instances are
 created or restarted.
 

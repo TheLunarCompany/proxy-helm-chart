@@ -397,6 +397,8 @@ controller:
     uvConfigSecret: ""
     # -- netrcSecret Name of a secret containing a `.netrc` key exposed via NETRC.
     netrcSecret: ""
+    # -- decodeBase64 If true, runtime-auth secret values are expected to be base64-encoded and decoded at pod startup via an init container.
+    decodeBase64: false
 
   # -- mcpxNodeSelector NodeSelector applied to every MCPX instance pod created by the controller.
   # Useful to constrain MCPX workloads to dedicated node pools (e.g. GPU nodes, spot nodes).
