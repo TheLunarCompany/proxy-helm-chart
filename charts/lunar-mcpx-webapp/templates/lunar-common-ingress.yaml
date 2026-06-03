@@ -36,6 +36,9 @@ spec:
   redirectToHttps:
     enabled: true
     responseCodeName: "302"
+  {{- with .Values.ingress.gce.sslPolicy }}
+  sslPolicy: {{ . }}
+  {{- end }}
 {{- end }}
 
 ---
