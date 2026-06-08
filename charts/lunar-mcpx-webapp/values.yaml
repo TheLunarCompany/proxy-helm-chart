@@ -61,6 +61,13 @@ global:
   #   secretName: ca-private-cert-1
   caCerts: {}
 
+  # -- extraInitContainers Additional init containers configuration
+  # Value of this extraInitContainers will be appended to spec.template.spec.initContainers of the deployment
+  extraInitContainers: []
+
+  # -- extraContainers Additional sidecars configuration
+  # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
+  extraContainers: []
 
 webserver:
   image:
@@ -132,6 +139,14 @@ webserver:
   #   llmModel: "gpt-4"
   # Note: For the API key, add `SANDBOX_ANALYSIS_LLM_API_KEY` through a secret via `webserver.extraEnvFromSecrets`
   sandboxAnalysis: {}
+
+  # -- extraInitContainers Additional init containers configuration
+  # Value of this extraInitContainers will be appended to spec.template.spec.initContainers of the deployment
+  extraInitContainers: []
+
+  # -- extraContainers Additional sidecars configuration
+  # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
+  extraContainers: []
 
 hub:
   image:
@@ -235,6 +250,14 @@ hub:
   #   label_2: value_2
   podLabels: {}
 
+  # -- extraInitContainers Additional init containers configuration
+  # Value of this extraInitContainers will be appended to spec.template.spec.initContainers of the deployment
+  extraInitContainers: []
+
+  # -- extraContainers Additional sidecars configuration
+  # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
+  extraContainers: []
+
 admin:
   image:
     # -- Lunar mcpx-webserver image repository
@@ -298,6 +321,14 @@ admin:
   #   label_1: value_1
   #   label_2: value_2
   podLabels: {}
+
+  # -- extraInitContainers Additional init containers configuration
+  # Value of this extraInitContainers will be appended to spec.template.spec.initContainers of the deployment
+  extraInitContainers: []
+
+  # -- extraContainers Additional sidecars configuration
+  # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
+  extraContainers: []
 
 auth:
   image:
@@ -370,6 +401,14 @@ auth:
   #   label_2: value_2
   podLabels: {}
 
+  # -- extraInitContainers Additional init containers configuration
+  # Value of this extraInitContainers will be appended to spec.template.spec.initContainers of the deployment
+  extraInitContainers: []
+
+  # -- extraContainers Additional sidecars configuration
+  # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
+  extraContainers: []
+
 controller:
   image:
     # -- Lunar mcpx-hive-controller image repository
@@ -416,6 +455,14 @@ controller:
   #     value: "mcpx"
   #     effect: "NoSchedule"
   mcpxTolerations: []
+
+  # -- mcpxExtraInitContainers Additional init containers configuration applied to every MCPX instance pod created by the controller.
+  # Value of this extraInitContainers will be appended to spec.template.spec.initContainers of the deployment
+  mcpxExtraInitContainers: []
+
+  # -- mcpxExtraContainers Additional sidecars configuration applied to every MCPX instance pod created by the controller.
+  # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
+  mcpxExtraContainers: []
 
   # -- mcpxCRD configuration for CRD schema version checks
   mcpxCRD:
@@ -477,6 +524,14 @@ controller:
   #   label_1: value_1
   #   label_2: value_2
   podLabels: {}
+
+  # -- extraInitContainers Additional init containers configuration
+  # Value of this extraInitContainers will be appended to spec.template.spec.initContainers of the deployment
+  extraInitContainers: []
+
+  # -- extraContainers Additional sidecars configuration
+  # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
+  extraContainers: []
 
 router:
   image:
@@ -546,6 +601,14 @@ router:
   #   label_2: value_2
   podLabels: {}
 
+  # -- extraInitContainers Additional init containers configuration
+  # Value of this extraInitContainers will be appended to spec.template.spec.initContainers of the deployment
+  extraInitContainers: []
+
+  # -- extraContainers Additional sidecars configuration
+  # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
+  extraContainers: []
+
 ui:
   image:
     # -- Lunar mcpx-ui image repository
@@ -608,6 +671,14 @@ ui:
   #   label_1: value_1
   #   label_2: value_2
   podLabels: {}
+
+  # -- extraInitContainers Additional init containers configuration
+  # Value of this extraInitContainers will be appended to spec.template.spec.initContainers of the deployment
+  extraInitContainers: []
+
+  # -- extraContainers Additional sidecars configuration
+  # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
+  extraContainers: []
 
 jobs:
   image:
