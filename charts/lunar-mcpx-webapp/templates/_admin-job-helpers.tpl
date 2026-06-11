@@ -66,6 +66,10 @@ spec:
               envFrom:
                 - secretRef:
                     name: {{ include "lunar-mcpx-webapp.fullname" .root }}-embedded
+              {{- if and .clickhouse (.root.Values.clickhouse.enabled | default false) }}
+                - secretRef:
+                    name: {{ .root.Values.clickhouse.credentialsSecret }}
+              {{- end }}
               {{- with .root.Values.global.extraEnvFromSecrets }}
               {{- range . }}
                 - secretRef:
@@ -79,6 +83,10 @@ spec:
               {{- end }}
               {{- end }}
               env:
+              {{- if and .clickhouse (.root.Values.clickhouse.enabled | default false) }}
+                - name: CLICKHOUSE_URL
+                  value: "{{ include "lunar-mcpx-webapp.clickhouseUrl" .root }}"
+              {{- end }}
               {{- range .extraEnv }}
               {{- if .value }}
                 - name: {{ .name }}

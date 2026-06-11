@@ -70,6 +70,11 @@ spec:
             - name: data
               mountPath: /var/lib/clickhouse
             {{- end }}
+            {{- if .Values.clickhouse.systemLogConfig }}
+            - name: system-log-config
+              mountPath: /etc/clickhouse-server/config.d/z-lunar-system-logs.xml
+              subPath: z-lunar-system-logs.xml
+            {{- end }}
           livenessProbe:
             httpGet:
               path: /ping
@@ -84,6 +89,12 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
+      {{- if .Values.clickhouse.systemLogConfig }}
+      volumes:
+        - name: system-log-config
+          configMap:
+            name: {{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse-config
+      {{- end }}
       {{- with .Values.clickhouse.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

@@ -1,0 +1,12 @@
+{{- if .Values.clickhouse.enabled | default false }}
+---
+{{- include "lunar-mcpx-webapp.adminCronJob" (dict
+  "root" .
+  "jobName" "prune-clickhouse-system-logs-execute"
+  "command" (list "node" "dist/index.js" "prune-clickhouse-system-logs")
+  "clickhouse" true
+  "extraEnv" (list
+    (dict "name" "CLICKHOUSE_PRUNE_DRY_RUN" "value" "false")
+  )
+) }}
+{{- end }}
