@@ -51,6 +51,10 @@ spec:
         runAsUser: 1000
         fsGroup: 2000
         {{- end }}
+      {{- with concat (.Values.global.extraInitContainers | default (list)) (.Values.controller.extraInitContainers | default (list)) }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: mcpx-controller-container
           image: "{{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
@@ -145,6 +149,14 @@ spec:
             - name: MCPX_TOLERATIONS
               value: {{ $mcpxTolerations | toJson | quote }}
           {{- end }}
+          {{- with .Values.controller.mcpxExtraInitContainers | default list }}
+            - name: MCPX_EXTRA_INIT_CONTAINERS
+              value: {{ . | toJson | quote }}
+          {{- end }}
+          {{- with .Values.controller.mcpxExtraContainers | default list }}
+            - name: MCPX_EXTRA_CONTAINERS
+              value: {{ . | toJson | quote }}
+          {{- end }}
           {{- $mcpxAffinity := .Values.controller.mcpxAffinity | default dict }}
           {{- if $mcpxAffinity }}
             - name: MCPX_AFFINITY
@@ -203,6 +215,9 @@ spec:
               readOnly: true
           {{- end }}
           {{- end }}
+        {{- with concat (.Values.global.extraContainers | default (list)) (.Values.controller.extraContainers | default (list)) }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       volumes:
         - name: tmp
           emptyDir: {}

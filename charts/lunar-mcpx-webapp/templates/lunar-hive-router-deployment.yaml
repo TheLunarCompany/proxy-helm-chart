@@ -43,6 +43,10 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      {{- with concat (.Values.global.extraInitContainers | default (list)) (.Values.router.extraInitContainers | default (list)) }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: mcpx-router-container
           image: "{{ .Values.router.image.repository }}:{{ .Values.router.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
@@ -144,6 +148,9 @@ spec:
               readOnly: true
           {{- end }}
           {{- end }}
+        {{- with concat (.Values.global.extraContainers | default (list)) (.Values.router.extraContainers | default (list)) }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       volumes:
         - name: tmp
           emptyDir: {}

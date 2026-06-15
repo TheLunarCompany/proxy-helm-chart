@@ -67,6 +67,9 @@ spec:
           volumeMounts:
             - name: lunar-packages-ui
               mountPath: /tmp/lunar/packages/ui/
+        {{- with concat (.Values.global.extraInitContainers | default (list)) (.Values.ui.extraInitContainers | default (list)) }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       containers:
         - name: mcpx-ui-container
           image: '{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) }}'
@@ -152,6 +155,9 @@ spec:
           volumeMounts:
             - name: lunar-packages-ui
               mountPath: /lunar/packages/ui
+        {{- with concat (.Values.global.extraContainers | default (list)) (.Values.ui.extraContainers | default (list)) }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       volumes:
       - name: lunar-packages-ui
         emptyDir: {}

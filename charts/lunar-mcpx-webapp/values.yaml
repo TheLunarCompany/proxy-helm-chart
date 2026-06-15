@@ -83,11 +83,18 @@ global:
   #   secretName: ca-private-cert-1
   caCerts: {}
 
+  # -- extraInitContainers Additional init containers configuration
+  # Value of this extraInitContainers will be appended to spec.template.spec.initContainers of the deployment
+  extraInitContainers: []
+
+  # -- extraContainers Additional sidecars configuration
+  # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
+  extraContainers: []
+
   # -- priorityClassName determines a pod's scheduling priority relative to other pods.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
   # priorityClassName: "custom"
   priorityClassName: ""
-
 
 webserver:
   image:
@@ -186,6 +193,14 @@ webserver:
   #   llmModel: "gpt-4"
   # Note: For the API key, add `SANDBOX_ANALYSIS_LLM_API_KEY` through a secret via `webserver.extraEnvFromSecrets`
   sandboxAnalysis: {}
+
+  # -- extraInitContainers Additional init containers configuration
+  # Value of this extraInitContainers will be appended to spec.template.spec.initContainers of the deployment
+  extraInitContainers: []
+
+  # -- extraContainers Additional sidecars configuration
+  # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
+  extraContainers: []
 
 hub:
   image:
@@ -311,6 +326,14 @@ hub:
   #   label_2: value_2
   podLabels: {}
 
+  # -- extraInitContainers Additional init containers configuration
+  # Value of this extraInitContainers will be appended to spec.template.spec.initContainers of the deployment
+  extraInitContainers: []
+
+  # -- extraContainers Additional sidecars configuration
+  # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
+  extraContainers: []
+
   # -- priorityClassName determines a pod's scheduling priority relative to other pods.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
   # priorityClassName: "custom"
@@ -401,6 +424,14 @@ admin:
   #   label_1: value_1
   #   label_2: value_2
   podLabels: {}
+
+  # -- extraInitContainers Additional init containers configuration
+  # Value of this extraInitContainers will be appended to spec.template.spec.initContainers of the deployment
+  extraInitContainers: []
+
+  # -- extraContainers Additional sidecars configuration
+  # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
+  extraContainers: []
 
   # -- priorityClassName determines a pod's scheduling priority relative to other pods.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
@@ -500,6 +531,14 @@ auth:
   #   label_2: value_2
   podLabels: {}
 
+  # -- extraInitContainers Additional init containers configuration
+  # Value of this extraInitContainers will be appended to spec.template.spec.initContainers of the deployment
+  extraInitContainers: []
+
+  # -- extraContainers Additional sidecars configuration
+  # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
+  extraContainers: []
+
   # -- priorityClassName determines a pod's scheduling priority relative to other pods.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
   # priorityClassName: "custom"
@@ -552,6 +591,13 @@ controller:
   #     effect: "NoSchedule"
   mcpxTolerations: []
 
+  # -- mcpxExtraInitContainers Additional init containers configuration applied to every MCPX instance pod created by the controller.
+  # Value of this extraInitContainers will be appended to spec.template.spec.initContainers of the deployment
+  mcpxExtraInitContainers: []
+
+  # -- mcpxExtraContainers Additional sidecars configuration applied to every MCPX instance pod created by the controller.
+  # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
+  mcpxExtraContainers: []
   # -- mcpxAffinity Affinity applied to every MCPX instance pod created by the controller.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   # mcpxAffinity:
@@ -662,6 +708,14 @@ controller:
   #   label_2: value_2
   podLabels: {}
 
+  # -- extraInitContainers Additional init containers configuration
+  # Value of this extraInitContainers will be appended to spec.template.spec.initContainers of the deployment
+  extraInitContainers: []
+
+  # -- extraContainers Additional sidecars configuration
+  # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
+  extraContainers: []
+
   # -- priorityClassName determines a pod's scheduling priority relative to other pods.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
   # priorityClassName: "custom"
@@ -757,6 +811,14 @@ router:
   #   label_2: value_2
   podLabels: {}
 
+  # -- extraInitContainers Additional init containers configuration
+  # Value of this extraInitContainers will be appended to spec.template.spec.initContainers of the deployment
+  extraInitContainers: []
+
+  # -- extraContainers Additional sidecars configuration
+  # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
+  extraContainers: []
+
   # -- priorityClassName determines a pod's scheduling priority relative to other pods.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
   # priorityClassName: "custom"
@@ -846,6 +908,14 @@ ui:
   #   label_1: value_1
   #   label_2: value_2
   podLabels: {}
+
+  # -- extraInitContainers Additional init containers configuration
+  # Value of this extraInitContainers will be appended to spec.template.spec.initContainers of the deployment
+  extraInitContainers: []
+
+  # -- extraContainers Additional sidecars configuration
+  # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
+  extraContainers: []
 
   # -- priorityClassName determines a pod's scheduling priority relative to other pods.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass

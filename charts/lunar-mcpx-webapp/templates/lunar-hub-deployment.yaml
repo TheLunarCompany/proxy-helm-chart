@@ -115,7 +115,9 @@ spec:
             - name: NODE_ENV
               value: "production"
         {{- end }}
-
+        {{- with concat (.Values.global.extraInitContainers | default (list)) (.Values.hub.extraInitContainers | default (list)) }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       containers:
         - name: mcpx-hub-container
           image: "{{ .Values.hub.image.repository }}:{{ .Values.hub.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
@@ -227,6 +229,9 @@ spec:
               readOnly: true
           {{- end }}
           {{- end }}
+        {{- with concat (.Values.global.extraContainers | default (list)) (.Values.hub.extraContainers | default (list)) }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       volumes:
         - name: tmp
           emptyDir: {}
