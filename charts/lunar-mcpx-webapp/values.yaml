@@ -40,6 +40,28 @@ global:
   #     effect: "NoSchedule"
   tolerations: []
 
+  # -- affinity is a scheduling feature that lets influence which nodes or which pods a pod should be placed near (or away from).
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       - topologyKey: kubernetes.io/hostname
+  #         labelSelector:
+  #           matchLabels:
+  #             example: lunar-mcpx-webapp
+  affinity: {}
+
+  # -- topologySpreadConstraints if specified, the pod's topology spread constraints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+  # topologySpreadConstraints:
+  #   - maxSkew: 1
+  #     topologyKey: topology.kubernetes.io/zone
+  #     whenUnsatisfiable: ScheduleAnyway
+  #     labelSelector:
+  #       matchLabels:
+  #         example: lunar-mcpx-webapp
+  topologySpreadConstraints: []
+
   # Labels for all resources
   # labels:
   #   label_1: value_1
@@ -69,6 +91,11 @@ global:
   # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
   extraContainers: []
 
+  # -- priorityClassName determines a pod's scheduling priority relative to other pods.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
+  # priorityClassName: "custom"
+  priorityClassName: ""
+
 webserver:
   image:
     # -- Lunar mcpx-webserver image repository
@@ -90,6 +117,28 @@ webserver:
   #     operator: "Exists"
   #     effect: "NoSchedule"
   tolerations: []
+
+  # -- affinity is a scheduling feature that lets influence which nodes or which pods a pod should be placed near (or away from).
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       - topologyKey: kubernetes.io/hostname
+  #         labelSelector:
+  #           matchLabels:
+  #             example: lunar-mcpx-webapp
+  affinity: {}
+
+  # -- topologySpreadConstraints if specified, the pod's topology spread constraints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+  # topologySpreadConstraints:
+  #   - maxSkew: 1
+  #     topologyKey: topology.kubernetes.io/zone
+  #     whenUnsatisfiable: ScheduleAnyway
+  #     labelSelector:
+  #       matchLabels:
+  #         example: lunar-mcpx-webapp
+  topologySpreadConstraints: []
 
   # -- number of replicas to run
   replicaCount: 1
@@ -133,6 +182,11 @@ webserver:
   #   label_2: value_2
   podLabels: {}
 
+  # -- priorityClassName determines a pod's scheduling priority relative to other pods.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
+  # priorityClassName: "custom"
+  priorityClassName: ""
+
   # -- Sandbox Analysis LLM configuration
   # sandboxAnalysis:
   #   llmProvider: "openai"  # or "google-gen-ai"
@@ -169,6 +223,28 @@ hub:
   #     operator: "Exists"
   #     effect: "NoSchedule"
   tolerations: []
+
+  # -- affinity is a scheduling feature that lets influence which nodes or which pods a pod should be placed near (or away from).
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       - topologyKey: kubernetes.io/hostname
+  #         labelSelector:
+  #           matchLabels:
+  #             example: lunar-mcpx-webapp
+  affinity: {}
+
+  # -- topologySpreadConstraints if specified, the pod's topology spread constraints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+  # topologySpreadConstraints:
+  #   - maxSkew: 1
+  #     topologyKey: topology.kubernetes.io/zone
+  #     whenUnsatisfiable: ScheduleAnyway
+  #     labelSelector:
+  #       matchLabels:
+  #         example: lunar-mcpx-webapp
+  topologySpreadConstraints: []
 
   # -- number of replicas to run
   replicaCount: 1
@@ -258,6 +334,11 @@ hub:
   # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
   extraContainers: []
 
+  # -- priorityClassName determines a pod's scheduling priority relative to other pods.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
+  # priorityClassName: "custom"
+  priorityClassName: ""
+
 admin:
   image:
     # -- Lunar mcpx-webserver image repository
@@ -279,6 +360,28 @@ admin:
   #     operator: "Exists"
   #     effect: "NoSchedule"
   tolerations: []
+
+  # -- affinity is a scheduling feature that lets influence which nodes or which pods a pod should be placed near (or away from).
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       - topologyKey: kubernetes.io/hostname
+  #         labelSelector:
+  #           matchLabels:
+  #             example: lunar-mcpx-webapp
+  affinity: {}
+
+  # -- topologySpreadConstraints if specified, the pod's topology spread constraints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+  # topologySpreadConstraints:
+  #   - maxSkew: 1
+  #     topologyKey: topology.kubernetes.io/zone
+  #     whenUnsatisfiable: ScheduleAnyway
+  #     labelSelector:
+  #       matchLabels:
+  #         example: lunar-mcpx-webapp
+  topologySpreadConstraints: []
 
   # -- number of replicas to run
   replicaCount: 1
@@ -330,6 +433,11 @@ admin:
   # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
   extraContainers: []
 
+  # -- priorityClassName determines a pod's scheduling priority relative to other pods.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
+  # priorityClassName: "custom"
+  priorityClassName: ""
+
 auth:
   image:
     # -- Lunar mcpx-webserver image repository
@@ -351,6 +459,28 @@ auth:
   #     operator: "Exists"
   #     effect: "NoSchedule"
   tolerations: []
+
+  # -- affinity is a scheduling feature that lets influence which nodes or which pods a pod should be placed near (or away from).
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       - topologyKey: kubernetes.io/hostname
+  #         labelSelector:
+  #           matchLabels:
+  #             example: lunar-mcpx-webapp
+  affinity: {}
+
+  # -- topologySpreadConstraints if specified, the pod's topology spread constraints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+  # topologySpreadConstraints:
+  #   - maxSkew: 1
+  #     topologyKey: topology.kubernetes.io/zone
+  #     whenUnsatisfiable: ScheduleAnyway
+  #     labelSelector:
+  #       matchLabels:
+  #         example: lunar-mcpx-webapp
+  topologySpreadConstraints: []
 
   # -- number of replicas to run
   replicaCount: 1
@@ -409,6 +539,11 @@ auth:
   # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
   extraContainers: []
 
+  # -- priorityClassName determines a pod's scheduling priority relative to other pods.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
+  # priorityClassName: "custom"
+  priorityClassName: ""
+
 controller:
   image:
     # -- Lunar mcpx-hive-controller image repository
@@ -463,6 +598,32 @@ controller:
   # -- mcpxExtraContainers Additional sidecars configuration applied to every MCPX instance pod created by the controller.
   # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
   mcpxExtraContainers: []
+  # -- mcpxAffinity Affinity applied to every MCPX instance pod created by the controller.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  # mcpxAffinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       - topologyKey: kubernetes.io/hostname
+  #         labelSelector:
+  #           matchLabels:
+  #             type: mcpx-instance
+  mcpxAffinity: {}
+
+  # -- mcpxTopologySpreadConstraints Topology spread constraints applied to every MCPX instance pod created by the controller.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+  # mcpxTopologySpreadConstraints:
+  #   - maxSkew: 1
+  #     topologyKey: topology.kubernetes.io/zone
+  #     whenUnsatisfiable: ScheduleAnyway
+  #     labelSelector:
+  #       matchLabels:
+  #         type: mcpx-instance
+  mcpxTopologySpreadConstraints: []
+
+  # -- mcpxPriorityClassName priorityClassName applied to every MCPX instance pod created by the controller.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
+  # mcpxPriorityClassName: "custom"
+  mcpxPriorityClassName: ""
 
   # -- mcpxCRD configuration for CRD schema version checks
   mcpxCRD:
@@ -482,6 +643,28 @@ controller:
   #     operator: "Exists"
   #     effect: "NoSchedule"
   tolerations: []
+
+  # -- affinity is a scheduling feature that lets influence which nodes or which pods a pod should be placed near (or away from).
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       - topologyKey: kubernetes.io/hostname
+  #         labelSelector:
+  #           matchLabels:
+  #             example: lunar-mcpx-webapp
+  affinity: {}
+
+  # -- topologySpreadConstraints if specified, the pod's topology spread constraints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+  # topologySpreadConstraints:
+  #   - maxSkew: 1
+  #     topologyKey: topology.kubernetes.io/zone
+  #     whenUnsatisfiable: ScheduleAnyway
+  #     labelSelector:
+  #       matchLabels:
+  #         example: lunar-mcpx-webapp
+  topologySpreadConstraints: []
 
   # -- number of replicas to run
   replicaCount: 1
@@ -533,6 +716,11 @@ controller:
   # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
   extraContainers: []
 
+  # -- priorityClassName determines a pod's scheduling priority relative to other pods.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
+  # priorityClassName: "custom"
+  priorityClassName: ""
+
 router:
   image:
     # -- Lunar mcpx-router image repository
@@ -554,6 +742,28 @@ router:
   #     operator: "Exists"
   #     effect: "NoSchedule"
   tolerations: []
+
+  # -- affinity is a scheduling feature that lets influence which nodes or which pods a pod should be placed near (or away from).
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       - topologyKey: kubernetes.io/hostname
+  #         labelSelector:
+  #           matchLabels:
+  #             example: lunar-mcpx-webapp
+  affinity: {}
+
+  # -- topologySpreadConstraints if specified, the pod's topology spread constraints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+  # topologySpreadConstraints:
+  #   - maxSkew: 1
+  #     topologyKey: topology.kubernetes.io/zone
+  #     whenUnsatisfiable: ScheduleAnyway
+  #     labelSelector:
+  #       matchLabels:
+  #         example: lunar-mcpx-webapp
+  topologySpreadConstraints: []
 
   # -- number of replicas to run
   replicaCount: 1
@@ -609,6 +819,11 @@ router:
   # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
   extraContainers: []
 
+  # -- priorityClassName determines a pod's scheduling priority relative to other pods.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
+  # priorityClassName: "custom"
+  priorityClassName: ""
+
 ui:
   image:
     # -- Lunar mcpx-ui image repository
@@ -629,6 +844,28 @@ ui:
   #     operator: "Exists"
   #     effect: "NoSchedule"
   tolerations: []
+
+  # -- affinity is a scheduling feature that lets influence which nodes or which pods a pod should be placed near (or away from).
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       - topologyKey: kubernetes.io/hostname
+  #         labelSelector:
+  #           matchLabels:
+  #             example: lunar-mcpx-webapp
+  affinity: {}
+
+  # -- topologySpreadConstraints if specified, the pod's topology spread constraints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+  # topologySpreadConstraints:
+  #   - maxSkew: 1
+  #     topologyKey: topology.kubernetes.io/zone
+  #     whenUnsatisfiable: ScheduleAnyway
+  #     labelSelector:
+  #       matchLabels:
+  #         example: lunar-mcpx-webapp
+  topologySpreadConstraints: []
 
   # -- number of replicas to run
   replicaCount: 1
@@ -679,6 +916,11 @@ ui:
   # -- extraContainers Additional sidecars configuration
   # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
   extraContainers: []
+
+  # -- priorityClassName determines a pod's scheduling priority relative to other pods.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
+  # priorityClassName: "custom"
+  priorityClassName: ""
 
 jobs:
   image:
