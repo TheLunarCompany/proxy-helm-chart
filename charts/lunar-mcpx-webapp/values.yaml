@@ -552,6 +552,33 @@ controller:
   #     effect: "NoSchedule"
   mcpxTolerations: []
 
+  # -- mcpxAffinity Affinity applied to every MCPX instance pod created by the controller.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  # mcpxAffinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       - topologyKey: kubernetes.io/hostname
+  #         labelSelector:
+  #           matchLabels:
+  #             type: mcpx-instance
+  mcpxAffinity: {}
+
+  # -- mcpxTopologySpreadConstraints Topology spread constraints applied to every MCPX instance pod created by the controller.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+  # mcpxTopologySpreadConstraints:
+  #   - maxSkew: 1
+  #     topologyKey: topology.kubernetes.io/zone
+  #     whenUnsatisfiable: ScheduleAnyway
+  #     labelSelector:
+  #       matchLabels:
+  #         type: mcpx-instance
+  mcpxTopologySpreadConstraints: []
+
+  # -- mcpxPriorityClassName priorityClassName applied to every MCPX instance pod created by the controller.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
+  # mcpxPriorityClassName: "custom"
+  mcpxPriorityClassName: ""
+
   # -- mcpxCRD configuration for CRD schema version checks
   mcpxCRD:
     # -- Enable strict schema version checking

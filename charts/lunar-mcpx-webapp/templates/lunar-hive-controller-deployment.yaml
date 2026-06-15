@@ -145,6 +145,21 @@ spec:
             - name: MCPX_TOLERATIONS
               value: {{ $mcpxTolerations | toJson | quote }}
           {{- end }}
+          {{- $mcpxAffinity := .Values.controller.mcpxAffinity | default dict }}
+          {{- if $mcpxAffinity }}
+            - name: MCPX_AFFINITY
+              value: {{ $mcpxAffinity | toJson | quote }}
+          {{- end }}
+          {{- $mcpxTopologySpreadConstraints := .Values.controller.mcpxTopologySpreadConstraints | default list }}
+          {{- if $mcpxTopologySpreadConstraints }}
+            - name: MCPX_TOPOLOGY_SPREAD_CONSTRAINTS
+              value: {{ $mcpxTopologySpreadConstraints | toJson | quote }}
+          {{- end }}
+          {{- $mcpxPriorityClassName := .Values.controller.mcpxPriorityClassName | default "" }}
+          {{- if $mcpxPriorityClassName }}
+            - name: MCPX_PRIORITY_CLASS_NAME
+              value: {{ $mcpxPriorityClassName | quote }}
+          {{- end }}
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}
