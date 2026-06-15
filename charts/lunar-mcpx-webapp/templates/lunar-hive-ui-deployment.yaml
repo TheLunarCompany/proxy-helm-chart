@@ -155,6 +155,14 @@ spec:
       volumes:
       - name: lunar-packages-ui
         emptyDir: {}
+      {{- with mergeOverwrite (deepCopy (.Values.global.affinity | default dict)) (.Values.ui.affinity | default dict) }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with concat (.Values.global.topologySpreadConstraints | default list) (.Values.ui.topologySpreadConstraints | default list) }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
@@ -169,5 +177,8 @@ spec:
       {{- with $tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with coalesce .Values.ui.priorityClassName .Values.global.priorityClassName }}
+      priorityClassName: {{ . }}
       {{- end }}
   {{- end }}

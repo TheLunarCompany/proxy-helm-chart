@@ -145,6 +145,21 @@ spec:
             - name: MCPX_TOLERATIONS
               value: {{ $mcpxTolerations | toJson | quote }}
           {{- end }}
+          {{- $mcpxAffinity := .Values.controller.mcpxAffinity | default dict }}
+          {{- if $mcpxAffinity }}
+            - name: MCPX_AFFINITY
+              value: {{ $mcpxAffinity | toJson | quote }}
+          {{- end }}
+          {{- $mcpxTopologySpreadConstraints := .Values.controller.mcpxTopologySpreadConstraints | default list }}
+          {{- if $mcpxTopologySpreadConstraints }}
+            - name: MCPX_TOPOLOGY_SPREAD_CONSTRAINTS
+              value: {{ $mcpxTopologySpreadConstraints | toJson | quote }}
+          {{- end }}
+          {{- $mcpxPriorityClassName := .Values.controller.mcpxPriorityClassName | default "" }}
+          {{- if $mcpxPriorityClassName }}
+            - name: MCPX_PRIORITY_CLASS_NAME
+              value: {{ $mcpxPriorityClassName | quote }}
+          {{- end }}
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}
@@ -201,6 +216,14 @@ spec:
                 path: {{ . }}.crt
         {{- end }}
         {{- end }}
+      {{- with mergeOverwrite (deepCopy (.Values.global.affinity | default dict)) (.Values.controller.affinity | default dict) }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with concat (.Values.global.topologySpreadConstraints | default list) (.Values.controller.topologySpreadConstraints | default list) }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
@@ -215,5 +238,8 @@ spec:
       {{- with $tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with coalesce .Values.controller.priorityClassName .Values.global.priorityClassName }}
+      priorityClassName: {{ . }}
       {{- end }}
   {{- end }}
