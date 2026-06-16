@@ -1,6 +1,6 @@
 suite: Catalog Derived Host Backfill Job
 templates:
-  - templates/lunar-admin-catalog-derived-host-backfill-cronjob.yaml
+  - templates/lunar-admin-catalog-host-backfill-cronjob.yaml
 
 tests:
   - it: should be a suspended CronJob
