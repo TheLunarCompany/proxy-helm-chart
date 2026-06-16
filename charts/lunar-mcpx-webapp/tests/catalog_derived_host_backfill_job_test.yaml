@@ -1,0 +1,24 @@
+suite: Catalog Derived Host Backfill Job
+templates:
+  - templates/lunar-admin-catalog-derived-host-backfill-cronjob.yaml
+
+tests:
+  - it: should be a suspended CronJob
+    asserts:
+      - isKind:
+          of: CronJob
+      - equal:
+          path: spec.suspend
+          value: true
+
+  - it: should use the impossible Feb 31 schedule
+    asserts:
+      - equal:
+          path: spec.schedule
+          value: "0 0 31 2 *"
+
+  - it: should run backfill-catalog-item-derived-hosts command
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].command
+          value: ["node", "dist/index.js", "backfill-catalog-item-derived-hosts"]

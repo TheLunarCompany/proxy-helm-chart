@@ -1,0 +1,7 @@
+---
+{{- include "lunar-mcpx-webapp.adminCronJob" (dict
+  "root" .
+  "jobName" "catalog-derived-host-backfill"
+  "command" (list "node" "dist/index.js" "backfill-catalog-item-derived-hosts")
+  "extraEnv" list
+) }}
