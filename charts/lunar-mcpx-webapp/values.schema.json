@@ -13,6 +13,15 @@
         },
         "imagePullSecrets": {
           "type": "array"
+        },
+        "affinity": {
+          "type": "object"
+        },
+        "topologySpreadConstraints": {
+          "type": "array"
+        },
+        "priorityClassName": {
+          "type": "string"
         }
       }
     },
@@ -80,6 +89,15 @@
         "staticOauth": {
           "type": "object",
           "description": "Static OAuth configuration for MCP server authentication. Maps domains to OAuth providers with credentials."
+        },
+        "affinity": {
+          "type": "object"
+        },
+        "topologySpreadConstraints": {
+          "type": "array"
+        },
+        "priorityClassName": {
+          "type": "string"
         }
       }
     },
@@ -99,6 +117,15 @@
               "default": "credentials.json"
             }
           }
+        },
+        "affinity": {
+          "type": "object"
+        },
+        "topologySpreadConstraints": {
+          "type": "array"
+        },
+        "priorityClassName": {
+          "type": "string"
         }
       }
     },
@@ -338,6 +365,11 @@
             "netrcSecret": {
               "type": "string",
               "description": "Name of a secret containing a .netrc key exposed through NETRC"
+            },
+            "decodeBase64": {
+              "type": "boolean",
+              "default": false,
+              "description": "If true, runtime-auth secret values are expected to be base64-encoded and decoded at pod startup via an init container"
             }
           }
         },
@@ -356,6 +388,38 @@
               "default": "1"
             }
           }
+        },
+        "affinity": {
+          "type": "object",
+          "description": "Affinity for the controller's own pod"
+        },
+        "topologySpreadConstraints": {
+          "type": "array",
+          "description": "Topology spread constraints for the controller's own pod"
+        },
+        "priorityClassName": {
+          "type": "string",
+          "description": "priorityClassName for the controller's own pod"
+        },
+        "mcpxNodeSelector": {
+          "type": "object",
+          "description": "NodeSelector applied to every MCPX instance pod created by the controller"
+        },
+        "mcpxTolerations": {
+          "type": "array",
+          "description": "Tolerations applied to every MCPX instance pod created by the controller"
+        },
+        "mcpxAffinity": {
+          "type": "object",
+          "description": "Affinity applied to every MCPX instance pod created by the controller"
+        },
+        "mcpxTopologySpreadConstraints": {
+          "type": "array",
+          "description": "Topology spread constraints applied to every MCPX instance pod created by the controller"
+        },
+        "mcpxPriorityClassName": {
+          "type": "string",
+          "description": "priorityClassName applied to every MCPX instance pod created by the controller"
         }
       }
     },
@@ -423,6 +487,15 @@
               }
             }
           }
+        },
+        "affinity": {
+          "type": "object"
+        },
+        "topologySpreadConstraints": {
+          "type": "array"
+        },
+        "priorityClassName": {
+          "type": "string"
         }
       }
     }

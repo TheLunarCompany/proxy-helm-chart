@@ -43,6 +43,10 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      {{- with concat (.Values.global.extraInitContainers | default (list)) (.Values.admin.extraInitContainers | default (list)) }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: mcpx-admin-container
           image: "{{ .Values.admin.image.repository }}:{{ .Values.admin.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
@@ -146,6 +150,9 @@ spec:
               readOnly: true
           {{- end }}
           {{- end }}
+        {{- with concat (.Values.global.extraContainers | default (list)) (.Values.admin.extraContainers | default (list)) }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       volumes:
         - name: tmp
           emptyDir: {}
@@ -159,6 +166,14 @@ spec:
                 path: {{ . }}.crt
         {{- end }}
         {{- end }}
+      {{- with mergeOverwrite (deepCopy (.Values.global.affinity | default dict)) (.Values.admin.affinity | default dict) }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with concat (.Values.global.topologySpreadConstraints | default list) (.Values.admin.topologySpreadConstraints | default list) }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
@@ -173,5 +188,8 @@ spec:
       {{- with $tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with coalesce .Values.admin.priorityClassName .Values.global.priorityClassName }}
+      priorityClassName: {{ . }}
       {{- end }}
   {{- end }}

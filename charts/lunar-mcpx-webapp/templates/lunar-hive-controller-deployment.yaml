@@ -51,6 +51,10 @@ spec:
         runAsUser: 1000
         fsGroup: 2000
         {{- end }}
+      {{- with concat (.Values.global.extraInitContainers | default (list)) (.Values.controller.extraInitContainers | default (list)) }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: mcpx-controller-container
           image: "{{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
@@ -145,6 +149,29 @@ spec:
             - name: MCPX_TOLERATIONS
               value: {{ $mcpxTolerations | toJson | quote }}
           {{- end }}
+          {{- with .Values.controller.mcpxExtraInitContainers | default list }}
+            - name: MCPX_EXTRA_INIT_CONTAINERS
+              value: {{ . | toJson | quote }}
+          {{- end }}
+          {{- with .Values.controller.mcpxExtraContainers | default list }}
+            - name: MCPX_EXTRA_CONTAINERS
+              value: {{ . | toJson | quote }}
+          {{- end }}
+          {{- $mcpxAffinity := .Values.controller.mcpxAffinity | default dict }}
+          {{- if $mcpxAffinity }}
+            - name: MCPX_AFFINITY
+              value: {{ $mcpxAffinity | toJson | quote }}
+          {{- end }}
+          {{- $mcpxTopologySpreadConstraints := .Values.controller.mcpxTopologySpreadConstraints | default list }}
+          {{- if $mcpxTopologySpreadConstraints }}
+            - name: MCPX_TOPOLOGY_SPREAD_CONSTRAINTS
+              value: {{ $mcpxTopologySpreadConstraints | toJson | quote }}
+          {{- end }}
+          {{- $mcpxPriorityClassName := .Values.controller.mcpxPriorityClassName | default "" }}
+          {{- if $mcpxPriorityClassName }}
+            - name: MCPX_PRIORITY_CLASS_NAME
+              value: {{ $mcpxPriorityClassName | quote }}
+          {{- end }}
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}
@@ -188,6 +215,9 @@ spec:
               readOnly: true
           {{- end }}
           {{- end }}
+        {{- with concat (.Values.global.extraContainers | default (list)) (.Values.controller.extraContainers | default (list)) }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       volumes:
         - name: tmp
           emptyDir: {}
@@ -201,6 +231,14 @@ spec:
                 path: {{ . }}.crt
         {{- end }}
         {{- end }}
+      {{- with mergeOverwrite (deepCopy (.Values.global.affinity | default dict)) (.Values.controller.affinity | default dict) }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with concat (.Values.global.topologySpreadConstraints | default list) (.Values.controller.topologySpreadConstraints | default list) }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
@@ -215,5 +253,8 @@ spec:
       {{- with $tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with coalesce .Values.controller.priorityClassName .Values.global.priorityClassName }}
+      priorityClassName: {{ . }}
       {{- end }}
   {{- end }}

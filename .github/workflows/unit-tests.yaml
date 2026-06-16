@@ -20,7 +20,7 @@ jobs:
           curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
       - name: Install Helm unittest plugin
-        run: helm plugin install https://github.com/quintush/helm-unittest
+        run: helm plugin install https://github.com/helm-unittest/helm-unittest --version v1.1.0
 
       - name: Update Helm dependencies
         run: helm dependency update ./charts/${{ matrix.chart }}

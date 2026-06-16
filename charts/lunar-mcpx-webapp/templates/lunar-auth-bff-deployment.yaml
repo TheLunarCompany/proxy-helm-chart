@@ -92,7 +92,9 @@ spec:
           {{- if .Values.auth.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.auth.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}
-
+        {{- with concat (.Values.global.extraInitContainers | default (list)) (.Values.auth.extraInitContainers | default (list)) }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       containers:
         - name: mcpx-auth-container
           image: "{{ .Values.auth.image.repository }}:{{ .Values.auth.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
@@ -203,6 +205,9 @@ spec:
               readOnly: true
           {{- end }}
           {{- end }}
+        {{- with concat (.Values.global.extraContainers | default (list)) (.Values.auth.extraContainers | default (list)) }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       volumes:
         - name: tmp
           emptyDir: {}
@@ -222,6 +227,14 @@ spec:
               - key: {{ $googleCredentialsSecretKey | quote }}
                 path: "credentials.json"
         {{- end }}
+      {{- with mergeOverwrite (deepCopy (.Values.global.affinity | default dict)) (.Values.auth.affinity | default dict) }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with concat (.Values.global.topologySpreadConstraints | default list) (.Values.auth.topologySpreadConstraints | default list) }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
@@ -236,5 +249,8 @@ spec:
       {{- with $tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with coalesce .Values.auth.priorityClassName .Values.global.priorityClassName }}
+      priorityClassName: {{ . }}
       {{- end }}
   {{- end }}
