@@ -1174,6 +1174,19 @@ clickhouse:
       - ReadWriteOnce
     storageClassName: ""
     size: 10Gi
+  # -- Caps ClickHouse's internal system-log tables, which otherwise grow with
+  # server uptime (not with usage) and can fill the data volume. text_log mirrors
+  # the server log you already ship to stdout/Loki, and the metric/trace logs
+  # overlap the Prometheus monitor, so they're disabled by default. Mounted into
+  # /etc/clickhouse-server/config.d/. Set to "" to keep ClickHouse defaults, or
+  # replace with your own XML to keep some logs (e.g. a short TTL instead).
+  systemLogConfig: |
+    <clickhouse>
+        <text_log remove="1"/>
+        <trace_log remove="1"/>
+        <metric_log remove="1"/>
+        <asynchronous_metric_log remove="1"/>
+    </clickhouse>
   # -- Resource defaults: CH docs recommend 4 CPU / 8Gi RAM as practical minimum.
   # Limits set to 2x requests for burst headroom.
   resources:

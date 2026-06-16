@@ -1,0 +1,15 @@
+{{- if and (.Values.clickhouse.enabled | default false) .Values.clickhouse.systemLogConfig }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse-config
+  labels:
+    name: {{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+data:
+  z-lunar-system-logs.xml: |
+    {{- .Values.clickhouse.systemLogConfig | nindent 4 }}
+{{- end }}
