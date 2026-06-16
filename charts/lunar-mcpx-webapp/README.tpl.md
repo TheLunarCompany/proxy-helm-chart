@@ -274,6 +274,22 @@ kubectl create job catalog-fix-$(date +%s) \
 > - **Default (merge):** metadata fields (`displayName`, `description`, `repoUrl`, `docsUrl`) are overwritten from the store. For stdio config, `command` and `args` are overridden from the store; for env, only new keys are added — existing admin customizations are preserved. For remote config, `url` is overridden; for headers, only new keys are added.
 > - **Force override (`forceOverride: true`):** the entire config is replaced with the store template, discarding all admin customizations.
 
+### Catalog Derived Host Backfill Job
+
+This chart includes a **suspended CronJob** for a one-time backfill that populates the `derivedHost` column on existing catalog items with remote config. Like the other admin jobs above, it never runs automatically — admins create a one-off job from it using `kubectl create job`.
+
+| CronJob | Purpose |
+|:--------|:--------|
+| `<release>-catalog-derived-host-backfill` | Backfills `derivedHost` on catalog items where it is currently null (remote config items only) |
+
+**Run the backfill:**
+```bash
+kubectl create job catalog-derived-host-backfill-$(date +%s) \
+  --from=cronjob/<release>-catalog-derived-host-backfill -n <namespace>
+```
+
+> **Note:** This job is idempotent — it only updates items where `derivedHost` is null. Stdio catalog items are skipped.
+
 ### Hibernation Cron Schedule
 
 Use `hibernation.cronSchedule` to control when the `hibernate-instances` CronJob runs.
