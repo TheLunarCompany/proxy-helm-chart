@@ -2,7 +2,7 @@
 ---
 {{- include "lunar-mcpx-webapp.adminCronJob" (dict
   "root" .
-  "jobName" "prune-clickhouse-system-logs-dry"
+  "jobName" "prune-ch-logs-dry"
   "command" (list "node" "dist/index.js" "prune-clickhouse-system-logs")
   "clickhouse" true
   "extraEnv" (list
