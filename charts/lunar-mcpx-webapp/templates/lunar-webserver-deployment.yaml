@@ -182,6 +182,10 @@ spec:
             {{- end }}
             - name: HIVE_CONTROLLER_URL
               value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-controller"
+            {{- if .Values.router.enabled | default true }}
+            - name: ROUTER_INTERNAL_URL
+              value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-router:4000"
+            {{- end }}
             {{- if .Values.hibernation.cronSchedule }}
             - name: HIBERNATION_ENABLED
               value: "true"

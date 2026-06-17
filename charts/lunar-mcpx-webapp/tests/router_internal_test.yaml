@@ -1,0 +1,40 @@
+suite: router internal OBO API wiring
+templates:
+  - templates/lunar-hive-router-service.yaml
+  - templates/lunar-hive-router-deployment.yaml
+  - templates/lunar-webserver-deployment.yaml
+
+tests:
+  - it: router service exposes the internal port 4000
+    template: templates/lunar-hive-router-service.yaml
+    release:
+      name: my-release
+    asserts:
+      - contains:
+          path: spec.ports
+          content:
+            name: router-internal
+            port: 4000
+            targetPort: 4000
+
+  - it: router deployment exposes the internal container port 4000
+    template: templates/lunar-hive-router-deployment.yaml
+    release:
+      name: my-release
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].ports
+          content:
+            containerPort: 4000
+            name: router-internal
+
+  - it: webserver deployment points ROUTER_INTERNAL_URL at the router service
+    template: templates/lunar-webserver-deployment.yaml
+    release:
+      name: my-release
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: ROUTER_INTERNAL_URL
+            value: "http://my-release-lunar-mcpx-webapp-router:4000"

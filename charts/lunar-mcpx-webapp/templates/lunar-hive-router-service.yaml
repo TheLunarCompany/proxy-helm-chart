@@ -25,6 +25,9 @@ spec:
     - name: router80
       port: 80
       targetPort: 8080
+    - name: router-internal
+      port: 4000
+      targetPort: 4000
   sessionAffinity: ClientIP
   type: ClusterIP
   selector:

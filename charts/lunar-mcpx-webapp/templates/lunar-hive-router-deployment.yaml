@@ -53,6 +53,8 @@ spec:
           ports:
             - containerPort: 8080
               name: router
+            - containerPort: 4000
+              name: router-internal
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
             {{- if .Values.global.manageResources.limits }}
