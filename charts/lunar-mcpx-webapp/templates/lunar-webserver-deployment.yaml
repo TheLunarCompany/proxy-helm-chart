@@ -206,7 +206,7 @@ spec:
             {{- end }}
           {{- if .Values.ingress.enabled }}
             - name: CORS_ALLOWED_ORIGINS
-              value: "https://{{ first .Values.ingress.domains.admin }}"
+              value: "https://{{ first .Values.ingress.domains.admin }},https://{{ first .Values.ingress.domains.ui }}"
             - name: PUBLIC_URL
               value: "https://{{ first .Values.ingress.domains.webserver }}"
           {{- end }}
