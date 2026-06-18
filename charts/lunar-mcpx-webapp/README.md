@@ -290,6 +290,24 @@ kubectl create job catalog-derived-host-backfill-$(date +%s) \
 
 > **Note:** This job is idempotent — it only updates items where `derivedHost` is null. Stdio catalog items are skipped.
 
+### ClickHouse System-Log Pruning
+
+When `clickhouse.enabled` is set, `clickhouse.systemLogConfig` disables ClickHouse's internal system-log tables (`text_log`, `trace_log`, `metric_log`, `asynchronous_metric_log`) going forward — they grow with server uptime and can fill the data volume. Historical rows written before that may still be sitting on the volume; they have no use, so the chart includes two **suspended CronJobs** to drop them. Running these is optional (not mandatory) and, like the other admin jobs, they never run automatically.
+
+| CronJob | Purpose |
+|:--------|:--------|
+| `<release>-prune-ch-logs-dry` | Reports which tables would be dropped and how many bytes would be freed (no changes) |
+| `<release>-prune-ch-logs-execute` | **Drops** the noisy system-log tables |
+
+**Run a dry run, then execute:**
+```bash
+kubectl create job prune-ch-logs-dry-$(date +%s) \
+  --from=cronjob/<release>-prune-ch-logs-dry -n <namespace>
+
+kubectl create job prune-ch-logs-execute-$(date +%s) \
+  --from=cronjob/<release>-prune-ch-logs-execute -n <namespace>
+```
+
 ### Hibernation Cron Schedule
 
 Use `hibernation.cronSchedule` to control when the `hibernate-instances` CronJob runs.
@@ -350,13 +368,13 @@ kubectl exec -it <release>-clickhouse-0 -n <namespace> -- clickhouse-client \
 
 Minimal deployment with embedded Postgresql and Redis
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.44 --set postgres.enabled=true --set redis.enabled=true
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.45 --set postgres.enabled=true --set redis.enabled=true
 ```
 
 Alternatively, you may work with a separate values file to handle values override just like any other Helm chart:
 
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.44  -f ./values-override.yaml
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.45  -f ./values-override.yaml
 ```
 
 ### MCPX runtime auth
