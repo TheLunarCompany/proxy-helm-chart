@@ -781,6 +781,10 @@ router:
   # If empty, defaults to the in-cluster auth service URL.
   oidcJwksUri: ""
 
+  # -- Internal HTTP port the router serves for in-cluster calls from other pods.
+  # Exposed on the router Service (ClusterIP) but never via Ingress.
+  internalPort: 4000
+
   # -- extraEnvVars An array to add extra env vars
   # e.g:
   # extraEnvVars:
