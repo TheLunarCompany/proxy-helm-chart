@@ -13,9 +13,9 @@ tests:
       - contains:
           path: spec.ports
           content:
-            name: router-internal
+            name: internal
             port: 4000
-            targetPort: 4000
+            targetPort: internal
 
   - it: router deployment exposes the internal container port 4000
     template: templates/lunar-hive-router-deployment.yaml
@@ -26,7 +26,7 @@ tests:
           path: spec.template.spec.containers[0].ports
           content:
             containerPort: 4000
-            name: router-internal
+            name: internal
 
   - it: webserver deployment points ROUTER_INTERNAL_URL at the router service
     template: templates/lunar-webserver-deployment.yaml

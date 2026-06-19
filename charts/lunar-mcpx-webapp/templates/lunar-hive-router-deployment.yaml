@@ -53,8 +53,8 @@ spec:
           ports:
             - containerPort: 8080
               name: router
-            - containerPort: 4000
-              name: router-internal
+            - containerPort: {{ .Values.router.internalPort | default 4000 }}
+              name: internal
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
             {{- if .Values.global.manageResources.limits }}
@@ -100,6 +100,8 @@ spec:
                   fieldPath: metadata.namespace
             - name: PORT
               value: "8080"
+            - name: INTERNAL_PORT
+              value: "{{ .Values.router.internalPort | default 4000 }}"
             - name: CORS_ORIGINS
               value: "https://{{ first .Values.ingress.domains.ui }}"
             - name: WEBSERVER_URL

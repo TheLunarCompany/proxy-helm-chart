@@ -25,9 +25,9 @@ spec:
     - name: router80
       port: 80
       targetPort: 8080
-    - name: router-internal
-      port: 4000
-      targetPort: 4000
+    - name: internal
+      port: {{ .Values.router.internalPort | default 4000 }}
+      targetPort: internal
   sessionAffinity: ClientIP
   type: ClusterIP
   selector:
