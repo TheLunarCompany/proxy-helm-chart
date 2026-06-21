@@ -1,5 +1,5 @@
 {{/*
-Shared template for admin suspended CronJobs (migrate-status, migrate-rollback-dry, migrate-rollback-execute, migrate-resolve-failed, catalog-derived-host-backfill).
+Shared template for admin suspended CronJobs (migrate-status, migrate-rollback-dry, migrate-rollback-execute, migrate-resolve-failed, host-backfill).
 Expects a dict with keys:
   - root: top-level Helm context (.)
   - jobName: suffix for the CronJob name and labels

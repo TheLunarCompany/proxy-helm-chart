@@ -280,12 +280,12 @@ This chart includes a **suspended CronJob** for a one-time backfill that populat
 
 | CronJob | Purpose |
 |:--------|:--------|
-| `<release>-catalog-derived-host-backfill` | Backfills `derivedHost` on catalog items where it is currently null (remote config items only) |
+| `<release>-host-backfill` | Backfills `derivedHost` on catalog items where it is currently null (remote config items only) |
 
 **Run the backfill:**
 ```bash
-kubectl create job catalog-derived-host-backfill-$(date +%s) \
-  --from=cronjob/<release>-catalog-derived-host-backfill -n <namespace>
+kubectl create job host-backfill-$(date +%s) \
+  --from=cronjob/<release>host-backfill -n <namespace>
 ```
 
 > **Note:** This job is idempotent — it only updates items where `derivedHost` is null. Stdio catalog items are skipped.
