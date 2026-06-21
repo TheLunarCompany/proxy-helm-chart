@@ -280,12 +280,12 @@ This chart includes a **suspended CronJob** for a one-time backfill that populat
 
 | CronJob | Purpose |
 |:--------|:--------|
-| `<release>-catalog-derived-host-backfill` | Backfills `derivedHost` on catalog items where it is currently null (remote config items only) |
+| `<release>-host-backfill` | Backfills `derivedHost` on catalog items where it is currently null (remote config items only) |
 
 **Run the backfill:**
 ```bash
-kubectl create job catalog-derived-host-backfill-$(date +%s) \
-  --from=cronjob/<release>-catalog-derived-host-backfill -n <namespace>
+kubectl create job host-backfill-$(date +%s) \
+  --from=cronjob/<release>host-backfill -n <namespace>
 ```
 
 > **Note:** This job is idempotent — it only updates items where `derivedHost` is null. Stdio catalog items are skipped.
@@ -307,6 +307,26 @@ kubectl create job prune-ch-logs-dry-$(date +%s) \
 kubectl create job prune-ch-logs-execute-$(date +%s) \
   --from=cronjob/<release>-prune-ch-logs-execute -n <namespace>
 ```
+
+### Drain Space-Editing Swaps
+
+Restores each user's real ACTIVE setup before moving to the new space-editing mechanism. If a user was left mid-edit under the old mechanism, their ACTIVE slot holds a temporary editing copy while their real setup sits in a stash. Two **suspended CronJobs**, they never run automatically.
+
+| CronJob | Purpose |
+|:--------|:--------|
+| `<release>-drain-swaps-dry` | Lists every affected user (email + space name), makes no changes |
+| `<release>-drain-swaps-execute` | **Restores** each affected user's real ACTIVE setup |
+
+**Run a dry run, then execute:**
+```bash
+kubectl create job drain-swaps-dry-$(date +%s) \
+  --from=cronjob/<release>-drain-swaps-dry -n <namespace>
+
+kubectl create job drain-swaps-execute-$(date +%s) \
+  --from=cronjob/<release>-drain-swaps-execute -n <namespace>
+```
+
+> **Note:** Once you upgrade the MCPX pods in the system, any affected setup will be the correct one.
 
 ### Hibernation Cron Schedule
 
@@ -368,13 +388,13 @@ kubectl exec -it <release>-clickhouse-0 -n <namespace> -- clickhouse-client \
 
 Minimal deployment with embedded Postgresql and Redis
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.45 --set postgres.enabled=true --set redis.enabled=true
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.46 --set postgres.enabled=true --set redis.enabled=true
 ```
 
 Alternatively, you may work with a separate values file to handle values override just like any other Helm chart:
 
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.45  -f ./values-override.yaml
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.46  -f ./values-override.yaml
 ```
 
 ### MCPX runtime auth
