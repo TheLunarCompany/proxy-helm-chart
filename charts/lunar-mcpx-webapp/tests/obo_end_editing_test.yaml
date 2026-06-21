@@ -1,0 +1,27 @@
+suite: OBO end-editing env wiring
+templates:
+  - templates/lunar-hive-ui-deployment.yaml
+  - templates/lunar-webserver-deployment.yaml
+
+tests:
+  - it: ui deployment points VITE_ADMIN_WEBSERVER_URL at the webserver domain
+    template: templates/lunar-hive-ui-deployment.yaml
+    release:
+      name: my-release
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: VITE_ADMIN_WEBSERVER_URL
+            value: "https://mcpx-app.example.com"
+
+  - it: webserver deployment allows both admin and ui origins for CORS
+    template: templates/lunar-webserver-deployment.yaml
+    release:
+      name: my-release
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CORS_ALLOWED_ORIGINS
+            value: "https://mcpx-admin.example.com,https://mcpx-ui.example.com"
