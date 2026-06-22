@@ -43,6 +43,11 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
+      securityContext:
+        fsGroup: 1001
+        fsGroupChangePolicy: OnRootMismatch
+      {{- end }}
       {{- with concat (.Values.global.extraInitContainers | default (list)) (.Values.admin.extraInitContainers | default (list)) }}
       initContainers:
         {{- toYaml . | nindent 8 }}
@@ -72,8 +77,8 @@ spec:
             runAsNonRoot: true
             allowPrivilegeEscalation: false
             {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
-            runAsUser: 1000
-            runAsGroup: 1000
+            runAsUser: 1001
+            runAsGroup: 1001
             {{- end }}
           envFrom:
             - secretRef:
@@ -142,8 +147,12 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 10
 
-          {{- with .Values.global.caCerts }}
           volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: next-cache
+              mountPath: /app/packages/admin-ui/.next/cache
+          {{- with .Values.global.caCerts }}
           {{- with .secretName }}
             - name: {{ . }}
               mountPath: "/usr/local/share/ca-certificates/"
@@ -155,6 +164,8 @@ spec:
         {{- end }}
       volumes:
         - name: tmp
+          emptyDir: {}
+        - name: next-cache
           emptyDir: {}
         {{- with .Values.global.caCerts }}
         {{- with .secretName }}

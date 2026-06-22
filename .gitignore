@@ -17,3 +17,5 @@
 *.tmp.yaml
 settings.local.json
 charts/**/test.yaml
+
+.idea

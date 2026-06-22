@@ -1,0 +1,66 @@
+suite: Admin deployment
+templates:
+  - templates/lunar-admin-ui-deployment.yaml
+
+tests:
+  - it: should mount writable runtime directories with a read-only root filesystem
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+          value: true
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: tmp
+            mountPath: /tmp
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: next-cache
+            mountPath: /app/packages/admin-ui/.next/cache
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: tmp
+            emptyDir: {}
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: next-cache
+            emptyDir: {}
+
+  - it: should run as the admin image user
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.fsGroup
+          value: 1001
+      - equal:
+          path: spec.template.spec.securityContext.fsGroupChangePolicy
+          value: OnRootMismatch
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsUser
+          value: 1001
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsGroup
+          value: 1001
+
+  - it: should still render CA mounts with runtime directory mounts
+    set:
+      global.caCerts.secretName: ca-example-com-1
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: tmp
+            mountPath: /tmp
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: next-cache
+            mountPath: /app/packages/admin-ui/.next/cache
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: ca-example-com-1
+            mountPath: /usr/local/share/ca-certificates/
+            readOnly: true
