@@ -1,5 +1,6 @@
 {{- if .Values.auth.enabled | default true }}
 {{- $tolerations := concat .Values.global.tolerations .Values.auth.tolerations -}}
+{{- $repository := printf "%s/mcpx-auth-bff" (coalesce .Values.global.webappRepository .Values.auth.image.repository) -}}
 {{- $globalCaSecretName := .Values.global.caCerts.secretName | default "" -}}
 {{- $hasGlobalCaSecret := ne $globalCaSecretName "" -}}
 {{- $googleCredentialsSecretName := .Values.auth.googleApplicationCredentials.secretName | default "" -}}
@@ -50,7 +51,7 @@ spec:
     spec:
       initContainers:
         - name: mcpx-auth-prisma-migration
-          image: "{{ .Values.auth.image.repository }}:{{ .Values.auth.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          image: "{{ $repository }}:{{ .Values.auth.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
             {{- if .Values.global.manageResources.limits }}
@@ -97,7 +98,7 @@ spec:
         {{- end }}
       containers:
         - name: mcpx-auth-container
-          image: "{{ .Values.auth.image.repository }}:{{ .Values.auth.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          image: "{{ $repository }}:{{ .Values.auth.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           ports:
             - containerPort: 8080
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
