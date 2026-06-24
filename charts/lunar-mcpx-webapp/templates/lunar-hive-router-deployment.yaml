@@ -1,5 +1,6 @@
 {{- if .Values.router.enabled | default true }}
 {{- $tolerations := concat .Values.global.tolerations .Values.router.tolerations -}}
+{{- $repository := printf "%s/mcpx-router" (coalesce .Values.global.webappRepository .Values.router.image.repository) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -49,7 +50,7 @@ spec:
       {{- end }}
       containers:
         - name: mcpx-router-container
-          image: "{{ .Values.router.image.repository }}:{{ .Values.router.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          image: "{{ $repository }}:{{ .Values.router.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           ports:
             - containerPort: 8080
               name: router

@@ -1,5 +1,6 @@
 {{- if .Values.ui.enabled | default true }}
 {{- $tolerations := concat .Values.global.tolerations .Values.ui.tolerations -}}
+{{- $repository := printf "%s/mcpx-ui" (coalesce .Values.global.mcpxRepository .Values.ui.image.repository) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -52,7 +53,7 @@ spec:
         {{- end }}
       initContainers:
         - name: mcpx-ui-prepare-ui-files
-          image: '{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) }}'
+          image: '{{ $repository }}:{{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) }}'
           command:
             - sh
             - -c
@@ -72,7 +73,7 @@ spec:
         {{- end }}
       containers:
         - name: mcpx-ui-container
-          image: '{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) }}'
+          image: '{{ $repository }}:{{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) }}'
           ports:
             - containerPort: 8080
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
