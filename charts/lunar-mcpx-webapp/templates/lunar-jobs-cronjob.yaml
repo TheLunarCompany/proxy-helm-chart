@@ -86,7 +86,7 @@ spec:
             - name: {{ . }}
             {{- end }}
           {{- end }}
-          {{- with .Values.jobs.nodeSelector }}
+          {{- with coalesce .Values.jobs.nodeSelector .Values.global.nodeSelector }}
           nodeSelector:
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -185,7 +185,7 @@ spec:
             - name: {{ . }}
             {{- end }}
           {{- end }}
-          {{- with .Values.jobs.nodeSelector }}
+          {{- with coalesce .Values.jobs.nodeSelector .Values.global.nodeSelector }}
           nodeSelector:
             {{- toYaml . | nindent 12 }}
           {{- end }}

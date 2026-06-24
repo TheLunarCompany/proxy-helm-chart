@@ -106,7 +106,7 @@ spec:
             - name: {{ . }}
             {{- end }}
           {{- end }}
-          {{- with .root.Values.jobs.nodeSelector }}
+          {{- with coalesce .root.Values.jobs.nodeSelector .root.Values.global.nodeSelector }}
           nodeSelector:
             {{- toYaml . | nindent 12 }}
           {{- end }}

@@ -91,7 +91,7 @@ spec:
           configMap:
             name: {{ include "lunar-mcpx-webapp.fullname" . }}-redis-config
             defaultMode: 0644
-      {{- with .Values.redis.nodeSelector }}
+      {{- with coalesce .Values.redis.nodeSelector .Values.global.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}

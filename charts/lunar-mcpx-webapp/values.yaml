@@ -32,6 +32,10 @@ global:
   # Required — services that touch encrypted target servers will fail if this is not set.
   encryptionKey: ""
 
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  nodeSelector: {}
+
   # -- tolerations allow the scheduler to schedule pods with matching taints.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
   # tolerations:

@@ -95,7 +95,7 @@ spec:
           configMap:
             name: {{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse-config
       {{- end }}
-      {{- with .Values.clickhouse.nodeSelector }}
+      {{- with coalesce .Values.clickhouse.nodeSelector .Values.global.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
