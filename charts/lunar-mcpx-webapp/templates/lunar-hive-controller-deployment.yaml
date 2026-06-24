@@ -1,5 +1,6 @@
 {{- if .Values.controller.enabled | default true }}
 {{- $tolerations := concat .Values.global.tolerations .Values.controller.tolerations -}}
+{{- $repository := printf "%s/mcpx-hive-controller" (coalesce .Values.global.webappRepository .Values.controller.image.repository) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -57,7 +58,7 @@ spec:
       {{- end }}
       containers:
         - name: mcpx-controller-container
-          image: "{{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          image: "{{ $repository }}:{{ .Values.controller.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           ports:
             - containerPort: 8080
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}

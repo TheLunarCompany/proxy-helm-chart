@@ -1,5 +1,6 @@
 {{- if .Values.admin.enabled | default true }}
 {{- $tolerations := concat .Values.global.tolerations .Values.admin.tolerations -}}
+{{- $repository := printf "%s/mcpx-admin-ui" (coalesce .Values.global.webappRepository .Values.admin.image.repository) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -49,7 +50,7 @@ spec:
       {{- end }}
       containers:
         - name: mcpx-admin-container
-          image: "{{ .Values.admin.image.repository }}:{{ .Values.admin.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          image: "{{ $repository }}:{{ .Values.admin.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           ports:
             - containerPort: 8080
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
