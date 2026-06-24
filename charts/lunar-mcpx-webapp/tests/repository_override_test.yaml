@@ -1,0 +1,127 @@
+suite: Repository overrides
+templates:
+  - templates/lunar-webserver-deployment.yaml
+  - templates/lunar-hub-deployment.yaml
+  - templates/lunar-admin-ui-deployment.yaml
+  - templates/lunar-auth-bff-deployment.yaml
+  - templates/lunar-hive-controller-deployment.yaml
+  - templates/lunar-hive-router-deployment.yaml
+  - templates/lunar-hive-ui-deployment.yaml
+  - templates/lunar-jobs-cronjob.yaml
+
+tests:
+  - it: webserver uses default repository when webappRepository is not set
+    template: templates/lunar-webserver-deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-webserver:0.9.48
+
+  - it: webserver uses global webappRepository when set
+    template: templates/lunar-webserver-deployment.yaml
+    set:
+      global.webappRepository: my-registry.example.com/my-org
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: my-registry.example.com/my-org/mcpx-webserver:0.9.48
+
+  - it: hub uses global webappRepository when set
+    template: templates/lunar-hub-deployment.yaml
+    set:
+      global.webappRepository: my-registry.example.com/my-org
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: my-registry.example.com/my-org/mcpx-hub:0.9.48
+
+  - it: admin uses global webappRepository when set
+    template: templates/lunar-admin-ui-deployment.yaml
+    set:
+      global.webappRepository: my-registry.example.com/my-org
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: my-registry.example.com/my-org/mcpx-admin-ui:0.9.48
+
+  - it: auth uses global webappRepository when set
+    template: templates/lunar-auth-bff-deployment.yaml
+    set:
+      global.webappRepository: my-registry.example.com/my-org
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: my-registry.example.com/my-org/mcpx-auth-bff:0.9.48
+
+  - it: controller uses global webappRepository when set
+    template: templates/lunar-hive-controller-deployment.yaml
+    set:
+      global.webappRepository: my-registry.example.com/my-org
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: my-registry.example.com/my-org/mcpx-hive-controller:0.9.48
+
+  - it: router uses global webappRepository when set
+    template: templates/lunar-hive-router-deployment.yaml
+    set:
+      global.webappRepository: my-registry.example.com/my-org
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: my-registry.example.com/my-org/mcpx-router:0.9.48
+
+  - it: ui uses default repository when mcpxRepository is not set
+    template: templates/lunar-hive-ui-deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: us-central1-docker.pkg.dev/prj-common-442813/mcpx/mcpx-ui:0.4.48
+
+  - it: ui uses global mcpxRepository when set
+    template: templates/lunar-hive-ui-deployment.yaml
+    set:
+      global.mcpxRepository: my-registry.example.com/mcpx
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: my-registry.example.com/mcpx/mcpx-ui:0.4.48
+
+  - it: webserver sets HIVE_DEFAULT_MCPX_IMAGE_REPO to default when mcpxRepository is not set
+    template: templates/lunar-webserver-deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: HIVE_DEFAULT_MCPX_IMAGE_REPO
+            value: us-central1-docker.pkg.dev/prj-common-442813/mcpx/mcpx-server
+
+  - it: webserver sets HIVE_DEFAULT_MCPX_IMAGE_REPO from global mcpxRepository
+    template: templates/lunar-webserver-deployment.yaml
+    set:
+      global.mcpxRepository: my-registry.example.com/mcpx
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: HIVE_DEFAULT_MCPX_IMAGE_REPO
+            value: my-registry.example.com/mcpx/mcpx-server
+
+  - it: per-service repository is used when webappRepository is not set
+    template: templates/lunar-webserver-deployment.yaml
+    set:
+      webserver.image.repository: custom-registry.example.com/custom-path
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: custom-registry.example.com/custom-path/mcpx-webserver:0.9.48
+
+  - it: global webappRepository takes precedence over per-service repository
+    template: templates/lunar-webserver-deployment.yaml
+    set:
+      global.webappRepository: global-registry.example.com/global
+      webserver.image.repository: custom-registry.example.com/custom-path
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: global-registry.example.com/global/mcpx-webserver:0.9.48
