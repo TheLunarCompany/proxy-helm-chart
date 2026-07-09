@@ -354,6 +354,7 @@
         },
         "retentionDays": {
           "type": "integer",
+          "minimum": 0,
           "description": "Delete audit_logs rows older than this many days. 0 disables pruning.",
           "default": 60
         }
