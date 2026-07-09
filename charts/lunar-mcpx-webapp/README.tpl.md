@@ -386,6 +386,27 @@ for that many minutes. The webserver runs an in-process reconciler; no CronJob i
     idleMinutes: 30
   ```
 
+### Audit Log Pruning
+
+The `prune-audit-logs` CronJob periodically deletes old rows from the `audit_logs` table so it doesn't grow unbounded. It is **enabled by default**, running daily at noon and removing rows older than `auditLog.retentionDays` (60 by default).
+
+- Build/verify cron expressions with [crontab.guru](https://crontab.guru/).
+- Change the schedule (example: hourly):
+  ```yaml
+  auditLog:
+    pruneCronSchedule: "0 * * * *"
+  ```
+- Change how many days of history to keep:
+  ```yaml
+  auditLog:
+    retentionDays: 90
+  ```
+- Disable the CronJob entirely by leaving the schedule empty:
+  ```yaml
+  auditLog:
+    pruneCronSchedule: ""
+  ```
+
 ### ClickHouse (Event Store Analytics)
 
 The chart can deploy an embedded single-node ClickHouse instance for event store analytics. ClickHouse is cluster-internal only and is **not** exposed outside the cluster.
