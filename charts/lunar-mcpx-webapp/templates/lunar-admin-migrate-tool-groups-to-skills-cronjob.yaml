@@ -1,0 +1,7 @@
+---
+{{- include "lunar-mcpx-webapp.adminCronJob" (dict
+  "root" .
+  "jobName" "migrate-tool-groups-to-skills"
+  "command" (list "node" "dist/index.js" "migrate-tool-groups-to-skills")
+  "extraEnv" list
+) }}
