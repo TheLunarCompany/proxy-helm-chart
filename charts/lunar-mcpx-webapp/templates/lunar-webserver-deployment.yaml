@@ -187,9 +187,13 @@ spec:
             - name: ROUTER_INTERNAL_URL
               value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-router:{{ .Values.router.internalPort | default 4000 }}"
             {{- end }}
-            {{- if .Values.hibernation.cronSchedule }}
+            {{- if or .Values.hibernation.cronSchedule (gt (int .Values.hibernation.idleMinutes) 0) }}
             - name: HIBERNATION_ENABLED
               value: "true"
+            {{- end }}
+            {{- if gt (int .Values.hibernation.idleMinutes) 0 }}
+            - name: HIBERNATION_IDLE_MINUTES
+              value: {{ .Values.hibernation.idleMinutes | quote }}
             {{- end }}
             - name: WEBAPP_DEPLOYMENT_PREFIX
               value: {{ include "lunar-mcpx-webapp.fullname" . | quote }}

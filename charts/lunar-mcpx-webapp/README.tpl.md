@@ -344,9 +344,13 @@ kubectl create job migrate-tgs-$(date +%s) \
 
 > **Note:** Run this job first and check its log, then enable the skills feature flag on the MCPX instances. Order matters: migrate, then turn on.
 
-### Hibernation Cron Schedule
+### Hibernation
 
-Use `hibernation.cronSchedule` to control when the `hibernate-instances` CronJob runs.
+Two independent ways to hibernate idle MCPX instances. Either one (or both) turns
+`HIBERNATION_ENABLED` on for the webserver, and they can run together.
+
+**Scheduled (CronJob).** `hibernation.cronSchedule` controls when the `hibernate-instances`
+CronJob runs.
 
 - Build/verify cron expressions with [crontab.guru](https://crontab.guru/).
 - Keep it empty to disable the CronJob:
@@ -363,6 +367,23 @@ Use `hibernation.cronSchedule` to control when the `hibernate-instances` CronJob
   ```yaml
   hibernation:
     cronSchedule: "*/5 * * * *"
+  ```
+
+**Idle (signal-based).** `hibernation.idleMinutes` hibernates any instance with no real usage
+for that many minutes. The webserver runs an in-process reconciler; no CronJob involved.
+
+- `0` disables it (default). Apart from `0`, the effective minimum is `3`: values of `1` or
+  `2` are clamped up to `3`.
+- Idle-only (no schedule):
+  ```yaml
+  hibernation:
+    idleMinutes: 30
+  ```
+- Both together (scheduled sweep plus idle reconciler):
+  ```yaml
+  hibernation:
+    cronSchedule: "0 22 * * *"
+    idleMinutes: 30
   ```
 
 ### ClickHouse (Event Store Analytics)

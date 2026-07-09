@@ -341,6 +341,12 @@
           "type": "string",
           "description": "Cron schedule for the scheduled hibernation job. Leave empty to disable the CronJob.",
           "default": ""
+        },
+        "idleMinutes": {
+          "type": "integer",
+          "description": "Idle window in minutes. Instances with no real usage for this long are hibernated. 0 disables idle hibernation; any value > 0 also turns HIBERNATION_ENABLED on. Apart from 0, the effective minimum is 3: values of 1 or 2 are clamped up to 3.",
+          "default": 0,
+          "minimum": 0
         }
       }
     },
