@@ -328,6 +328,22 @@ kubectl create job drain-swaps-execute-$(date +%s) \
 
 > **Note:** Once you upgrade the MCPX pods in the system, any affected setup will be the correct one.
 
+### Migrate Tool Groups to Skills
+
+Turns each active setup's tool groups into skills before enabling the skills feature. Every tool group becomes one skill carrying the same capability group; tools on custom (non-catalog) servers are dropped, and a group left with nothing is skipped. The original tool groups are **not** deleted. The migrated skills are **not** enabled for any consumer/client, so after the migration users will need to re-enable them per subject. A single **suspended CronJob**, it never runs automatically. It is **idempotent**: rerunning skips groups already migrated, so no duplicates.
+
+| CronJob | Purpose |
+|:--------|:--------|
+| `<release>-migrate-tool-groups-to-skills` | Creates a skill per tool group; logs a report of what was created, skipped, and dropped |
+
+**Run it:**
+```bash
+kubectl create job migrate-tgs-$(date +%s) \
+  --from=cronjob/<release>-migrate-tool-groups-to-skills -n <namespace>
+```
+
+> **Note:** Run this job first and check its log, then enable the skills feature flag on the MCPX instances. Order matters: migrate, then turn on.
+
 ### Hibernation
 
 Two independent ways to hibernate idle MCPX instances. Either one (or both) turns
