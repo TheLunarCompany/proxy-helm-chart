@@ -1,0 +1,71 @@
+suite: Prune Audit Logs Job
+templates:
+  - templates/lunar-jobs-cronjob.yaml
+
+release:
+  name: my-release
+
+tests:
+  - it: is enabled by default with the daily noon schedule
+    documentSelector:
+      path: metadata.name
+      value: my-release-lunar-mcpx-webapp-prune-audit-logs
+    asserts:
+      - isKind:
+          of: CronJob
+      - equal:
+          path: spec.schedule
+          value: "0 12 * * *"
+
+  - it: runs the prune-audit-logs command
+    documentSelector:
+      path: metadata.name
+      value: my-release-lunar-mcpx-webapp-prune-audit-logs
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].args
+          value:
+            - prune-audit-logs
+
+  - it: sets AUDIT_LOG_RETENTION_DAYS from auditLog.retentionDays
+    documentSelector:
+      path: metadata.name
+      value: my-release-lunar-mcpx-webapp-prune-audit-logs
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: AUDIT_LOG_RETENTION_DAYS
+            value: "60"
+
+  - it: honors a custom retentionDays value
+    set:
+      auditLog.retentionDays: 90
+    documentSelector:
+      path: metadata.name
+      value: my-release-lunar-mcpx-webapp-prune-audit-logs
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: AUDIT_LOG_RETENTION_DAYS
+            value: "90"
+
+  - it: honors a custom pruneCronSchedule value
+    set:
+      auditLog.pruneCronSchedule: "0 * * * *"
+    documentSelector:
+      path: metadata.name
+      value: my-release-lunar-mcpx-webapp-prune-audit-logs
+    asserts:
+      - equal:
+          path: spec.schedule
+          value: "0 * * * *"
+
+  - it: is not rendered when the schedule is empty
+    set:
+      auditLog.pruneCronSchedule: ""
+    asserts:
+      # Only the always-on db-ses-rtn CronJob remains (hibernation is disabled by default).
+      - hasDocuments:
+          count: 1

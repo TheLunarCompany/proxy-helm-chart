@@ -344,6 +344,21 @@
         }
       }
     },
+    "auditLog": {
+      "type": "object",
+      "properties": {
+        "pruneCronSchedule": {
+          "type": "string",
+          "description": "Cron schedule for the audit-log pruning job. Enabled by default (daily at noon). Leave empty to disable the CronJob.",
+          "default": "0 12 * * *"
+        },
+        "retentionDays": {
+          "type": "integer",
+          "description": "Delete audit_logs rows older than this many days. 0 disables pruning.",
+          "default": 60
+        }
+      }
+    },
     "controller": {
       "type": "object",
       "properties": {

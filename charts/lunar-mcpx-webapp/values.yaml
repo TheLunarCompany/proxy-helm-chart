@@ -1025,11 +1025,11 @@ hibernation:
   cronSchedule: ""
 
 auditLog:
-  # Cron schedule for the audit-log pruning job (e.g. "0 3 * * *").
-  # Leave empty to disable the CronJob.
-  pruneCronSchedule: ""
+  # Cron schedule for the audit-log pruning job (e.g. "0 12 * * *").
+  # Enabled by default (daily at noon). Leave empty to disable the CronJob.
+  pruneCronSchedule: "0 12 * * *"
   # Delete audit_logs rows older than this many days. 0 disables pruning.
-  retentionDays: "60"
+  retentionDays: 60
 
 ingress:
   # -- Enable or disable Ingress for mcpx-webapp services
