@@ -1023,6 +1023,10 @@ hibernation:
   # Cron schedule for the scheduled hibernation job (e.g. "0 22 * * *").
   # Leave empty to disable the CronJob.
   cronSchedule: ""
+  # Idle window in minutes. Instances with no real usage for this long are hibernated.
+  # 0 disables idle hibernation. Any value > 0 also turns HIBERNATION_ENABLED on.
+  # Apart from 0, the effective minimum is 3: values of 1 or 2 are clamped up to 3.
+  idleMinutes: 0
 
 auditLog:
   # Cron schedule for the audit-log pruning job (e.g. "0 12 * * *").
