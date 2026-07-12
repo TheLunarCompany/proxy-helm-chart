@@ -328,9 +328,29 @@ kubectl create job drain-swaps-execute-$(date +%s) \
 
 > **Note:** Once you upgrade the MCPX pods in the system, any affected setup will be the correct one.
 
-### Hibernation Cron Schedule
+### Migrate Tool Groups to Skills
 
-Use `hibernation.cronSchedule` to control when the `hibernate-instances` CronJob runs.
+Turns each active setup's tool groups into skills before enabling the skills feature. Every tool group becomes one skill carrying the same capability group; tools on custom (non-catalog) servers are dropped, and a group left with nothing is skipped. The original tool groups are **not** deleted. The migrated skills are **not** enabled for any consumer/client, so after the migration users will need to re-enable them per subject. A single **suspended CronJob**, it never runs automatically. It is **idempotent**: rerunning skips groups already migrated, so no duplicates.
+
+| CronJob | Purpose |
+|:--------|:--------|
+| `<release>-migrate-tool-groups-to-skills` | Creates a skill per tool group; logs a report of what was created, skipped, and dropped |
+
+**Run it:**
+```bash
+kubectl create job migrate-tgs-$(date +%s) \
+  --from=cronjob/<release>-migrate-tool-groups-to-skills -n <namespace>
+```
+
+> **Note:** Run this job first and check its log, then enable the skills feature flag on the MCPX instances. Order matters: migrate, then turn on.
+
+### Hibernation
+
+Two independent ways to hibernate idle MCPX instances. Either one (or both) turns
+`HIBERNATION_ENABLED` on for the webserver, and they can run together.
+
+**Scheduled (CronJob).** `hibernation.cronSchedule` controls when the `hibernate-instances`
+CronJob runs.
 
 - Build/verify cron expressions with [crontab.guru](https://crontab.guru/).
 - Keep it empty to disable the CronJob:
@@ -347,6 +367,44 @@ Use `hibernation.cronSchedule` to control when the `hibernate-instances` CronJob
   ```yaml
   hibernation:
     cronSchedule: "*/5 * * * *"
+  ```
+
+**Idle (signal-based).** `hibernation.idleMinutes` hibernates any instance with no real usage
+for that many minutes. The webserver runs an in-process reconciler; no CronJob involved.
+
+- `0` disables it (default). Apart from `0`, the effective minimum is `3`: values of `1` or
+  `2` are clamped up to `3`.
+- Idle-only (no schedule):
+  ```yaml
+  hibernation:
+    idleMinutes: 30
+  ```
+- Both together (scheduled sweep plus idle reconciler):
+  ```yaml
+  hibernation:
+    cronSchedule: "0 22 * * *"
+    idleMinutes: 30
+  ```
+
+### Audit Log Pruning
+
+The `prune-audit-logs` CronJob periodically deletes old rows from the `audit_logs` table so it doesn't grow unbounded. It is **enabled by default**, running daily at noon and removing rows older than `auditLog.retentionDays` (60 by default).
+
+- Build/verify cron expressions with [crontab.guru](https://crontab.guru/).
+- Change the schedule (example: hourly):
+  ```yaml
+  auditLog:
+    pruneCronSchedule: "0 * * * *"
+  ```
+- Change how many days of history to keep:
+  ```yaml
+  auditLog:
+    retentionDays: 90
+  ```
+- Disable the CronJob entirely by leaving the schedule empty:
+  ```yaml
+  auditLog:
+    pruneCronSchedule: ""
   ```
 
 ### ClickHouse (Event Store Analytics)
@@ -388,13 +446,13 @@ kubectl exec -it <release>-clickhouse-0 -n <namespace> -- clickhouse-client \
 
 Minimal deployment with embedded Postgresql and Redis
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.54 --set postgres.enabled=true --set redis.enabled=true
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.55 --set postgres.enabled=true --set redis.enabled=true
 ```
 
 Alternatively, you may work with a separate values file to handle values override just like any other Helm chart:
 
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.54  -f ./values-override.yaml
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.9.55  -f ./values-override.yaml
 ```
 
 ### MCPX runtime auth
