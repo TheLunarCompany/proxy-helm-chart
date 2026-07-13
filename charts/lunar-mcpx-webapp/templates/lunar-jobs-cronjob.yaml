@@ -236,7 +236,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: job-runner
-              image: "{{ $repository }}:{{ .Values.jobs.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+              image: "{{ .Values.jobs.image.repository }}:{{ .Values.jobs.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
               args:
                 - prune-audit-logs
               {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
