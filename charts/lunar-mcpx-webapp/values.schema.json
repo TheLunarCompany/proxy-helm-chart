@@ -11,12 +11,6 @@
         "mcpxVersion": {
           "type": "string"
         },
-        "webappRepository": {
-          "type": "string"
-        },
-        "mcpxRepository": {
-          "type": "string"
-        },
         "imagePullSecrets": {
           "type": "array"
         },

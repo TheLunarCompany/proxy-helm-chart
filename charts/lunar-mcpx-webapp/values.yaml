@@ -70,17 +70,6 @@ global:
 
   # -- Override for MCPX image tag across components. Falls back to the chart mcpxVersion annotation then appVersion.
   mcpxVersion: ""
-  # -- webappRepository Override for the image repository base path for all webapp services
-  # (webserver, hub, admin, auth, controller, router, jobs). When set, replaces each service's
-  # individual image.repository. Falls back to the per-service image.repository when empty.
-  # e.g. "my-registry.example.com/my-project/lunar-private"
-  webappRepository: ""
-
-  # -- mcpxRepository Override for the image repository base path for MCPX components.
-  # When set, replaces the ui image.repository and the HIVE_DEFAULT_MCPX_IMAGE_REPO default
-  # in the webserver. Falls back to ui.image.repository and the hardcoded default when empty.
-  # e.g. "my-registry.example.com/my-project/mcpx"
-  mcpxRepository: ""
 
   # -- manageResources flags that globally enables or disables resource specs
   # It is highly recommended to always specify requests and limits for services
@@ -109,8 +98,8 @@ global:
 
 webserver:
   image:
-    # -- Lunar mcpx-webserver image repository base path
-    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private
+    # -- Lunar mcpx-webserver image repository
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-webserver
     # -- Lunar mcpx-webserver image pull policy
     pullPolicy: IfNotPresent
     # -- Lunar mcpx-webserver image tag
@@ -216,7 +205,7 @@ webserver:
 hub:
   image:
     # -- Lunar mcpx-webserver image repository
-    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hub
     # -- Lunar mcpx-webserver image pull policy
     pullPolicy: IfNotPresent
     # -- Lunar mcpx-webserver image tag
@@ -353,7 +342,7 @@ hub:
 admin:
   image:
     # -- Lunar mcpx-webserver image repository
-    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-admin-ui
     # -- Lunar mcpx-webserver image pull policy
     pullPolicy: IfNotPresent
     # -- Lunar mcpx-webserver image tag
@@ -452,7 +441,7 @@ admin:
 auth:
   image:
     # -- Lunar mcpx-webserver image repository
-    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-auth-bff
     # -- Lunar mcpx-webserver image pull policy
     pullPolicy: IfNotPresent
     # -- Lunar mcpx-webserver image tag
@@ -558,7 +547,7 @@ auth:
 controller:
   image:
     # -- Lunar mcpx-hive-controller image repository
-    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-controller
     # -- Lunar mcpx-hive-controller image pull policy
     pullPolicy: IfNotPresent
     # -- Lunar mcpx-hive-controller image tag
@@ -735,7 +724,7 @@ controller:
 router:
   image:
     # -- Lunar mcpx-router image repository
-    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-router
     # -- Lunar mcpx-router image pull policy
     pullPolicy: IfNotPresent
     # -- Lunar mcpx-router image tag
@@ -842,7 +831,7 @@ router:
 ui:
   image:
     # -- Lunar mcpx-ui image repository
-    repository: us-central1-docker.pkg.dev/prj-common-442813/mcpx
+    repository: us-central1-docker.pkg.dev/prj-common-442813/mcpx/mcpx-ui
     # -- Lunar mcpx-ui image pull policy
     pullPolicy: IfNotPresent
     # -- Lunar mcpx-ui image tag
@@ -940,7 +929,7 @@ ui:
 jobs:
   image:
     # -- Lunar mcpx-jobs image repository
-    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-jobs
     # -- Lunar mcpx-jobs image pull policy
     pullPolicy: IfNotPresent
     # -- Lunar mcpx-jobs image tag

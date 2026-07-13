@@ -1,6 +1,5 @@
 {{- if .Values.webserver.enabled | default true }}
 {{- $tolerations := concat .Values.global.tolerations .Values.webserver.tolerations -}}
-{{- $repository := printf "%s/mcpx-webserver" (coalesce .Values.global.webappRepository .Values.webserver.image.repository) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -46,7 +45,7 @@ spec:
     spec:
       initContainers:
         - name: mcpx-webserver-prisma-migration
-          image: "{{ $repository }}:{{ .Values.webserver.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          image: "{{ .Values.webserver.image.repository }}:{{ .Values.webserver.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
             {{- if .Values.global.manageResources.limits }}
@@ -91,7 +90,7 @@ spec:
 
         {{- if .Values.clickhouse.enabled }}
         - name: mcpx-webserver-clickhouse-migration
-          image: "{{ $repository }}:{{ .Values.webserver.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          image: "{{ .Values.webserver.image.repository }}:{{ .Values.webserver.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
             {{- if .Values.global.manageResources.limits }}
@@ -121,7 +120,7 @@ spec:
         {{- end }}
       containers:
         - name: mcpx-webserver-container
-          image: "{{ $repository }}:{{ .Values.webserver.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          image: "{{ .Values.webserver.image.repository }}:{{ .Values.webserver.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           ports:
             - containerPort: 8080
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
@@ -203,7 +202,7 @@ spec:
             {{- end }}
             {{- if not (has "HIVE_DEFAULT_MCPX_IMAGE_REPO" $webserverExtraEnvNames) }}
             - name: HIVE_DEFAULT_MCPX_IMAGE_REPO
-              value: '{{ printf "%s/mcpx-server" (coalesce .Values.global.mcpxRepository .Values.ui.image.repository) }}'
+              value: 'us-central1-docker.pkg.dev/prj-common-442813/mcpx/mcpx-server'
             {{- end }}
             {{- if not (has "HIVE_DEFAULT_MCPX_IMAGE_TAG" $webserverExtraEnvNames) }}
             - name: HIVE_DEFAULT_MCPX_IMAGE_TAG
