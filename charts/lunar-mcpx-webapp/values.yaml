@@ -71,6 +71,29 @@ global:
   # -- Override for MCPX image tag across components. Falls back to the chart mcpxVersion annotation then appVersion.
   mcpxVersion: ""
 
+  # -- webappRepository selects which registry the webapp services
+  # (webserver, hub, auth, router, jobs, admin, controller) pull from.
+  # "prod" (default) uses each service's image.repository as-is.
+  # "dev" swaps only the registry base path to webappRepositoryDev, preserving
+  # each service's image name. Independent from mcpxRepository.
+  webappRepository: "prod"
+
+  # -- mcpxRepository selects which registry the MCPX images pull from
+  # (mcpx-ui pod image and the spawned mcpx-server).
+  # "prod" (default) uses image.repository as-is.
+  # "dev" swaps only the registry base path to mcpxRepositoryDev, preserving the
+  # image name. Independent from webappRepository.
+  mcpxRepository: "prod"
+
+  # -- webappRepositoryDev is the registry base path used for the webapp services
+  # when webappRepository == "dev". Only the base path is swapped; each service's
+  # image name is preserved.
+  webappRepositoryDev: "us-central1-docker.pkg.dev/prj-common-442813/lunar-playground"
+
+  # -- mcpxRepositoryDev is the registry base path used for the MCPX images
+  # when mcpxRepository == "dev".
+  mcpxRepositoryDev: "us-central1-docker.pkg.dev/prj-common-442813/mcpx-dev"
+
   # -- manageResources flags that globally enables or disables resource specs
   # It is highly recommended to always specify requests and limits for services
   manageResources:

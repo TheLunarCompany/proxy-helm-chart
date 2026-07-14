@@ -11,6 +11,20 @@
         "mcpxVersion": {
           "type": "string"
         },
+        "webappRepository": {
+          "type": "string",
+          "enum": ["prod", "dev"]
+        },
+        "mcpxRepository": {
+          "type": "string",
+          "enum": ["prod", "dev"]
+        },
+        "webappRepositoryDev": {
+          "type": "string"
+        },
+        "mcpxRepositoryDev": {
+          "type": "string"
+        },
         "imagePullSecrets": {
           "type": "array"
         },

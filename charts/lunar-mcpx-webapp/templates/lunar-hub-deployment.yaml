@@ -1,5 +1,6 @@
 {{- if .Values.hub.enabled | default true }}
 {{- $tolerations := concat .Values.global.tolerations .Values.hub.tolerations -}}
+{{- $repository := include "lunar-mcpx-webapp.webappImage" (dict "repo" .Values.hub.image.repository "context" .) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -45,7 +46,7 @@ spec:
     spec:
       initContainers:
         - name: mcpx-hub-prisma-migration
-          image: "{{ .Values.hub.image.repository }}:{{ .Values.hub.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          image: "{{ $repository }}:{{ .Values.hub.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
             {{- if .Values.global.manageResources.limits }}
@@ -90,7 +91,7 @@ spec:
 
         {{- if .Values.clickhouse.enabled }}
         - name: mcpx-hub-clickhouse-migration
-          image: "{{ .Values.hub.image.repository }}:{{ .Values.hub.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          image: "{{ $repository }}:{{ .Values.hub.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
             {{- if .Values.global.manageResources.limits }}
@@ -120,7 +121,7 @@ spec:
         {{- end }}
       containers:
         - name: mcpx-hub-container
-          image: "{{ .Values.hub.image.repository }}:{{ .Values.hub.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          image: "{{ $repository }}:{{ .Values.hub.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
           ports:
             - containerPort: 8080
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}

@@ -1,4 +1,5 @@
 {{- $tolerations := concat .Values.global.tolerations .Values.jobs.tolerations -}}
+{{- $repository := include "lunar-mcpx-webapp.webappImage" (dict "repo" .Values.jobs.image.repository "context" .) -}}
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -39,7 +40,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: job-runner
-              image: "{{ .Values.jobs.image.repository }}:{{ .Values.jobs.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+              image: "{{ $repository }}:{{ .Values.jobs.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
               args:
                 - clean-terminated-sessions
               {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
@@ -136,7 +137,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: job-runner
-              image: "{{ .Values.jobs.image.repository }}:{{ .Values.jobs.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+              image: "{{ $repository }}:{{ .Values.jobs.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
               args:
                 - hibernate-instances
               {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
@@ -236,7 +237,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: job-runner
-              image: "{{ .Values.jobs.image.repository }}:{{ .Values.jobs.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+              image: "{{ $repository }}:{{ .Values.jobs.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
               args:
                 - prune-audit-logs
               {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}

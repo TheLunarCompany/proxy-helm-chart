@@ -1,4 +1,4 @@
-suite: Repository overrides
+suite: Repository resolution (global.env)
 templates:
   - templates/lunar-webserver-deployment.yaml
   - templates/lunar-hub-deployment.yaml
@@ -10,84 +10,22 @@ templates:
   - templates/lunar-jobs-cronjob.yaml
 
 tests:
-  - it: webserver uses default repository when webappRepository is not set
+  # --- prod (default): per-service image.repository used verbatim ---
+  - it: webserver uses its full prod repository by default
     template: templates/lunar-webserver-deployment.yaml
     asserts:
       - matchRegex:
           path: spec.template.spec.containers[0].image
           pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-private/mcpx-webserver:.+$
 
-  - it: webserver uses global webappRepository when set
-    template: templates/lunar-webserver-deployment.yaml
-    set:
-      global.webappRepository: my-registry.example.com/my-org
-    asserts:
-      - matchRegex:
-          path: spec.template.spec.containers[0].image
-          pattern: ^my-registry\.example\.com/my-org/mcpx-webserver:.+$
-
-  - it: hub uses global webappRepository when set
-    template: templates/lunar-hub-deployment.yaml
-    set:
-      global.webappRepository: my-registry.example.com/my-org
-    asserts:
-      - matchRegex:
-          path: spec.template.spec.containers[0].image
-          pattern: ^my-registry\.example\.com/my-org/mcpx-hub:.+$
-
-  - it: admin uses global webappRepository when set
-    template: templates/lunar-admin-ui-deployment.yaml
-    set:
-      global.webappRepository: my-registry.example.com/my-org
-    asserts:
-      - matchRegex:
-          path: spec.template.spec.containers[0].image
-          pattern: ^my-registry\.example\.com/my-org/mcpx-admin-ui:.+$
-
-  - it: auth uses global webappRepository when set
-    template: templates/lunar-auth-bff-deployment.yaml
-    set:
-      global.webappRepository: my-registry.example.com/my-org
-    asserts:
-      - matchRegex:
-          path: spec.template.spec.containers[0].image
-          pattern: ^my-registry\.example\.com/my-org/mcpx-auth-bff:.+$
-
-  - it: controller uses global webappRepository when set
-    template: templates/lunar-hive-controller-deployment.yaml
-    set:
-      global.webappRepository: my-registry.example.com/my-org
-    asserts:
-      - matchRegex:
-          path: spec.template.spec.containers[0].image
-          pattern: ^my-registry\.example\.com/my-org/mcpx-hive-controller:.+$
-
-  - it: router uses global webappRepository when set
-    template: templates/lunar-hive-router-deployment.yaml
-    set:
-      global.webappRepository: my-registry.example.com/my-org
-    asserts:
-      - matchRegex:
-          path: spec.template.spec.containers[0].image
-          pattern: ^my-registry\.example\.com/my-org/mcpx-router:.+$
-
-  - it: ui uses default repository when mcpxRepository is not set
+  - it: ui uses its full prod repository by default
     template: templates/lunar-hive-ui-deployment.yaml
     asserts:
       - matchRegex:
           path: spec.template.spec.containers[0].image
           pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/mcpx/mcpx-ui:.+$
 
-  - it: ui uses global mcpxRepository when set
-    template: templates/lunar-hive-ui-deployment.yaml
-    set:
-      global.mcpxRepository: my-registry.example.com/mcpx
-    asserts:
-      - matchRegex:
-          path: spec.template.spec.containers[0].image
-          pattern: ^my-registry\.example\.com/mcpx/mcpx-ui:.+$
-
-  - it: webserver sets HIVE_DEFAULT_MCPX_IMAGE_REPO to default when mcpxRepository is not set
+  - it: webserver sets HIVE_DEFAULT_MCPX_IMAGE_REPO to the prod default
     template: templates/lunar-webserver-deployment.yaml
     asserts:
       - contains:
@@ -96,32 +34,171 @@ tests:
             name: HIVE_DEFAULT_MCPX_IMAGE_REPO
             value: us-central1-docker.pkg.dev/prj-common-442813/mcpx/mcpx-server
 
-  - it: webserver sets HIVE_DEFAULT_MCPX_IMAGE_REPO from global mcpxRepository
+  # --- prod: a client can override the full per-service image path ---
+  - it: webserver honors a full per-service repository override in prod
     template: templates/lunar-webserver-deployment.yaml
     set:
-      global.mcpxRepository: my-registry.example.com/mcpx
+      webserver.image.repository: my-registry.example.com/my-org/my-custom-name
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^my-registry\.example\.com/my-org/my-custom-name:.+$
+
+  # --- webappRepository=dev: webapp base path swapped, image name preserved ---
+  - it: webserver uses the dev registry base when global.webappRepository=dev
+    template: templates/lunar-webserver-deployment.yaml
+    set:
+      global.webappRepository: dev
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-playground/mcpx-webserver:.+$
+
+  - it: hub uses the dev registry base when global.webappRepository=dev
+    template: templates/lunar-hub-deployment.yaml
+    set:
+      global.webappRepository: dev
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-playground/mcpx-hub:.+$
+
+  - it: admin uses the dev registry base when global.webappRepository=dev
+    template: templates/lunar-admin-ui-deployment.yaml
+    set:
+      global.webappRepository: dev
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-playground/mcpx-admin-ui:.+$
+
+  - it: auth uses the dev registry base when global.webappRepository=dev
+    template: templates/lunar-auth-bff-deployment.yaml
+    set:
+      global.webappRepository: dev
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-playground/mcpx-auth-bff:.+$
+
+  - it: controller uses the dev registry base when global.webappRepository=dev
+    template: templates/lunar-hive-controller-deployment.yaml
+    set:
+      global.webappRepository: dev
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-playground/mcpx-hive-controller:.+$
+
+  - it: router uses the dev registry base when global.webappRepository=dev
+    template: templates/lunar-hive-router-deployment.yaml
+    set:
+      global.webappRepository: dev
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-playground/mcpx-router:.+$
+
+  - it: jobs cronjob uses the dev registry base when global.webappRepository=dev
+    template: templates/lunar-jobs-cronjob.yaml
+    documentIndex: 0
+    set:
+      global.webappRepository: dev
+    asserts:
+      - matchRegex:
+          path: spec.jobTemplate.spec.template.spec.containers[0].image
+          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-playground/mcpx-jobs:.+$
+
+  # --- mcpxRepository=dev: mcpx base path swapped ---
+  - it: ui uses the dev mcpx registry base when global.mcpxRepository=dev
+    template: templates/lunar-hive-ui-deployment.yaml
+    set:
+      global.mcpxRepository: dev
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/mcpx-dev/mcpx-ui:.+$
+
+  - it: webserver sets HIVE_DEFAULT_MCPX_IMAGE_REPO to the dev mcpx registry when global.mcpxRepository=dev
+    template: templates/lunar-webserver-deployment.yaml
+    set:
+      global.mcpxRepository: dev
     asserts:
       - contains:
           path: spec.template.spec.containers[0].env
           content:
             name: HIVE_DEFAULT_MCPX_IMAGE_REPO
-            value: my-registry.example.com/mcpx/mcpx-server
+            value: us-central1-docker.pkg.dev/prj-common-442813/mcpx-dev/mcpx-server
 
-  - it: per-service repository is used when webappRepository is not set
-    template: templates/lunar-webserver-deployment.yaml
+  # --- the two groups switch independently ---
+  - it: webappRepository=dev does not affect the mcpx (ui) image
+    template: templates/lunar-hive-ui-deployment.yaml
     set:
-      webserver.image.repository: custom-registry.example.com/custom-path
+      global.webappRepository: dev
     asserts:
       - matchRegex:
           path: spec.template.spec.containers[0].image
-          pattern: ^custom-registry\.example\.com/custom-path/mcpx-webserver:.+$
+          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/mcpx/mcpx-ui:.+$
 
-  - it: global webappRepository takes precedence over per-service repository
+  - it: mcpxRepository=dev does not affect the webapp (webserver) image
     template: templates/lunar-webserver-deployment.yaml
     set:
-      global.webappRepository: global-registry.example.com/global
-      webserver.image.repository: custom-registry.example.com/custom-path
+      global.mcpxRepository: dev
     asserts:
       - matchRegex:
           path: spec.template.spec.containers[0].image
-          pattern: ^global-registry\.example\.com/global/mcpx-webserver:.+$
+          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-private/mcpx-webserver:.+$
+
+  # --- dev swap is a string replacement of the prod base path ---
+  - it: dev swap preserves a nested sub-path under the prod base
+    template: templates/lunar-webserver-deployment.yaml
+    set:
+      global.webappRepository: dev
+      webserver.image.repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/team/mcpx-webserver
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-playground/team/mcpx-webserver:.+$
+
+  - it: dev swap leaves a repository without the prod base unchanged
+    template: templates/lunar-webserver-deployment.yaml
+    set:
+      global.webappRepository: dev
+      webserver.image.repository: whatever.example.com/some-path/renamed-webserver
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^whatever\.example\.com/some-path/renamed-webserver:.+$
+
+  # --- dev registry base paths are configurable via global values ---
+  - it: webapp uses a custom global.webappRepositoryDev when webappRepository=dev
+    template: templates/lunar-webserver-deployment.yaml
+    set:
+      global.webappRepository: dev
+      global.webappRepositoryDev: my-dev-registry.example.com/webapp
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^my-dev-registry\.example\.com/webapp/mcpx-webserver:.+$
+
+  - it: ui uses a custom global.mcpxRepositoryDev when mcpxRepository=dev
+    template: templates/lunar-hive-ui-deployment.yaml
+    set:
+      global.mcpxRepository: dev
+      global.mcpxRepositoryDev: my-dev-registry.example.com/mcpx
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^my-dev-registry\.example\.com/mcpx/mcpx-ui:.+$
+
+  - it: HIVE_DEFAULT_MCPX_IMAGE_REPO honors a custom global.mcpxRepositoryDev when mcpxRepository=dev
+    template: templates/lunar-webserver-deployment.yaml
+    set:
+      global.mcpxRepository: dev
+      global.mcpxRepositoryDev: my-dev-registry.example.com/mcpx
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: HIVE_DEFAULT_MCPX_IMAGE_REPO
+            value: my-dev-registry.example.com/mcpx/mcpx-server
