@@ -1,6 +1,6 @@
 {{- if .Values.auth.enabled | default true }}
 {{- $tolerations := concat .Values.global.tolerations .Values.auth.tolerations -}}
-{{- $repository := printf "%s/mcpx-auth-bff" (coalesce .Values.global.webappRepository .Values.auth.image.repository) -}}
+{{- $repository := include "lunar-mcpx-webapp.webappImage" (dict "repo" .Values.auth.image.repository "context" .) -}}
 {{- $globalCaSecretName := .Values.global.caCerts.secretName | default "" -}}
 {{- $hasGlobalCaSecret := ne $globalCaSecretName "" -}}
 {{- $googleCredentialsSecretName := .Values.auth.googleApplicationCredentials.secretName | default "" -}}

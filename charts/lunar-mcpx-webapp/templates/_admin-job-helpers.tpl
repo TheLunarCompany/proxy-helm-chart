@@ -46,7 +46,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: {{ .jobName }}
-              image: "{{ printf "%s/mcpx-jobs" (coalesce .root.Values.global.webappRepository .root.Values.jobs.image.repository) }}:{{ .root.Values.jobs.image.tag | default .root.Values.global.appVersion | default .root.Chart.AppVersion }}"
+              image: "{{ include "lunar-mcpx-webapp.webappImage" (dict "repo" .root.Values.jobs.image.repository "context" .root) }}:{{ .root.Values.jobs.image.tag | default .root.Values.global.appVersion | default .root.Chart.AppVersion }}"
               command: {{ .command | toJson }}
               {{- if or (.root.Values.global.manageResources.limits) (.root.Values.global.manageResources.requests) }}
               resources:

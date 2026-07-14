@@ -1,6 +1,6 @@
 {{- if .Values.router.enabled | default true }}
 {{- $tolerations := concat .Values.global.tolerations .Values.router.tolerations -}}
-{{- $repository := printf "%s/mcpx-router" (coalesce .Values.global.webappRepository .Values.router.image.repository) -}}
+{{- $repository := include "lunar-mcpx-webapp.webappImage" (dict "repo" .Values.router.image.repository "context" .) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

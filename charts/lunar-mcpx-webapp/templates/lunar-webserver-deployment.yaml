@@ -1,6 +1,6 @@
 {{- if .Values.webserver.enabled | default true }}
 {{- $tolerations := concat .Values.global.tolerations .Values.webserver.tolerations -}}
-{{- $repository := printf "%s/mcpx-webserver" (coalesce .Values.global.webappRepository .Values.webserver.image.repository) -}}
+{{- $repository := include "lunar-mcpx-webapp.webappImage" (dict "repo" .Values.webserver.image.repository "context" .) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -203,7 +203,7 @@ spec:
             {{- end }}
             {{- if not (has "HIVE_DEFAULT_MCPX_IMAGE_REPO" $webserverExtraEnvNames) }}
             - name: HIVE_DEFAULT_MCPX_IMAGE_REPO
-              value: '{{ printf "%s/mcpx-server" (coalesce .Values.global.mcpxRepository .Values.ui.image.repository) }}'
+              value: '{{ include "lunar-mcpx-webapp.mcpxImage" (dict "repo" "us-central1-docker.pkg.dev/prj-common-442813/mcpx/mcpx-server" "context" .) }}'
             {{- end }}
             {{- if not (has "HIVE_DEFAULT_MCPX_IMAGE_TAG" $webserverExtraEnvNames) }}
             - name: HIVE_DEFAULT_MCPX_IMAGE_TAG

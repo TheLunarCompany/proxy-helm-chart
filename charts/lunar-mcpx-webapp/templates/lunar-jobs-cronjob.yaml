@@ -1,5 +1,5 @@
 {{- $tolerations := concat .Values.global.tolerations .Values.jobs.tolerations -}}
-{{- $repository := printf "%s/mcpx-jobs" (coalesce .Values.global.webappRepository .Values.jobs.image.repository) -}}
+{{- $repository := include "lunar-mcpx-webapp.webappImage" (dict "repo" .Values.jobs.image.repository "context" .) -}}
 ---
 apiVersion: batch/v1
 kind: CronJob

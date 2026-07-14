@@ -1,6 +1,6 @@
 {{- if .Values.hub.enabled | default true }}
 {{- $tolerations := concat .Values.global.tolerations .Values.hub.tolerations -}}
-{{- $repository := printf "%s/mcpx-hub" (coalesce .Values.global.webappRepository .Values.hub.image.repository) -}}
+{{- $repository := include "lunar-mcpx-webapp.webappImage" (dict "repo" .Values.hub.image.repository "context" .) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

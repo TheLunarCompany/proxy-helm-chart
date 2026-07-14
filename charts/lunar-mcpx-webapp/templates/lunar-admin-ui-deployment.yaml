@@ -1,6 +1,6 @@
 {{- if .Values.admin.enabled | default true }}
 {{- $tolerations := concat .Values.global.tolerations .Values.admin.tolerations -}}
-{{- $repository := printf "%s/mcpx-admin-ui" (coalesce .Values.global.webappRepository .Values.admin.image.repository) -}}
+{{- $repository := include "lunar-mcpx-webapp.webappImage" (dict "repo" .Values.admin.image.repository "context" .) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

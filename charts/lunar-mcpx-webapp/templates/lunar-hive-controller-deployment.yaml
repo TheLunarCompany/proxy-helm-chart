@@ -1,6 +1,6 @@
 {{- if .Values.controller.enabled | default true }}
 {{- $tolerations := concat .Values.global.tolerations .Values.controller.tolerations -}}
-{{- $repository := printf "%s/mcpx-hive-controller" (coalesce .Values.global.webappRepository .Values.controller.image.repository) -}}
+{{- $repository := include "lunar-mcpx-webapp.webappImage" (dict "repo" .Values.controller.image.repository "context" .) -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

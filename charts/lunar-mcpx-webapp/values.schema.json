@@ -12,9 +12,17 @@
           "type": "string"
         },
         "webappRepository": {
-          "type": "string"
+          "type": "string",
+          "enum": ["prod", "dev"]
         },
         "mcpxRepository": {
+          "type": "string",
+          "enum": ["prod", "dev"]
+        },
+        "webappRepositoryDev": {
+          "type": "string"
+        },
+        "mcpxRepositoryDev": {
           "type": "string"
         },
         "imagePullSecrets": {

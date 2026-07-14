@@ -39,6 +39,55 @@ Resolve MCPX version for UI and SERVER tag/env: global.mcpxVersion override fall
 {{- end }}
 
 {{/*
+Default registry base paths per group and environment. When a group's selector
+(global.webappRepository / global.mcpxRepository) is "dev", the prod base path
+below is replaced (plain string replacement) with the dev base path inside each
+service's image.repository — everything after the base (image name and any
+sub-path) is preserved. The dev bases can be overridden with
+global.webappRepositoryDev / global.mcpxRepositoryDev.
+*/}}
+{{- define "lunar-mcpx-webapp.webappRepositoryProd.default" -}}us-central1-docker.pkg.dev/prj-common-442813/lunar-private{{- end -}}
+{{- define "lunar-mcpx-webapp.webappRepositoryDev.default" -}}us-central1-docker.pkg.dev/prj-common-442813/lunar-playground{{- end -}}
+{{- define "lunar-mcpx-webapp.mcpxRepositoryProd.default" -}}us-central1-docker.pkg.dev/prj-common-442813/mcpx{{- end -}}
+{{- define "lunar-mcpx-webapp.mcpxRepositoryDev.default" -}}us-central1-docker.pkg.dev/prj-common-442813/mcpx-dev{{- end -}}
+
+{{/*
+Resolve a webapp image repository based on global.webappRepository.
+- "prod" (default): use the service's configured image.repository as-is.
+- "dev": replace the prod base path with the dev base path (string replacement).
+  Repositories that don't contain the prod base are left unchanged.
+Usage:
+{{ include "lunar-mcpx-webapp.webappImage" (dict "repo" .Values.webserver.image.repository "context" .) }}
+*/}}
+{{- define "lunar-mcpx-webapp.webappImage" -}}
+{{- if eq (.context.Values.global.webappRepository | default "prod") "dev" -}}
+{{- $prodBase := include "lunar-mcpx-webapp.webappRepositoryProd.default" .context -}}
+{{- $devBase := .context.Values.global.webappRepositoryDev | default (include "lunar-mcpx-webapp.webappRepositoryDev.default" .context) -}}
+{{- .repo | replace $prodBase $devBase -}}
+{{- else -}}
+{{- .repo -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve an mcpx image repository based on global.mcpxRepository.
+- "prod" (default): use the provided image.repository as-is.
+- "dev": replace the prod base path with the dev base path (string replacement).
+  Repositories that don't contain the prod base are left unchanged.
+Usage:
+{{ include "lunar-mcpx-webapp.mcpxImage" (dict "repo" .Values.ui.image.repository "context" .) }}
+*/}}
+{{- define "lunar-mcpx-webapp.mcpxImage" -}}
+{{- if eq (.context.Values.global.mcpxRepository | default "prod") "dev" -}}
+{{- $prodBase := include "lunar-mcpx-webapp.mcpxRepositoryProd.default" .context -}}
+{{- $devBase := .context.Values.global.mcpxRepositoryDev | default (include "lunar-mcpx-webapp.mcpxRepositoryDev.default" .context) -}}
+{{- .repo | replace $prodBase $devBase -}}
+{{- else -}}
+{{- .repo -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Common labels
 */}}
 {{- define "lunar-mcpx-webapp.labels" -}}
