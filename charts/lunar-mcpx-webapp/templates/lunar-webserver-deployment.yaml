@@ -215,17 +215,6 @@ spec:
             - name: PUBLIC_URL
               value: "https://{{ first .Values.ingress.domains.webserver }}"
           {{- end }}
-          {{- with .Values.webserver.sandboxAnalysis }}
-          {{- if .llmProvider }}
-            - name: SANDBOX_ANALYSIS_LLM_PROVIDER
-              value: {{ .llmProvider | quote }}
-          {{- end }}
-          {{- if .llmModel }}
-            - name: SANDBOX_ANALYSIS_LLM_MODEL
-              value: {{ .llmModel | quote }}
-          {{- end }}
-          {{- end }}
-          
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}

@@ -198,13 +198,6 @@ webserver:
   # priorityClassName: "custom"
   priorityClassName: ""
 
-  # -- Sandbox Analysis LLM configuration
-  # sandboxAnalysis:
-  #   llmProvider: "openai"  # or "google-gen-ai"
-  #   llmModel: "gpt-4"
-  # Note: For the API key, add `SANDBOX_ANALYSIS_LLM_API_KEY` through a secret via `webserver.extraEnvFromSecrets`
-  sandboxAnalysis: {}
-
   # -- extraInitContainers Additional init containers configuration
   # Value of this extraInitContainers will be appended to spec.template.spec.initContainers of the deployment
   extraInitContainers: []
