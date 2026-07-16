@@ -1031,6 +1031,19 @@ jobs:
       # -- Set to true to force-override existing config in fix job. Default merges non-destructively.
       forceOverride: false
 
+    # -- Input for the seed-system-config jobs: a flat map of editable
+    # system-config env keys to seed as DB overrides. List only the keys you
+    # actually set on the services' env (sparse, never the full catalog).
+    # Existing DB overrides are never overwritten.
+    # Values here are literals; to seed a key from a k8s Secret instead of
+    # pasting its value, put it on the job via jobs.extraEnvVars (secretKeyRef)
+    # or jobs.extraEnvFromSecrets.
+    # Example:
+    #   seedSystemConfig:
+    #     HIVE_DEFAULT_LOG_LEVEL: debug
+    #     HIBERNATION_ENABLED: true
+    seedSystemConfig: {}
+
 hibernation:
   # Cron schedule for the scheduled hibernation job (e.g. "0 22 * * *").
   # Leave empty to disable the CronJob.
