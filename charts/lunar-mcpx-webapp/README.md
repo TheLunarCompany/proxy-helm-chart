@@ -170,6 +170,29 @@ kubectl create secret generic {{ name_of_cert }} -n {{ mcpx_namespace }} --from-
 Note: In case when multiple CA certificates should be added, concat all of them in the same file and import as a single
 kubernetes secret
 
+### Naming / `fullnameOverride` length limit
+
+Kubernetes enforces a **63 character limit** for many resource names (DNS label, e.g. `metadata.name` for `Service`, `Deployment`, `Secret`, etc.).
+
+This chart builds many resource names by taking the chart **fullname** (from your Helm release name + optional `nameOverride`/`fullnameOverride`) and appending a suffix, for example:
+
+- `<fullname>-webserver`
+- `<fullname>-controller`
+- `<fullname>-embedded`
+
+Because the suffix is appended **after** the fullname is computed, the fullname itself must leave room for that suffix.
+
+**Recommended rule:** keep `fullnameOverride` **≤ 53 characters**.
+
+Why 53? One common suffix in this chart is `-webserver` which is 10 characters (including the leading `-`).  
+So the safe max base length is \(63 - 10 = 53\).
+
+If you set `fullnameOverride` longer than that, installs/upgrades may fail with errors similar to:
+
+- `metadata.name: Invalid value: "...": must be no more than 63 characters`
+
+**How to fix:** choose a shorter `fullnameOverride` (or a shorter Helm release name), then run `helm upgrade` again.
+
 #### GCP
 
 - [Minimal non-production configuration with GCE ingress controller](examples/values-override/gcp-nonprod-demo.yaml)

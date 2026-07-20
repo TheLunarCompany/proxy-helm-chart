@@ -138,3 +138,37 @@ http://$(CLICKHOUSE_USER):$(CLICKHOUSE_PASSWORD)@{{ include "lunar-mcpx-webapp.f
         {{- tpl (.value | toYaml) .context }}
     {{- end }}
 {{- end -}}
+
+{{/*
+CronJob base name.
+Returns cronJobBaseName if set, otherwise falls back to the standard fullname.
+*/}}
+{{- define "lunar-mcpx-webapp.cronJobBaseName" -}}
+{{- if .Values.cronJobBaseName -}}
+  {{- .Values.cronJobBaseName -}}
+{{- else -}}
+  {{- include "lunar-mcpx-webapp.fullname" . -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+CronJob name-length validation.
+If the computed fullname exceeds 27 characters please supply cronJobBaseName (<= 27 chars).
+The 27-char limit exists because the longest CronJob suffix ("-migrate-rollback-execute",
+25 chars) plus the base name must fit within the Kubernetes 52-character CronJob name limit.
+Only CronJob names are affected; all other resources keep the standard fullname.
+*/}}
+{{- define "lunar-mcpx-webapp.validateNames" -}}
+{{- $fullname := include "lunar-mcpx-webapp.fullname" . -}}
+{{- $fullnameLen := int (len $fullname) -}}
+
+{{- if gt $fullnameLen 27 -}}
+  {{- if not .Values.cronJobBaseName -}}
+    {{- $msg := printf "\n\nVALIDATION ERROR:\nThe computed resource base name '%s' is %d characters long, exceeding the maximum of 27\ncharacters allowed for CronJob base names.\n\nCronJob resources append suffixes up to 25 characters (e.g. '-migrate-rollback-execute').\nCombined with the base name this would exceed Kubernetes' 52-character CronJob name limit.\n\nAll non-CronJob resources are unaffected. To fix this, add 'cronJobBaseName' to your\nvalues file (values.yaml or values-override) with a value up to 27 characters.\nThis value will be used exclusively for CronJob resource names.\n\nCurrent inputs:\n  Release name:      '%s' (%d chars)\n  nameOverride:      '%s' (%d chars)\n  fullnameOverride:  '%s' (%d chars)\n\nExample (add to your values file):\n  cronJobBaseName: \"my-short-name\"\n" $fullname $fullnameLen .Release.Name (len .Release.Name) (default "<not set>" .Values.nameOverride) (len (default "" .Values.nameOverride)) (default "<not set>" .Values.fullnameOverride) (len (default "" .Values.fullnameOverride)) -}}
+    {{- fail $msg -}}
+  {{- else if gt (int (len .Values.cronJobBaseName)) 27 -}}
+    {{- $msg := printf "\n\nVALIDATION ERROR:\ncronJobBaseName '%s' is %d characters long, exceeding the maximum of 27.\nPlease set cronJobBaseName to a value up to 27 characters.\n" .Values.cronJobBaseName (len .Values.cronJobBaseName) -}}
+    {{- fail $msg -}}
+  {{- end -}}
+{{- end -}}
+{{- end -}}

@@ -2,6 +2,12 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
+    "cronJobBaseName": {
+      "type": "string",
+      "description": "Override base name used exclusively for CronJob resource names. Must be 27 characters or fewer. Use on helm upgrade when the computed fullname exceeds 27 characters.",
+      "default": "",
+      "maxLength": 27
+    },
     "global": {
       "type": "object",
       "properties": {
