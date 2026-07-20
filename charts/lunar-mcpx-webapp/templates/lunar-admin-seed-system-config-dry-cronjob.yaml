@@ -1,8 +1,32 @@
----
 {{- $env := list (dict "name" "DRY_RUN" "value" "true") }}
+
+{{/* Implicit chart knobs */}}
+{{- if and .Values.hibernation .Values.hibernation.idleMinutes (gt (.Values.hibernation.idleMinutes | int) 0) }}
+{{- $env = append $env (dict "name" "HIBERNATION_ENABLED" "value" "true") }}
+{{- $env = append $env (dict "name" "HIBERNATION_IDLE_MINUTES" "value" (.Values.hibernation.idleMinutes | toString)) }}
+{{- end }}
+{{- if and .Values.auditLog .Values.auditLog.retentionDays }}
+{{- $env = append $env (dict "name" "AUDIT_LOG_RETENTION_DAYS" "value" (.Values.auditLog.retentionDays | toString)) }}
+{{- end }}
+
+{{/* Literal extraEnvVars from all scopes */}}
+{{- $scopes := list "webserver" "hub" "admin" "auth" "controller" "router" }}
+{{- range $scope := $scopes }}
+{{- $scopeVals := index $.Values $scope }}
+{{- if $scopeVals }}
+{{- range ($scopeVals.extraEnvVars | default list) }}
+{{- if and .name .value }}
+{{- $env = append $env (dict "name" .name "value" (.value | toString)) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/* Explicit overrides — kept for valueFrom cases and backwards compat */}}
 {{- range $key, $value := .Values.jobs.admin.seedSystemConfig }}
 {{- $env = append $env (dict "name" $key "value" ($value | toString)) }}
 {{- end }}
+
 {{- include "lunar-mcpx-webapp.adminCronJob" (dict
   "root" .
   "jobName" "seed-system-config-dry"
