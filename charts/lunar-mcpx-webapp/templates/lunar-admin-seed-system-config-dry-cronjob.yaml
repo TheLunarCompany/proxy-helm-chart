@@ -26,10 +26,13 @@
 {{- end }}
 {{- end }}
 
+{{- $modifiedJobs := merge (dict "extraEnvFromSecrets" $envFromSecrets) .Values.jobs }}
+{{- $modifiedValues := merge (dict "jobs" $modifiedJobs) .Values }}
+{{- $modifiedRoot := merge (dict "Values" $modifiedValues) . }}
+
 {{- include "lunar-mcpx-webapp.adminCronJob" (dict
-  "root" .
+  "root" $modifiedRoot
   "jobName" "seed-system-config-dry"
   "command" (list "node" "dist/index.js" "seed-system-config")
   "extraEnv" $env
-  "extraEnvFromSecrets" $envFromSecrets
 ) }}
