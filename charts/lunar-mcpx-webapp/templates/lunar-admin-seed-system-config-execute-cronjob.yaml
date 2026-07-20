@@ -1,0 +1,11 @@
+---
+{{- $env := list (dict "name" "DRY_RUN" "value" "false") }}
+{{- range $key, $value := .Values.jobs.admin.seedSystemConfig }}
+{{- $env = append $env (dict "name" $key "value" ($value | toString)) }}
+{{- end }}
+{{- include "lunar-mcpx-webapp.adminCronJob" (dict
+  "root" .
+  "jobName" "seed-system-config-execute"
+  "command" (list "node" "dist/index.js" "seed-system-config")
+  "extraEnv" $env
+) }}
