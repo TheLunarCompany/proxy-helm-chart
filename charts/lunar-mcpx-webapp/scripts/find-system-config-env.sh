@@ -34,7 +34,11 @@ if command -v kubectl >/dev/null; then
     EFFECTIVE_NS="$NAMESPACE (from argument)"
   else
     ctx_ns=$(kubectl config view --minify -o jsonpath='{..namespace}' 2>/dev/null || true)
-    EFFECTIVE_NS="${ctx_ns:-default} (from current context$([ -z "$ctx_ns" ] && echo ", implicit default"))"
+    if [ -n "$ctx_ns" ]; then
+      EFFECTIVE_NS="$ctx_ns (from current context)"
+    else
+      EFFECTIVE_NS="default (from current context, implicit default)"
+    fi
   fi
 else
   EFFECTIVE_NS="n/a (kubectl not found - secret inspection skipped)"
