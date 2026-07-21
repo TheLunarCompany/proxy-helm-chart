@@ -337,6 +337,14 @@
                   "default": false
                 }
               }
+            },
+            "seedSystemConfig": {
+              "type": "object",
+              "description": "Flat map of editable system-config env keys to seed as DB overrides via the seed-system-config jobs. Sparse: list only keys you actually set. Existing DB overrides are never overwritten.",
+              "additionalProperties": {
+                "type": ["string", "number", "boolean"]
+              },
+              "default": {}
             }
           }
         }
@@ -467,7 +475,7 @@
         },
         "sandboxAnalysis": {
           "type": "object",
-          "description": "Sandbox Analysis LLM configuration. For API key, add a secret with SANDBOX_ANALYSIS_LLM_API_KEY and list it in extraEnvFromSecrets",
+          "description": "DEPRECATED: sandbox analysis now uses the system-wide LLM config; migrate via the seed-system-config job. Sandbox Analysis LLM configuration. For API key, add a secret with SANDBOX_ANALYSIS_LLM_API_KEY and list it in extraEnvFromSecrets",
           "properties": {
             "llmProvider": {
               "type": "string",
