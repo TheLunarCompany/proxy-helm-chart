@@ -28,6 +28,18 @@ NAMESPACE="${2:-}"
 NS_ARGS=()
 [ -n "$NAMESPACE" ] && NS_ARGS=(-n "$NAMESPACE")
 
+# Resolve the namespace kubectl will actually use, for the banner below.
+if command -v kubectl >/dev/null; then
+  if [ -n "$NAMESPACE" ]; then
+    EFFECTIVE_NS="$NAMESPACE (from argument)"
+  else
+    ctx_ns=$(kubectl config view --minify -o jsonpath='{..namespace}' 2>/dev/null || true)
+    EFFECTIVE_NS="${ctx_ns:-default} (from current context$([ -z "$ctx_ns" ] && echo ", implicit default"))"
+  fi
+else
+  EFFECTIVE_NS="n/a (kubectl not found - secret inspection skipped)"
+fi
+
 # Colors (disabled when not a TTY)
 if [ -t 1 ]; then
   BOLD=$'\033[1m'; GREEN=$'\033[32m'; YELLOW=$'\033[33m'; CYAN=$'\033[36m'; DIM=$'\033[2m'; RED=$'\033[31m'; RESET=$'\033[0m'
@@ -45,6 +57,9 @@ none() { echo "${DIM}(none found)${RESET}"; }
 LITERALS=()      # "KEY: value" (incl. knob-implied)
 SECRET_REFS=()   # "KEY|secretName|secretKey"
 FROM_SECRETS=()  # secret names containing a system-config key
+
+echo "${BOLD}Values file:${RESET} ${VALUES_FILE}"
+echo "${BOLD}Namespace:${RESET}   ${EFFECTIVE_NS}"
 
 section "Literal env vars (will go into jobs.admin.seedSystemConfig)"
 for scope in $SCOPES; do
@@ -86,9 +101,13 @@ for scope in $SCOPES; do
     found=1
     echo "${scope}.extraEnvFromSecrets: ${BOLD}${secret}${RESET}"
     if command -v kubectl >/dev/null; then
-      keys=$(kubectl "${NS_ARGS[@]}" get secret "$secret" -o jsonpath='{.data}' 2>/dev/null | yq -p=json -r 'keys | .[]' 2>/dev/null) || keys=""
+      keys=$(kubectl "${NS_ARGS[@]+"${NS_ARGS[@]}"}" get secret "$secret" -o jsonpath='{.data}' 2>/dev/null | yq -p=json -r 'keys | .[]' 2>/dev/null) || keys=""
       if [ -z "$keys" ]; then
-        echo "    ${DIM}(could not read secret - inspect manually)${RESET}"
+        if [ -z "$NAMESPACE" ]; then
+          echo "    ${YELLOW}(could not read secret - is the right namespace set? pass it as the 2nd arg or set your context)${RESET}"
+        else
+          echo "    ${YELLOW}(could not read secret in namespace ${NAMESPACE} - inspect manually)${RESET}"
+        fi
         continue
       fi
       while IFS= read -r key; do
