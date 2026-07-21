@@ -159,6 +159,8 @@ section "Here's how your jobs section should look (paste into your values file)"
 if [ $((${#LITERALS[@]} + ${#SANDBOX_LITERALS[@]} + ${#SECRET_REFS[@]} + ${#SANDBOX_SECRET_REFS[@]} + ${#FROM_SECRETS[@]})) -eq 0 ]; then
   echo "${DIM}(nothing to migrate — no system-config env vars found)${RESET}"
 else
+  echo "# Note: entries are ordered so deprecated SANDBOX_ANALYSIS_LLM_* values win duplicates,"
+  echo "# and explicit extraEnvVars entries override same-named keys from extraEnvFromSecrets (k8s env > envFrom)."
   echo "jobs:"
   if [ $((${#LITERALS[@]} + ${#SANDBOX_LITERALS[@]})) -gt 0 ]; then
     echo "  admin:"
