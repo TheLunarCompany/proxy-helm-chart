@@ -465,6 +465,21 @@
         "extraEnvVars": {
           "type": "array"
         },
+        "sandboxAnalysis": {
+          "type": "object",
+          "description": "DEPRECATED: sandbox analysis now uses the system-wide LLM config; migrate via the seed-system-config job. Sandbox Analysis LLM configuration. For API key, add a secret with SANDBOX_ANALYSIS_LLM_API_KEY and list it in extraEnvFromSecrets",
+          "properties": {
+            "llmProvider": {
+              "type": "string",
+              "description": "LLM provider for Sandbox Analysis",
+              "enum": ["openai", "google-gen-ai"]
+            },
+            "llmModel": {
+              "type": "string",
+              "description": "LLM model name for Sandbox Analysis"
+            }
+          }
+        },
         "image": {
           "type": "object",
           "properties": {
