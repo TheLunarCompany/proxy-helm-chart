@@ -183,6 +183,7 @@ spec:
             {{- end }}
             - name: HIVE_CONTROLLER_URL
               value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-controller"
+            {{- include "lunar-mcpx-webapp.dbPoolEnv" .Values.webserver | nindent 12 }}
             {{- if .Values.router.enabled | default true }}
             - name: ROUTER_INTERNAL_URL
               value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-router:{{ .Values.router.internalPort | default 4000 }}"

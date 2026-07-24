@@ -129,6 +129,16 @@ webserver:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
+  # -- Prisma connection pool sizing (unset = Prisma defaults:
+  # connection_limit = num_cpus * 2 + 1, pool_timeout = 10s). Each pod holds
+  # its own pool: hub + webserver + auth pools together (each times its
+  # replica count) must stay under Postgres max_connections.
+  db:
+    # -- Max DB connections per pod (Prisma connection_limit)
+    connectionLimit: null
+    # -- Seconds a query waits for a free pooled connection (Prisma pool_timeout)
+    poolTimeoutSeconds: null
+
   # -- NodeSelector to pin pods in deployment to certain set of nodes.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
@@ -236,6 +246,16 @@ hub:
     # -- Lunar mcpx-webserver image tag
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
+
+  # -- Prisma connection pool sizing (unset = Prisma defaults:
+  # connection_limit = num_cpus * 2 + 1, pool_timeout = 10s). Each pod holds
+  # its own pool: hub + webserver + auth pools together (each times its
+  # replica count) must stay under Postgres max_connections.
+  db:
+    # -- Max DB connections per pod (Prisma connection_limit)
+    connectionLimit: null
+    # -- Seconds a query waits for a free pooled connection (Prisma pool_timeout)
+    poolTimeoutSeconds: null
 
   # -- NodeSelector to pin pods in deployment to certain set of nodes.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
@@ -472,6 +492,16 @@ auth:
     # -- Lunar mcpx-webserver image tag
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
+
+  # -- Prisma connection pool sizing (unset = Prisma defaults:
+  # connection_limit = num_cpus * 2 + 1, pool_timeout = 10s). Each pod holds
+  # its own pool: hub + webserver + auth pools together (each times its
+  # replica count) must stay under Postgres max_connections.
+  db:
+    # -- Max DB connections per pod (Prisma connection_limit)
+    connectionLimit: null
+    # -- Seconds a query waits for a free pooled connection (Prisma pool_timeout)
+    poolTimeoutSeconds: null
 
   # -- NodeSelector to pin pods in deployment to certain set of nodes.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector

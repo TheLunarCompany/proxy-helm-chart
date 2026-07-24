@@ -42,6 +42,17 @@
     "hub": {
       "type": "object",
       "properties": {
+        "db": {
+          "type": "object",
+          "properties": {
+            "connectionLimit": {
+              "type": ["integer", "null"]
+            },
+            "poolTimeoutSeconds": {
+              "type": ["integer", "null"]
+            }
+          }
+        },
         "extraEnvVars": {
           "type": "array",
           "items": {
@@ -118,6 +129,17 @@
     "auth": {
       "type": "object",
       "properties": {
+        "db": {
+          "type": "object",
+          "properties": {
+            "connectionLimit": {
+              "type": ["integer", "null"]
+            },
+            "poolTimeoutSeconds": {
+              "type": ["integer", "null"]
+            }
+          }
+        },
         "googleApplicationCredentials": {
           "type": "object",
           "description": "Optional secret-backed ADC file for auth-bff.",
@@ -470,6 +492,17 @@
     "webserver": {
       "type": "object",
       "properties": {
+        "db": {
+          "type": "object",
+          "properties": {
+            "connectionLimit": {
+              "type": ["integer", "null"]
+            },
+            "poolTimeoutSeconds": {
+              "type": ["integer", "null"]
+            }
+          }
+        },
         "extraEnvVars": {
           "type": "array"
         },

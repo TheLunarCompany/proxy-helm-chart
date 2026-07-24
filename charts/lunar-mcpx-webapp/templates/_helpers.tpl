@@ -138,3 +138,22 @@ http://$(CLICKHOUSE_USER):$(CLICKHOUSE_PASSWORD)@{{ include "lunar-mcpx-webapp.f
         {{- tpl (.value | toYaml) .context }}
     {{- end }}
 {{- end -}}
+
+{{/*
+Prisma pool env vars from a service's values (e.g. .Values.hub).
+Unset knobs are omitted so the service falls back to Prisma defaults.
+Usage:
+{{- include "lunar-mcpx-webapp.dbPoolEnv" .Values.hub | nindent 12 }}
+*/}}
+{{- define "lunar-mcpx-webapp.dbPoolEnv" -}}
+{{- with .db }}
+{{- with .connectionLimit }}
+- name: DB_CONNECTION_LIMIT
+  value: {{ . | quote }}
+{{- end }}
+{{- with .poolTimeoutSeconds }}
+- name: DB_POOL_TIMEOUT_SECONDS
+  value: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
