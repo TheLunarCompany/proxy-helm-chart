@@ -148,6 +148,7 @@ spec:
             {{- end }}
             - name: PORT
               value: "8080"
+            {{- include "lunar-mcpx-webapp.dbPoolEnv" .Values.auth | nindent 12 }}
             {{- if $hasGoogleCredentialsSecret }}
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: "/var/secrets/google/credentials.json"

@@ -1,0 +1,87 @@
+suite: Prisma pool env knobs
+templates:
+  - templates/lunar-hub-deployment.yaml
+  - templates/lunar-webserver-deployment.yaml
+  - templates/lunar-auth-bff-deployment.yaml
+
+tests:
+  - it: hub renders pool env vars when set
+    template: templates/lunar-hub-deployment.yaml
+    set:
+      hub.db.connectionLimit: 30
+      hub.db.poolTimeoutSeconds: 20
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DB_CONNECTION_LIMIT
+            value: "30"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DB_POOL_TIMEOUT_SECONDS
+            value: "20"
+
+  - it: hub omits pool env vars by default
+    template: templates/lunar-hub-deployment.yaml
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DB_CONNECTION_LIMIT
+          any: true
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DB_POOL_TIMEOUT_SECONDS
+          any: true
+
+  - it: hub renders only the knob that is set
+    template: templates/lunar-hub-deployment.yaml
+    set:
+      hub.db.connectionLimit: 30
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DB_CONNECTION_LIMIT
+            value: "30"
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DB_POOL_TIMEOUT_SECONDS
+          any: true
+
+  - it: webserver renders pool env vars when set
+    template: templates/lunar-webserver-deployment.yaml
+    set:
+      webserver.db.connectionLimit: 15
+      webserver.db.poolTimeoutSeconds: 15
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DB_CONNECTION_LIMIT
+            value: "15"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DB_POOL_TIMEOUT_SECONDS
+            value: "15"
+
+  - it: auth renders pool env vars when set
+    template: templates/lunar-auth-bff-deployment.yaml
+    set:
+      auth.db.connectionLimit: 5
+      auth.db.poolTimeoutSeconds: 15
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DB_CONNECTION_LIMIT
+            value: "5"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DB_POOL_TIMEOUT_SECONDS
+            value: "15"
