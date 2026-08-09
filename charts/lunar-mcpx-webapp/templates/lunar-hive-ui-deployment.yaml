@@ -179,7 +179,7 @@ spec:
         - name: {{ . }}
         {{- end }}
       {{- end }}
-      {{- with .Values.ui.nodeSelector }}
+      {{- with coalesce .Values.ui.nodeSelector .Values.global.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}

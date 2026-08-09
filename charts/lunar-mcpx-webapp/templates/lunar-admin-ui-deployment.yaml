@@ -182,7 +182,7 @@ spec:
         - name: {{ . }}
         {{- end }}
       {{- end }}
-      {{- with .Values.admin.nodeSelector }}
+      {{- with coalesce .Values.admin.nodeSelector .Values.global.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}

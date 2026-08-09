@@ -244,7 +244,7 @@ spec:
         - name: {{ . }}
         {{- end }}
       {{- end }}
-      {{- with .Values.auth.nodeSelector }}
+      {{- with coalesce .Values.auth.nodeSelector .Values.global.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
