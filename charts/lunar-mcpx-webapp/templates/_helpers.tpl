@@ -119,6 +119,20 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
+Default in-cluster JWKS URI for the auth-bff service.
+*/}}
+{{- define "lunar-mcpx-webapp.authJwksUri" -}}
+http://{{ include "lunar-mcpx-webapp.fullname" . }}-auth/.well-known/jwks.json
+{{- end }}
+
+{{/*
+JWT audience for tokens minted by auth-bff.
+*/}}
+{{- define "lunar-mcpx-webapp.jwtAudience" -}}
+mcpx
+{{- end }}
+
+{{/*
 Renders a value that contains template.
 Usage:
 {{ include "lunar-mcpx-webapp.tplvalues.render" ( dict "value" .Values.path.to.the.Value "context" $) }}

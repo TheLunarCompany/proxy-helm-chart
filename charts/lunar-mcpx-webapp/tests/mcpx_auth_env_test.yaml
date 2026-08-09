@@ -1,0 +1,95 @@
+suite: MCPX auth env vars
+templates:
+  - templates/lunar-hive-controller-deployment.yaml
+  - templates/lunar-hive-router-deployment.yaml
+  - templates/lunar-auth-bff-deployment.yaml
+
+tests:
+  # --- controller ---
+  # Uses the external auth domain (not in-cluster) because Docker-based
+  # hosted servers can't resolve cluster-internal DNS.
+  - it: controller sets MCPX_AUTH_JWKS_URI to external auth domain
+    template: templates/lunar-hive-controller-deployment.yaml
+    release:
+      name: my-release
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MCPX_AUTH_JWKS_URI
+            value: "https://mcpx-auth.example.com/.well-known/jwks.json"
+
+  - it: controller sets MCPX_AUTH_JWT_ISSUER from auth ingress domain
+    template: templates/lunar-hive-controller-deployment.yaml
+    release:
+      name: my-release
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MCPX_AUTH_JWT_ISSUER
+            value: "https://mcpx-auth.example.com"
+
+  - it: controller sets MCPX_AUTH_JWT_AUDIENCE to shared jwt audience
+    template: templates/lunar-hive-controller-deployment.yaml
+    release:
+      name: my-release
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MCPX_AUTH_JWT_AUDIENCE
+            value: "mcpx"
+
+  - it: controller omits MCPX_AUTH_JWKS_URI and MCPX_AUTH_JWT_ISSUER when ingress is disabled
+    template: templates/lunar-hive-controller-deployment.yaml
+    release:
+      name: my-release
+    set:
+      ingress.enabled: false
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MCPX_AUTH_JWKS_URI
+          any: true
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MCPX_AUTH_JWT_ISSUER
+          any: true
+
+  # --- router (contrast: uses in-cluster URL, not external) ---
+  - it: router sets OIDC_JWKS_URI to in-cluster auth-bff
+    template: templates/lunar-hive-router-deployment.yaml
+    release:
+      name: my-release
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: OIDC_JWKS_URI
+            value: "http://my-release-lunar-mcpx-webapp-auth/.well-known/jwks.json"
+
+  # --- auth-bff ---
+  - it: auth-bff sets JWT_AUDIENCE to shared jwt audience
+    template: templates/lunar-auth-bff-deployment.yaml
+    release:
+      name: my-release
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: JWT_AUDIENCE
+            value: "mcpx"
+
+  - it: auth-bff and controller share the same audience value
+    template: templates/lunar-auth-bff-deployment.yaml
+    release:
+      name: my-release
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: JWT_AUDIENCE
+            value: "mcpx"

@@ -134,7 +134,13 @@ spec:
               value: "https://{{ first .Values.ingress.domains.router }}"
             - name: UI_DOMAIN
               value: "https://{{ first .Values.ingress.domains.ui }}"
+            - name: MCPX_AUTH_JWKS_URI
+              value: "https://{{ first .Values.ingress.domains.auth }}/.well-known/jwks.json"
+            - name: MCPX_AUTH_JWT_ISSUER
+              value: "https://{{ first .Values.ingress.domains.auth }}"
           {{- end }}
+            - name: MCPX_AUTH_JWT_AUDIENCE
+              value: {{ include "lunar-mcpx-webapp.jwtAudience" . | quote }}
           {{- $runtimeAuth := .Values.controller.mcpxRuntimeAuth | default dict }}
           {{- if or $runtimeAuth.dockerConfigSecret $runtimeAuth.npmrcSecret $runtimeAuth.uvConfigSecret $runtimeAuth.netrcSecret }}
             - name: MCPX_RUNTIME_AUTH_JSON
