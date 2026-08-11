@@ -40,30 +40,39 @@ Resolve MCPX version for UI and SERVER tag/env: global.mcpxVersion override fall
 
 {{/*
 Default registry base paths per group and environment. When a group's selector
-(global.webappRepository / global.mcpxRepository) is "dev", the prod base path
-below is replaced (plain string replacement) with the dev base path inside each
-service's image.repository — everything after the base (image name and any
-sub-path) is preserved. The dev bases can be overridden with
-global.webappRepositoryDev / global.mcpxRepositoryDev.
+(global.webappRepository / global.mcpxRepository) is "dev" or "boomipoc", the
+prod base path below is replaced (plain string replacement) with the selected
+environment's base path inside each service's image.repository — everything
+after the base (image name and any sub-path) is preserved. The dev/boomipoc
+bases can be overridden with global.webappRepositoryDev / global.mcpxRepositoryDev
+and global.webappRepositoryBoomipoc / global.mcpxRepositoryBoomipoc.
 */}}
 {{- define "lunar-mcpx-webapp.webappRepositoryProd.default" -}}us-central1-docker.pkg.dev/prj-common-442813/lunar-private{{- end -}}
 {{- define "lunar-mcpx-webapp.webappRepositoryDev.default" -}}us-central1-docker.pkg.dev/prj-common-442813/lunar-playground{{- end -}}
+{{- define "lunar-mcpx-webapp.webappRepositoryBoomipoc.default" -}}us-central1-docker.pkg.dev/prj-common-442813/lunar-boomi-poc{{- end -}}
 {{- define "lunar-mcpx-webapp.mcpxRepositoryProd.default" -}}us-central1-docker.pkg.dev/prj-common-442813/mcpx{{- end -}}
 {{- define "lunar-mcpx-webapp.mcpxRepositoryDev.default" -}}us-central1-docker.pkg.dev/prj-common-442813/mcpx-dev{{- end -}}
+{{- define "lunar-mcpx-webapp.mcpxRepositoryBoomipoc.default" -}}us-central1-docker.pkg.dev/prj-common-442813/mcpx-boomi-poc{{- end -}}
 
 {{/*
 Resolve a webapp image repository based on global.webappRepository.
 - "prod" (default): use the service's configured image.repository as-is.
 - "dev": replace the prod base path with the dev base path (string replacement).
+- "boomipoc": replace the prod base path with the boomipoc base path (string replacement).
   Repositories that don't contain the prod base are left unchanged.
 Usage:
 {{ include "lunar-mcpx-webapp.webappImage" (dict "repo" .Values.webserver.image.repository "context" .) }}
 */}}
 {{- define "lunar-mcpx-webapp.webappImage" -}}
-{{- if eq (.context.Values.global.webappRepository | default "prod") "dev" -}}
+{{- $selector := .context.Values.global.webappRepository | default "prod" -}}
+{{- if eq $selector "dev" -}}
 {{- $prodBase := include "lunar-mcpx-webapp.webappRepositoryProd.default" .context -}}
 {{- $devBase := .context.Values.global.webappRepositoryDev | default (include "lunar-mcpx-webapp.webappRepositoryDev.default" .context) -}}
 {{- .repo | replace $prodBase $devBase -}}
+{{- else if eq $selector "boomipoc" -}}
+{{- $prodBase := include "lunar-mcpx-webapp.webappRepositoryProd.default" .context -}}
+{{- $boomipocBase := .context.Values.global.webappRepositoryBoomipoc | default (include "lunar-mcpx-webapp.webappRepositoryBoomipoc.default" .context) -}}
+{{- .repo | replace $prodBase $boomipocBase -}}
 {{- else -}}
 {{- .repo -}}
 {{- end -}}
@@ -73,15 +82,21 @@ Usage:
 Resolve an mcpx image repository based on global.mcpxRepository.
 - "prod" (default): use the provided image.repository as-is.
 - "dev": replace the prod base path with the dev base path (string replacement).
+- "boomipoc": replace the prod base path with the boomipoc base path (string replacement).
   Repositories that don't contain the prod base are left unchanged.
 Usage:
 {{ include "lunar-mcpx-webapp.mcpxImage" (dict "repo" .Values.ui.image.repository "context" .) }}
 */}}
 {{- define "lunar-mcpx-webapp.mcpxImage" -}}
-{{- if eq (.context.Values.global.mcpxRepository | default "prod") "dev" -}}
+{{- $selector := .context.Values.global.mcpxRepository | default "prod" -}}
+{{- if eq $selector "dev" -}}
 {{- $prodBase := include "lunar-mcpx-webapp.mcpxRepositoryProd.default" .context -}}
 {{- $devBase := .context.Values.global.mcpxRepositoryDev | default (include "lunar-mcpx-webapp.mcpxRepositoryDev.default" .context) -}}
 {{- .repo | replace $prodBase $devBase -}}
+{{- else if eq $selector "boomipoc" -}}
+{{- $prodBase := include "lunar-mcpx-webapp.mcpxRepositoryProd.default" .context -}}
+{{- $boomipocBase := .context.Values.global.mcpxRepositoryBoomipoc | default (include "lunar-mcpx-webapp.mcpxRepositoryBoomipoc.default" .context) -}}
+{{- .repo | replace $prodBase $boomipocBase -}}
 {{- else -}}
 {{- .repo -}}
 {{- end -}}
