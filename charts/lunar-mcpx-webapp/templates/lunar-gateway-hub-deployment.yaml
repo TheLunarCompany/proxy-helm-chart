@@ -1,0 +1,255 @@
+{{- if .Values.gatewayHub.enabled | default false }}
+{{- $tolerations := concat .Values.global.tolerations .Values.gatewayHub.tolerations -}}
+{{- $repository := include "lunar-mcpx-webapp.webappImage" (dict "repo" .Values.gatewayHub.image.repository "context" .) -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-gateway-hub
+  labels:
+    name: {{ include "lunar-mcpx-webapp.fullname" . }}-gateway-hub
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-gateway-hub
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.gatewayHub.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  # Dedup, the budget store and the live gateway sessions are in-process, so a
+  # second replica keeps its own copy of all three. Keep this at 1.
+  replicas: {{ .Values.gatewayHub.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ include "lunar-mcpx-webapp.fullname" . }}-gateway-hub
+      {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 6 }}
+      {{- with .Values.global.labels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.gatewayHub.labels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.gatewayHub.podLabels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "lunar-mcpx-webapp.fullname" . }}-gateway-hub
+        {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 8 }}
+        {{- with .Values.global.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.gatewayHub.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.gatewayHub.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- $extraInit := concat (.Values.global.extraInitContainers | default (list)) (.Values.gatewayHub.extraInitContainers | default (list)) }}
+      {{- if or .Values.clickhouse.enabled $extraInit }}
+      initContainers:
+        {{- if .Values.clickhouse.enabled }}
+        - name: mcpx-gateway-hub-clickhouse-migration
+          image: "{{ $repository }}:{{ .Values.gatewayHub.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
+          resources:
+            {{- if .Values.global.manageResources.limits }}
+            limits:
+              {{- with .Values.gatewayHub.resources.limits }}
+              {{- toYaml . | nindent 14 }}
+              {{- end }}
+            {{- end }}
+            {{- if .Values.global.manageResources.requests }}
+            requests:
+              {{- with .Values.gatewayHub.resources.requests }}
+                {{- toYaml . | nindent 14 }}
+                {{- end }}
+            {{- end }}
+          {{- end }}
+          command: ["/bin/sh"]
+          args: ["-c", "cd /mcpx-webapp && CLICKHOUSE_URL='{{ include "lunar-mcpx-webapp.clickhouseUrl" . }}' node packages/toolkit-clickhouse/dist/bin/migrate.js"]
+          envFrom:
+            - secretRef:
+                name: {{ .Values.clickhouse.credentialsSecret }}
+          env:
+            - name: NODE_ENV
+              value: "production"
+        {{- end }}
+        {{- with $extraInit }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      containers:
+        - name: mcpx-gateway-hub-container
+          image: "{{ $repository }}:{{ .Values.gatewayHub.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          ports:
+            - containerPort: 8080
+          {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
+          resources:
+            {{- if .Values.global.manageResources.limits }}
+            limits:
+              {{- with .Values.gatewayHub.resources.limits }}
+              {{- toYaml . | nindent 14 }}
+              {{- end }}
+            {{- end }}
+            {{- if .Values.global.manageResources.requests }}
+            requests:
+              {{- with .Values.gatewayHub.resources.requests }}
+                {{- toYaml . | nindent 14 }}
+                {{- end }}
+            {{- end }}
+          {{- end }}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
+            runAsUser: 1000
+            runAsGroup: 1000
+            {{- end }}
+          envFrom:
+            - secretRef:
+                name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
+          {{- with .Values.global.extraEnvFromSecrets }}
+          {{- range $.Values.global.extraEnvFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.gatewayHub.extraEnvFromSecrets }}
+          {{- range $.Values.gatewayHub.extraEnvFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+          {{- end }}
+          {{- end }}
+          {{- if .Values.clickhouse.enabled }}
+            - secretRef:
+                name: {{ .Values.clickhouse.credentialsSecret }}
+          {{- end }}
+          env:
+            - name: NODE_ENV
+              value: "production"
+            {{- with .Values.global.caCerts }}
+            {{- with .secretName }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: /usr/local/share/ca-certificates/{{ . }}.crt
+            {{- end }}
+            {{- end }}
+            - name: PORT
+              value: "8080"
+            {{- with .Values.gatewayHub.logLevel }}
+            - name: LOG_LEVEL
+              value: {{ . | quote }}
+            {{- end }}
+            {{- include "lunar-mcpx-webapp.gatewayHubSecretEnv" . | nindent 12 }}
+            {{- if .Values.clickhouse.enabled }}
+            - name: CLICKHOUSE_URL
+              value: "{{ include "lunar-mcpx-webapp.clickhouseUrl" . }}"
+            {{- end }}
+            {{- with .Values.gatewayHub.clickhouseBuffer.flushIntervalMs }}
+            - name: CLICKHOUSE_BUFFER_FLUSH_INTERVAL_MS
+              value: {{ . | quote }}
+            {{- end }}
+            {{- with .Values.gatewayHub.clickhouseBuffer.maxSize }}
+            - name: CLICKHOUSE_BUFFER_MAX_SIZE
+              value: {{ . | quote }}
+            {{- end }}
+            {{/*
+            The flow, quota and providers documents the hub delivers are not set
+            here: each has a working default in the service. Override one with a
+            base64-encoded YAML document via gatewayHub.extraEnvVars
+            (GATEWAY_FLOW_YAML_B64 / GATEWAY_QUOTA_YAML_B64 /
+            GATEWAY_PROVIDERS_YAML_B64).
+            */}}
+          {{- if .Values.global.extraEnvVars }}
+          {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.gatewayHub.extraEnvVars }}
+          {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.gatewayHub.extraEnvVars "context" $) | nindent 12 }}
+          {{- end }}
+
+          startupProbe:
+            successThreshold: 1
+            failureThreshold: 30
+            httpGet:
+              path: /healthcheck
+              port: 8080
+              scheme: HTTP
+            periodSeconds: 10
+          # /readyz, not /healthcheck: the hub reports 503 until it can write to
+          # ClickHouse, and a gateway that connects to a hub with no sink would
+          # hand over usage that goes nowhere.
+          readinessProbe:
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              path: /readyz
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 10
+          # /livez never consults ClickHouse on purpose: restarting on an
+          # outage would drop the usage buffered in memory.
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /livez
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 10
+
+          {{- with .Values.global.caCerts }}
+          volumeMounts:
+          {{- with .secretName }}
+            - name: {{ . }}
+              mountPath: "/usr/local/share/ca-certificates/"
+              readOnly: true
+          {{- end }}
+          {{- end }}
+        {{- with concat (.Values.global.extraContainers | default (list)) (.Values.gatewayHub.extraContainers | default (list)) }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        {{- with .Values.global.caCerts }}
+        {{- with .secretName }}
+        - name: {{ . }}
+          secret:
+            secretName: {{ . }}
+            items:
+              - key: ca.crt
+                path: {{ . }}.crt
+        {{- end }}
+        {{- end }}
+      {{- with mergeOverwrite (deepCopy (.Values.global.affinity | default dict)) (.Values.gatewayHub.affinity | default dict) }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with concat (.Values.global.topologySpreadConstraints | default list) (.Values.gatewayHub.topologySpreadConstraints | default list) }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range $.Values.global.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+      {{- with .Values.gatewayHub.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with coalesce .Values.gatewayHub.priorityClassName .Values.global.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+  {{- end }}

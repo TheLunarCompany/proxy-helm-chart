@@ -399,6 +399,242 @@ hub:
   # priorityClassName: "custom"
   priorityClassName: ""
 
+gatewayHub:
+  # -- Enable gateway-hub, the WebSocket ingestion service for LLM usage
+  # reported by the AI gateway. Writes to ClickHouse, so it is only useful with
+  # clickhouse.enabled (or an external ClickHouse via extraEnvVars).
+  enabled: false
+
+  image:
+    # -- Lunar mcpx-gateway-hub image repository
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-gateway-hub
+    # -- Lunar mcpx-gateway-hub image pull policy
+    pullPolicy: IfNotPresent
+    # -- Lunar mcpx-gateway-hub image tag
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+  # -- sharedSecret is the bearer secret the AI gateway sends on the WebSocket
+  # upgrade. Both sides read it from the same k8s Secret, so they cannot drift.
+  # Required when gatewayHub.enabled or gateway.enabled is true - a hub with no
+  # secret would accept every connection.
+  # Generate with: openssl rand -hex 32
+  sharedSecret: ""
+
+  # -- existingSecret points at a pre-existing Secret holding the shared secret
+  # instead of having the chart render one from sharedSecret above.
+  existingSecret:
+    # -- Name of the existing Secret. Empty means the chart renders its own.
+    name: ""
+    # -- Key inside that Secret.
+    key: GATEWAY_HUB_SHARED_SECRET
+
+  # -- logLevel for the hub process (error|warn|info|http|verbose|debug|silly).
+  logLevel: "info"
+
+  # -- ClickHouse write buffer. Unset values fall back to the service defaults
+  # (5000ms / 2500 rows).
+  clickhouseBuffer:
+    # -- How often a partial buffer is flushed to ClickHouse, in ms.
+    flushIntervalMs: null
+    # -- Rows buffered before a flush is forced.
+    maxSize: null
+
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  nodeSelector: {}
+
+  # -- tolerations allow the scheduler to schedule pods with matching taints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  # tolerations:
+  #   - key: "example-key"
+  #     operator: "Exists"
+  #     effect: "NoSchedule"
+  tolerations: []
+
+  # -- affinity is a scheduling feature that lets influence which nodes or which pods a pod should be placed near (or away from).
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  affinity: {}
+
+  # -- topologySpreadConstraints if specified, the pod's topology spread constraints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+  topologySpreadConstraints: []
+
+  # -- number of replicas to run. Keep at 1: dedup, the budget store and the
+  # live gateway sessions are all in-process, so a second replica keeps its own
+  # separate copy of each.
+  replicaCount: 1
+
+  # -- Set pod resource requests & limits
+  resources:
+    limits:
+      cpu: "500m"
+      memory: 512Mi
+    requests:
+      cpu: "250m"
+      memory: 256Mi
+
+  # -- extraEnvVars An array to add extra env vars
+  # The flow, quota and providers documents the hub delivers to gateways each
+  # have a working default and need no configuration. To override one, pass a
+  # base64-encoded YAML document here as GATEWAY_FLOW_YAML_B64,
+  # GATEWAY_QUOTA_YAML_B64 or GATEWAY_PROVIDERS_YAML_B64.
+  # e.g:
+  # extraEnvVars:
+  #   - name: FOO
+  #     value: "bar"
+  #   - name: FOO2
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: SECRET_NAME
+  #         key: KEY
+  extraEnvVars: []
+
+  # -- extraEnvFromSecrets An array of secret names to add as extra env vars
+  # extraEnvFromSecrets:
+  #   - secret_1
+  #   - secret_2
+  extraEnvFromSecrets: []
+
+  # Labels for all application related resources
+  labels: {}
+
+  # Pod Labels
+  podLabels: {}
+
+  # -- extraInitContainers Additional init containers configuration
+  extraInitContainers: []
+
+  # -- extraContainers Additional sidecars configuration
+  extraContainers: []
+
+  # -- priorityClassName determines a pod's scheduling priority relative to other pods.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
+  priorityClassName: ""
+
+gateway:
+  # -- Enable the AI gateway (LLM gateway). Agents point their provider base URL
+  # at it and it forwards to the real provider, recording usage on the way.
+  enabled: false
+
+  image:
+    # -- Lunar mcpx-ai-gateway image repository
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-ai-gateway
+    # -- Lunar mcpx-ai-gateway image pull policy
+    pullPolicy: IfNotPresent
+    # -- Lunar mcpx-ai-gateway image tag
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+  # -- tenantName the gateway reports itself under. Defaults to the release
+  # fullname. The process refuses to start without one.
+  tenantName: ""
+
+  # -- defaultUpstream is where a request that names no destination of its own
+  # goes (the ANTHROPIC_BASE_URL / OPENAI_BASE_URL case). Requests carrying a
+  # destination - absolute-form target, Forwarded, X-Forwarded-Host,
+  # x-lunar-host - ignore this. Empty means a request with no resolvable
+  # upstream is refused rather than sent somewhere plausible.
+  # e.g. https://api.anthropic.com
+  defaultUpstream: ""
+
+  # -- Port the gateway serves LLM traffic on. Exposed on the Service as port 80.
+  bindPort: 8000
+  # -- Port the engine serves Prometheus metrics on at /metrics.
+  metricsPort: 3000
+  # -- Port the admin server serves /health and /providers on. Probes use it.
+  adminPort: 12346
+
+  # -- logLevel for the gateway process (trace|debug|info|warn|error).
+  logLevel: "info"
+
+  # -- failsafeEnabled lets the engine fall back to plain proxying when a flow
+  # fails, instead of failing the request.
+  failsafeEnabled: true
+
+  hub:
+    # -- Report usage to gateway-hub. Off the request path entirely: a hub that
+    # is absent, unreachable or misbehaving never affects an LLM request.
+    enabled: true
+    # -- url overrides the gateway-hub WebSocket URL. Empty uses the in-cluster
+    # gateway-hub Service of this release
+    # (ws://<release>-gateway-hub/v1/gateway).
+    url: ""
+    # -- Capacity of the in-memory usage queue. Unset uses the gateway default (10000).
+    queueSize: null
+    # -- Max usage events per batch frame. Unset uses the gateway default (200).
+    batchMaxSize: null
+    # -- How often a partial batch is flushed, in ms. Unset uses the gateway default (2000).
+    flushIntervalMs: null
+    # -- How often a heartbeat frame is sent, in ms. Unset uses the gateway default (5000).
+    heartbeatMs: null
+    # -- How long shutdown waits for the queue to drain, in ms. Unset uses the gateway default (3000).
+    drainMs: null
+
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  nodeSelector: {}
+
+  # -- tolerations allow the scheduler to schedule pods with matching taints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  tolerations: []
+
+  # -- affinity is a scheduling feature that lets influence which nodes or which pods a pod should be placed near (or away from).
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  affinity: {}
+
+  # -- topologySpreadConstraints if specified, the pod's topology spread constraints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+  topologySpreadConstraints: []
+
+  # -- number of replicas to run
+  replicaCount: 1
+
+  # -- Set pod resource requests & limits
+  resources:
+    limits:
+      cpu: "1000m"
+      memory: 1Gi
+    requests:
+      cpu: "250m"
+      memory: 256Mi
+
+  # -- extraEnvVars An array to add extra env vars.
+  # A provider that needs a server-side credential reads it from the env var
+  # named by its `secret_ref`, so add those here or via extraEnvFromSecrets.
+  # e.g:
+  # extraEnvVars:
+  #   - name: FOO
+  #     value: "bar"
+  #   - name: FOO2
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: SECRET_NAME
+  #         key: KEY
+  extraEnvVars: []
+
+  # -- extraEnvFromSecrets An array of secret names to add as extra env vars
+  # extraEnvFromSecrets:
+  #   - secret_1
+  #   - secret_2
+  extraEnvFromSecrets: []
+
+  # Labels for all application related resources
+  labels: {}
+
+  # Pod Labels
+  podLabels: {}
+
+  # -- extraInitContainers Additional init containers configuration
+  extraInitContainers: []
+
+  # -- extraContainers Additional sidecars configuration
+  extraContainers: []
+
+  # -- priorityClassName determines a pod's scheduling priority relative to other pods.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
+  priorityClassName: ""
+
 admin:
   image:
     # -- Lunar mcpx-webserver image repository
@@ -1134,6 +1370,16 @@ ingress:
       - mcpx-ui.example.com
     router:
       - mcpx.example.com
+    # -- Hostname(s) for the AI gateway. Every key here becomes an Ingress rule
+    # whose backend is the Service named <release>-<key>, so `gateway` reaches
+    # the AI gateway the same way `webserver` reaches the webserver. Agents then
+    # point their provider base URL at it, e.g.
+    # ANTHROPIC_BASE_URL=https://mcpx-gateway.example.com.
+    # Add it only together with gateway.enabled=true: a rule for a Service that
+    # was never rendered is a dead backend (and, on gce, a managed certificate
+    # that never resolves).
+    # gateway:
+    #   - mcpx-gateway.example.com
 
   # -- https variable controls settings related to certificates configuration on ingress
   # Block 'tls' represents standard 'tls' block of ingress controller - https://kubernetes.io/docs/concepts/services-networking/ingress/#tls

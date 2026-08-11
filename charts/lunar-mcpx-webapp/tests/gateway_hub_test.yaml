@@ -1,0 +1,178 @@
+suite: gateway-hub deployment, service and shared secret
+templates:
+  - templates/lunar-gateway-hub-deployment.yaml
+  - templates/lunar-gateway-hub-service.yaml
+  - templates/lunar-gateway-hub-secrets.yaml
+
+tests:
+  - it: should render nothing when both gateway-hub and gateway are disabled
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should fail when enabled without a shared secret
+    template: templates/lunar-gateway-hub-secrets.yaml
+    set:
+      gatewayHub.enabled: true
+    asserts:
+      - failedTemplate:
+          errorMessage: "gatewayHub.sharedSecret (or gatewayHub.existingSecret.name) is required when gatewayHub.enabled or gateway.enabled is true. A hub with no secret would accept every connection. Generate one with: openssl rand -hex 32"
+
+  - it: should render the shared secret from values
+    template: templates/lunar-gateway-hub-secrets.yaml
+    set:
+      gatewayHub.enabled: true
+      gatewayHub.sharedSecret: s3cr3t
+    asserts:
+      - isKind:
+          of: Secret
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-lunar-mcpx-webapp-gateway-hub
+      - equal:
+          path: data.GATEWAY_HUB_SHARED_SECRET
+          value: czNjcjN0
+
+  - it: should render no secret of its own when an existing one is named
+    template: templates/lunar-gateway-hub-secrets.yaml
+    set:
+      gatewayHub.enabled: true
+      gatewayHub.existingSecret.name: my-gateway-secret
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should read the shared secret from the existing secret and key
+    template: templates/lunar-gateway-hub-deployment.yaml
+    set:
+      gatewayHub.enabled: true
+      gatewayHub.existingSecret.name: my-gateway-secret
+      gatewayHub.existingSecret.key: MY_KEY
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: GATEWAY_HUB_SHARED_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: my-gateway-secret
+                key: MY_KEY
+
+  - it: should serve HTTP and the WebSocket on one port
+    template: templates/lunar-gateway-hub-service.yaml
+    set:
+      gatewayHub.enabled: true
+      gatewayHub.sharedSecret: s
+    asserts:
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-lunar-mcpx-webapp-gateway-hub
+      - lengthEqual:
+          path: spec.ports
+          count: 1
+      - equal:
+          path: spec.ports[0].port
+          value: 80
+      - equal:
+          path: spec.ports[0].targetPort
+          value: 8080
+
+  - it: should have no init containers when clickhouse is disabled
+    template: templates/lunar-gateway-hub-deployment.yaml
+    set:
+      gatewayHub.enabled: true
+      gatewayHub.sharedSecret: s
+    asserts:
+      - isNull:
+          path: spec.template.spec.initContainers
+
+  - it: should run the clickhouse migration and read the credentials secret when clickhouse is enabled
+    template: templates/lunar-gateway-hub-deployment.yaml
+    set:
+      gatewayHub.enabled: true
+      gatewayHub.sharedSecret: s
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+    asserts:
+      - lengthEqual:
+          path: spec.template.spec.initContainers
+          count: 1
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: mcpx-gateway-hub-clickhouse-migration
+      - matchRegex:
+          path: spec.template.spec.initContainers[0].args[1]
+          pattern: "node packages/toolkit-clickhouse/dist/bin/migrate.js"
+      - contains:
+          path: spec.template.spec.initContainers[0].envFrom
+          content:
+            secretRef:
+              name: ch-creds
+      - contains:
+          path: spec.template.spec.containers[0].envFrom
+          content:
+            secretRef:
+              name: ch-creds
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CLICKHOUSE_URL
+            value: "http://$(CLICKHOUSE_USER):$(CLICKHOUSE_PASSWORD)@RELEASE-NAME-lunar-mcpx-webapp-clickhouse:8123"
+
+  - it: should not reference clickhouse at all when it is disabled
+    template: templates/lunar-gateway-hub-deployment.yaml
+    set:
+      gatewayHub.enabled: true
+      gatewayHub.sharedSecret: s
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CLICKHOUSE_URL
+          any: true
+
+  - it: should probe readiness on /readyz and liveness on /livez
+    template: templates/lunar-gateway-hub-deployment.yaml
+    set:
+      gatewayHub.enabled: true
+      gatewayHub.sharedSecret: s
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+          value: /readyz
+      - equal:
+          path: spec.template.spec.containers[0].livenessProbe.httpGet.path
+          value: /livez
+      - equal:
+          path: spec.template.spec.containers[0].startupProbe.httpGet.path
+          value: /healthcheck
+
+  - it: should pass the clickhouse buffer knobs only when set
+    template: templates/lunar-gateway-hub-deployment.yaml
+    set:
+      gatewayHub.enabled: true
+      gatewayHub.sharedSecret: s
+      gatewayHub.clickhouseBuffer.flushIntervalMs: 1000
+      gatewayHub.clickhouseBuffer.maxSize: 500
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CLICKHOUSE_BUFFER_FLUSH_INTERVAL_MS
+            value: "1000"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: CLICKHOUSE_BUFFER_MAX_SIZE
+            value: "500"
+
+  - it: should use the dev registry when global.webappRepository is dev
+    template: templates/lunar-gateway-hub-deployment.yaml
+    set:
+      gatewayHub.enabled: true
+      gatewayHub.sharedSecret: s
+      global.webappRepository: dev
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: "^us-central1-docker.pkg.dev/prj-common-442813/lunar-playground/mcpx-gateway-hub:"

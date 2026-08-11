@@ -146,6 +146,49 @@ CLICKHOUSE_USER and CLICKHOUSE_PASSWORD must be available via envFrom.
 http://$(CLICKHOUSE_USER):$(CLICKHOUSE_PASSWORD)@{{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse:8123
 {{- end }}
 
+{{/*
+gateway-hub WebSocket URL the ai-gateway dials. Defaults to the in-cluster
+gateway-hub Service (port 80 -> containerPort 8080), overridable with
+gateway.hub.url for a gateway that runs outside this release.
+The path is fixed by gateway-hub's WS_PATH.
+*/}}
+{{- define "lunar-mcpx-webapp.gatewayHubUrl" -}}
+{{- with .Values.gateway.hub.url -}}
+{{- . -}}
+{{- else -}}
+ws://{{ include "lunar-mcpx-webapp.fullname" . }}-gateway-hub/v1/gateway
+{{- end -}}
+{{- end }}
+
+{{/*
+Name of the Secret holding GATEWAY_HUB_SHARED_SECRET. Either the chart-managed
+one rendered from gatewayHub.sharedSecret, or a pre-existing secret named by
+gatewayHub.existingSecret.name. Both the hub and the gateway read the same key.
+*/}}
+{{- define "lunar-mcpx-webapp.gatewayHubSecretName" -}}
+{{- with .Values.gatewayHub.existingSecret.name -}}
+{{- . -}}
+{{- else -}}
+{{- include "lunar-mcpx-webapp.fullname" . }}-gateway-hub
+{{- end -}}
+{{- end }}
+
+{{- define "lunar-mcpx-webapp.gatewayHubSecretKey" -}}
+{{- .Values.gatewayHub.existingSecret.key | default "GATEWAY_HUB_SHARED_SECRET" -}}
+{{- end }}
+
+{{/*
+GATEWAY_HUB_SHARED_SECRET env entry, shared by both sides of the connection so
+they cannot drift apart.
+*/}}
+{{- define "lunar-mcpx-webapp.gatewayHubSecretEnv" -}}
+- name: GATEWAY_HUB_SHARED_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "lunar-mcpx-webapp.gatewayHubSecretName" . }}
+      key: {{ include "lunar-mcpx-webapp.gatewayHubSecretKey" . }}
+{{- end }}
+
 {{- define "lunar-mcpx-webapp.tplvalues.render" -}}
     {{- if typeIs "string" .value }}
         {{- tpl .value .context }}

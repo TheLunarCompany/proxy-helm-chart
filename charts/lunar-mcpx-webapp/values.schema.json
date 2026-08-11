@@ -132,6 +132,233 @@
         }
       }
     },
+    "gatewayHub": {
+      "type": "object",
+      "description": "gateway-hub: WebSocket ingestion of LLM usage reported by the AI gateway",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "sharedSecret": {
+          "type": "string",
+          "description": "Bearer secret the AI gateway sends on the WebSocket upgrade. Required when gatewayHub.enabled or gateway.enabled is true, unless existingSecret.name is set.",
+          "default": ""
+        },
+        "existingSecret": {
+          "type": "object",
+          "description": "Pre-existing Secret holding the shared secret, instead of rendering one from sharedSecret.",
+          "properties": {
+            "name": {
+              "type": "string",
+              "default": ""
+            },
+            "key": {
+              "type": "string",
+              "default": "GATEWAY_HUB_SHARED_SECRET"
+            }
+          }
+        },
+        "logLevel": {
+          "type": "string",
+          "enum": ["error", "warn", "info", "http", "verbose", "debug", "silly"]
+        },
+        "clickhouseBuffer": {
+          "type": "object",
+          "properties": {
+            "flushIntervalMs": {
+              "type": ["integer", "null"]
+            },
+            "maxSize": {
+              "type": ["integer", "null"]
+            }
+          }
+        },
+        "image": {
+          "type": "object",
+          "properties": {
+            "pullPolicy": {
+              "type": "string"
+            },
+            "repository": {
+              "type": "string"
+            },
+            "tag": {
+              "type": "string"
+            }
+          }
+        },
+        "replicaCount": {
+          "type": "integer",
+          "description": "Keep at 1: dedup, the budget store and the live gateway sessions are all in-process.",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "extraEnvVars": {
+          "type": "array"
+        },
+        "extraEnvFromSecrets": {
+          "type": "array"
+        },
+        "resources": {
+          "type": "object",
+          "properties": {
+            "limits": {
+              "type": "object",
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                }
+              }
+            },
+            "requests": {
+              "type": "object",
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "affinity": {
+          "type": "object"
+        },
+        "topologySpreadConstraints": {
+          "type": "array"
+        },
+        "priorityClassName": {
+          "type": "string"
+        }
+      }
+    },
+    "gateway": {
+      "type": "object",
+      "description": "AI gateway (LLM gateway) that agents point their provider base URL at",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "tenantName": {
+          "type": "string",
+          "description": "Tenant the gateway reports itself under. Empty falls back to the release fullname."
+        },
+        "defaultUpstream": {
+          "type": "string",
+          "description": "Where a request that names no destination of its own goes, e.g. https://api.anthropic.com. Empty means such a request is refused."
+        },
+        "bindPort": {
+          "type": "integer"
+        },
+        "metricsPort": {
+          "type": "integer"
+        },
+        "adminPort": {
+          "type": "integer"
+        },
+        "logLevel": {
+          "type": "string"
+        },
+        "failsafeEnabled": {
+          "type": "boolean"
+        },
+        "hub": {
+          "type": "object",
+          "description": "Connection to gateway-hub. Entirely off the request path.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "url": {
+              "type": "string",
+              "description": "Overrides the gateway-hub WebSocket URL. Empty uses the in-cluster gateway-hub Service of this release."
+            },
+            "queueSize": {
+              "type": ["integer", "null"]
+            },
+            "batchMaxSize": {
+              "type": ["integer", "null"]
+            },
+            "flushIntervalMs": {
+              "type": ["integer", "null"]
+            },
+            "heartbeatMs": {
+              "type": ["integer", "null"]
+            },
+            "drainMs": {
+              "type": ["integer", "null"]
+            }
+          }
+        },
+        "image": {
+          "type": "object",
+          "properties": {
+            "pullPolicy": {
+              "type": "string"
+            },
+            "repository": {
+              "type": "string"
+            },
+            "tag": {
+              "type": "string"
+            }
+          }
+        },
+        "replicaCount": {
+          "type": "integer"
+        },
+        "extraEnvVars": {
+          "type": "array"
+        },
+        "extraEnvFromSecrets": {
+          "type": "array"
+        },
+        "resources": {
+          "type": "object",
+          "properties": {
+            "limits": {
+              "type": "object",
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                }
+              }
+            },
+            "requests": {
+              "type": "object",
+              "properties": {
+                "cpu": {
+                  "type": "string"
+                },
+                "memory": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "affinity": {
+          "type": "object"
+        },
+        "topologySpreadConstraints": {
+          "type": "array"
+        },
+        "priorityClassName": {
+          "type": "string"
+        }
+      }
+    },
     "auth": {
       "type": "object",
       "properties": {

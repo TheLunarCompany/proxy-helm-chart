@@ -1,0 +1,73 @@
+{{- if .Values.gateway.enabled | default false }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-gateway
+  labels:
+    name: {{ include "lunar-mcpx-webapp.fullname" . }}-gateway
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-gateway
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.gateway.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- if .Values.ingress.enabled | default true }}
+    {{- if eq .Values.ingress.type "gce" }}
+    cloud.google.com/backend-config: '{"ports": {"gateway80":"{{ include "lunar-mcpx-webapp.fullname" . }}-gateway"}}'
+    {{- end }}
+    {{- end }}
+spec:
+  ports:
+    # Port 80 so `ingress.domains.gateway` reaches it like every other
+    # ingress-backed service in this chart.
+    - name: gateway80
+      protocol: TCP
+      port: 80
+      targetPort: http
+    # Prometheus scrape endpoint. Not exposed through the Ingress.
+    - name: metrics
+      protocol: TCP
+      port: {{ .Values.gateway.metricsPort }}
+      targetPort: metrics
+  type: ClusterIP
+  selector:
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-gateway
+    {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 4 }}
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.gateway.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.gateway.podLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+
+{{- if .Values.ingress.enabled | default true }}
+{{- if eq .Values.ingress.type "gce" }}
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-gateway
+spec:
+  # An LLM call streams for as long as the model takes to answer, so the
+  # default 30s backend timeout would cut long completions mid-stream.
+  timeoutSec: 3600
+  connectionDraining:
+    drainingTimeoutSec: 60
+  healthCheck:
+    checkIntervalSec: 10
+    timeoutSec: 5
+    healthyThreshold: 1
+    unhealthyThreshold: 3
+    type: HTTP
+    # The admin server: the proxy port only answers a real LLM request.
+    requestPath: /health
+    port: {{ .Values.gateway.adminPort }}
+{{- end }}
+{{- end }}
+
+{{- end }}

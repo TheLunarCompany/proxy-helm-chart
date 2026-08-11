@@ -1,0 +1,37 @@
+{{- if .Values.gatewayHub.enabled | default false }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-gateway-hub
+  labels:
+    name: {{ include "lunar-mcpx-webapp.fullname" . }}-gateway-hub
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-gateway-hub
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.gatewayHub.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  ports:
+    # HTTP probes and the /v1/gateway WebSocket share this one port.
+    - name: gatewayhub80
+      protocol: TCP
+      port: 80
+      targetPort: 8080
+  sessionAffinity: ClientIP
+  type: ClusterIP
+  selector:
+    app: {{ include "lunar-mcpx-webapp.fullname" . }}-gateway-hub
+    {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 4 }}
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.gatewayHub.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.gatewayHub.podLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+
+{{- end }}
