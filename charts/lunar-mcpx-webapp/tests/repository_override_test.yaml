@@ -109,6 +109,71 @@ tests:
           path: spec.jobTemplate.spec.template.spec.containers[0].image
           pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-playground/mcpx-jobs:.+$
 
+  # --- webappRepository=boomipoc: webapp base path swapped, image name preserved ---
+  - it: webserver uses the boomipoc registry base when global.webappRepository=boomipoc
+    template: templates/lunar-webserver-deployment.yaml
+    set:
+      global.webappRepository: boomipoc
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-boomi-poc/mcpx-webserver:.+$
+
+  - it: hub uses the boomipoc registry base when global.webappRepository=boomipoc
+    template: templates/lunar-hub-deployment.yaml
+    set:
+      global.webappRepository: boomipoc
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-boomi-poc/mcpx-hub:.+$
+
+  - it: admin uses the boomipoc registry base when global.webappRepository=boomipoc
+    template: templates/lunar-admin-ui-deployment.yaml
+    set:
+      global.webappRepository: boomipoc
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-boomi-poc/mcpx-admin-ui:.+$
+
+  - it: auth uses the boomipoc registry base when global.webappRepository=boomipoc
+    template: templates/lunar-auth-bff-deployment.yaml
+    set:
+      global.webappRepository: boomipoc
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-boomi-poc/mcpx-auth-bff:.+$
+
+  - it: controller uses the boomipoc registry base when global.webappRepository=boomipoc
+    template: templates/lunar-hive-controller-deployment.yaml
+    set:
+      global.webappRepository: boomipoc
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-boomi-poc/mcpx-hive-controller:.+$
+
+  - it: router uses the boomipoc registry base when global.webappRepository=boomipoc
+    template: templates/lunar-hive-router-deployment.yaml
+    set:
+      global.webappRepository: boomipoc
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-boomi-poc/mcpx-router:.+$
+
+  - it: jobs cronjob uses the boomipoc registry base when global.webappRepository=boomipoc
+    template: templates/lunar-jobs-cronjob.yaml
+    documentIndex: 0
+    set:
+      global.webappRepository: boomipoc
+    asserts:
+      - matchRegex:
+          path: spec.jobTemplate.spec.template.spec.containers[0].image
+          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-boomi-poc/mcpx-jobs:.+$
+
   # --- mcpxRepository=dev: mcpx base path swapped ---
   - it: ui uses the dev mcpx registry base when global.mcpxRepository=dev
     template: templates/lunar-hive-ui-deployment.yaml
@@ -129,6 +194,27 @@ tests:
           content:
             name: HIVE_DEFAULT_MCPX_IMAGE_REPO
             value: us-central1-docker.pkg.dev/prj-common-442813/mcpx-dev/mcpx-server
+
+  # --- mcpxRepository=boomipoc: mcpx base path swapped ---
+  - it: ui uses the boomipoc mcpx registry base when global.mcpxRepository=boomipoc
+    template: templates/lunar-hive-ui-deployment.yaml
+    set:
+      global.mcpxRepository: boomipoc
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/mcpx-boomi-poc/mcpx-ui:.+$
+
+  - it: webserver sets HIVE_DEFAULT_MCPX_IMAGE_REPO to the boomipoc mcpx registry when global.mcpxRepository=boomipoc
+    template: templates/lunar-webserver-deployment.yaml
+    set:
+      global.mcpxRepository: boomipoc
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: HIVE_DEFAULT_MCPX_IMAGE_REPO
+            value: us-central1-docker.pkg.dev/prj-common-442813/mcpx-boomi-poc/mcpx-server
 
   # --- the two groups switch independently ---
   - it: webappRepository=dev does not affect the mcpx (ui) image
@@ -202,3 +288,35 @@ tests:
           content:
             name: HIVE_DEFAULT_MCPX_IMAGE_REPO
             value: my-dev-registry.example.com/mcpx/mcpx-server
+
+  - it: webapp uses a custom global.webappRepositoryBoomipoc when webappRepository=boomipoc
+    template: templates/lunar-webserver-deployment.yaml
+    set:
+      global.webappRepository: boomipoc
+      global.webappRepositoryBoomipoc: my-boomipoc-registry.example.com/webapp
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^my-boomipoc-registry\.example\.com/webapp/mcpx-webserver:.+$
+
+  - it: ui uses a custom global.mcpxRepositoryBoomipoc when mcpxRepository=boomipoc
+    template: templates/lunar-hive-ui-deployment.yaml
+    set:
+      global.mcpxRepository: boomipoc
+      global.mcpxRepositoryBoomipoc: my-boomipoc-registry.example.com/mcpx
+    asserts:
+      - matchRegex:
+          path: spec.template.spec.containers[0].image
+          pattern: ^my-boomipoc-registry\.example\.com/mcpx/mcpx-ui:.+$
+
+  - it: HIVE_DEFAULT_MCPX_IMAGE_REPO honors a custom global.mcpxRepositoryBoomipoc when mcpxRepository=boomipoc
+    template: templates/lunar-webserver-deployment.yaml
+    set:
+      global.mcpxRepository: boomipoc
+      global.mcpxRepositoryBoomipoc: my-boomipoc-registry.example.com/mcpx
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: HIVE_DEFAULT_MCPX_IMAGE_REPO
+            value: my-boomipoc-registry.example.com/mcpx/mcpx-server

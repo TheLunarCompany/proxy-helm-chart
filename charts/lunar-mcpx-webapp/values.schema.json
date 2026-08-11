@@ -13,16 +13,22 @@
         },
         "webappRepository": {
           "type": "string",
-          "enum": ["prod", "dev"]
+          "enum": ["prod", "dev", "boomipoc"]
         },
         "mcpxRepository": {
           "type": "string",
-          "enum": ["prod", "dev"]
+          "enum": ["prod", "dev", "boomipoc"]
         },
         "webappRepositoryDev": {
           "type": "string"
         },
         "mcpxRepositoryDev": {
+          "type": "string"
+        },
+        "webappRepositoryBoomipoc": {
+          "type": "string"
+        },
+        "mcpxRepositoryBoomipoc": {
           "type": "string"
         },
         "imagePullSecrets": {
