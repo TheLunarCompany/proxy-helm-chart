@@ -140,25 +140,6 @@
           "type": "boolean",
           "default": false
         },
-        "sharedSecret": {
-          "type": "string",
-          "description": "Bearer secret the AI gateway sends on the WebSocket upgrade. Required when gatewayHub.enabled or gateway.enabled is true, unless existingSecret.name is set.",
-          "default": ""
-        },
-        "existingSecret": {
-          "type": "object",
-          "description": "Pre-existing Secret holding the shared secret, instead of rendering one from sharedSecret.",
-          "properties": {
-            "name": {
-              "type": "string",
-              "default": ""
-            },
-            "key": {
-              "type": "string",
-              "default": "GATEWAY_HUB_SHARED_SECRET"
-            }
-          }
-        },
         "logLevel": {
           "type": "string",
           "enum": ["error", "warn", "info", "http", "verbose", "debug", "silly"]
@@ -250,10 +231,6 @@
           "type": "string",
           "description": "Tenant the gateway reports itself under. Empty falls back to the release fullname."
         },
-        "defaultUpstream": {
-          "type": "string",
-          "description": "Where a request that names no destination of its own goes, e.g. https://api.anthropic.com. Empty means such a request is refused."
-        },
         "bindPort": {
           "type": "integer"
         },
@@ -269,6 +246,32 @@
         "failsafeEnabled": {
           "type": "boolean"
         },
+        "redis": {
+          "type": "object",
+          "description": "Engine-side Redis knobs. The connection itself (REDIS_URL, REDIS_IS_CLUSTER) comes from the -embedded Secret, same as every other service.",
+          "properties": {
+            "maxRetryAttempts": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 10
+            },
+            "maxOptimisticLockingRetryAttempts": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 50
+            },
+            "retryBackoffMillis": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 50
+            },
+            "prefix": {
+              "type": "string",
+              "description": "Key prefix. Empty leaves REDIS_PREFIX unset.",
+              "default": "lunar-llm-gateway"
+            }
+          }
+        },
         "hub": {
           "type": "object",
           "description": "Connection to gateway-hub. Entirely off the request path.",
@@ -276,10 +279,6 @@
             "enabled": {
               "type": "boolean",
               "default": true
-            },
-            "url": {
-              "type": "string",
-              "description": "Overrides the gateway-hub WebSocket URL. Empty uses the in-cluster gateway-hub Service of this release."
             },
             "queueSize": {
               "type": ["integer", "null"]

@@ -147,46 +147,37 @@ http://$(CLICKHOUSE_USER):$(CLICKHOUSE_PASSWORD)@{{ include "lunar-mcpx-webapp.f
 {{- end }}
 
 {{/*
-gateway-hub WebSocket URL the ai-gateway dials. Defaults to the in-cluster
-gateway-hub Service (port 80 -> containerPort 8080), overridable with
-gateway.hub.url for a gateway that runs outside this release.
-The path is fixed by gateway-hub's WS_PATH.
-*/}}
-{{- define "lunar-mcpx-webapp.gatewayHubUrl" -}}
-{{- with .Values.gateway.hub.url -}}
-{{- . -}}
-{{- else -}}
-ws://{{ include "lunar-mcpx-webapp.fullname" . }}-gateway-hub/v1/gateway
-{{- end -}}
-{{- end }}
+Redis env for the AI gateway.
 
-{{/*
-Name of the Secret holding GATEWAY_HUB_SHARED_SECRET. Either the chart-managed
-one rendered from gatewayHub.sharedSecret, or a pre-existing secret named by
-gatewayHub.existingSecret.name. Both the hub and the gateway read the same key.
-*/}}
-{{- define "lunar-mcpx-webapp.gatewayHubSecretName" -}}
-{{- with .Values.gatewayHub.existingSecret.name -}}
-{{- . -}}
-{{- else -}}
-{{- include "lunar-mcpx-webapp.fullname" . }}-gateway-hub
-{{- end -}}
-{{- end }}
+REDIS_URL and the cluster flag arrive through the -embedded Secret on envFrom,
+the same source every other service reads them from. That Secret carries the
+flag as both REDIS_IS_CLUSTER for the Node services and REDIS_USE_CLUSTER for
+this engine, so nothing sets it here: a container's own `env` overrides
+`envFrom` and would shadow the Secret. With Redis from outside the chart the
+Secret is the operator's own and carries only the Node spelling, so the $(VAR)
+alias derives this engine's name from it, resolved by the kubelet against the
+envFrom values the same way CLICKHOUSE_URL is.
 
-{{- define "lunar-mcpx-webapp.gatewayHubSecretKey" -}}
-{{- .Values.gatewayHub.existingSecret.key | default "GATEWAY_HUB_SHARED_SECRET" -}}
-{{- end }}
-
-{{/*
-GATEWAY_HUB_SHARED_SECRET env entry, shared by both sides of the connection so
-they cannot drift apart.
+The retry knobs are set always. Each is a bare strconv.Atoi over the raw env
+value whose parse failure is a log.Panic, and the ai-gateway image carries no
+defaults for them. They are inert when no URL is set.
 */}}
-{{- define "lunar-mcpx-webapp.gatewayHubSecretEnv" -}}
-- name: GATEWAY_HUB_SHARED_SECRET
-  valueFrom:
-    secretKeyRef:
-      name: {{ include "lunar-mcpx-webapp.gatewayHubSecretName" . }}
-      key: {{ include "lunar-mcpx-webapp.gatewayHubSecretKey" . }}
+{{- define "lunar-mcpx-webapp.gatewayRedisEnv" -}}
+{{- $redis := .Values.gateway.redis }}
+{{- if not (.Values.redis.enabled | default false) }}
+- name: REDIS_USE_CLUSTER
+  value: "$(REDIS_IS_CLUSTER)"
+{{- end }}
+- name: REDIS_MAX_RETRY_ATTEMPTS
+  value: {{ $redis.maxRetryAttempts | toString | quote }}
+- name: REDIS_MAX_OPTIMISTIC_LOCKING_RETRY_ATTEMPTS
+  value: {{ $redis.maxOptimisticLockingRetryAttempts | toString | quote }}
+- name: REDIS_RETRY_BACKOFF_MILLIS
+  value: {{ $redis.retryBackoffMillis | toString | quote }}
+{{- with $redis.prefix }}
+- name: REDIS_PREFIX
+  value: {{ . | quote }}
+{{- end }}
 {{- end }}
 
 {{- define "lunar-mcpx-webapp.tplvalues.render" -}}

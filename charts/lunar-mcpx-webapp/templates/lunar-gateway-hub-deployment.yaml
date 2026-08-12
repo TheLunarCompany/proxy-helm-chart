@@ -52,6 +52,7 @@ spec:
         {{- if .Values.clickhouse.enabled }}
         - name: mcpx-gateway-hub-clickhouse-migration
           image: "{{ $repository }}:{{ .Values.gatewayHub.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.gatewayHub.image.pullPolicy }}
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
             {{- if .Values.global.manageResources.limits }}
@@ -83,6 +84,7 @@ spec:
       containers:
         - name: mcpx-gateway-hub-container
           image: "{{ $repository }}:{{ .Values.gatewayHub.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.gatewayHub.image.pullPolicy }}
           ports:
             - containerPort: 8080
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
@@ -142,7 +144,6 @@ spec:
             - name: LOG_LEVEL
               value: {{ . | quote }}
             {{- end }}
-            {{- include "lunar-mcpx-webapp.gatewayHubSecretEnv" . | nindent 12 }}
             {{- if .Values.clickhouse.enabled }}
             - name: CLICKHOUSE_URL
               value: "{{ include "lunar-mcpx-webapp.clickhouseUrl" . }}"

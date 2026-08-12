@@ -5,7 +5,6 @@ templates:
 
 set:
   gateway.enabled: true
-  gatewayHub.sharedSecret: s
 
 tests:
   - it: should render nothing when disabled
@@ -29,29 +28,6 @@ tests:
             name: GATEWAY_HUB_URL
             value: "ws://RELEASE-NAME-lunar-mcpx-webapp-gateway-hub/v1/gateway"
 
-  - it: should let gateway.hub.url override the hub DNS
-    template: templates/lunar-ai-gateway-deployment.yaml
-    set:
-      gateway.hub.url: "wss://gateway-hub.example.com/v1/gateway"
-    asserts:
-      - contains:
-          path: spec.template.spec.containers[0].env
-          content:
-            name: GATEWAY_HUB_URL
-            value: "wss://gateway-hub.example.com/v1/gateway"
-
-  - it: should share the hub secret with gateway-hub
-    template: templates/lunar-ai-gateway-deployment.yaml
-    asserts:
-      - contains:
-          path: spec.template.spec.containers[0].env
-          content:
-            name: GATEWAY_HUB_SHARED_SECRET
-            valueFrom:
-              secretKeyRef:
-                name: RELEASE-NAME-lunar-mcpx-webapp-gateway-hub
-                key: GATEWAY_HUB_SHARED_SECRET
-
   - it: should send no hub env beyond the off switch when the hub connection is disabled
     template: templates/lunar-ai-gateway-deployment.yaml
     set:
@@ -67,12 +43,6 @@ tests:
           content:
             name: GATEWAY_HUB_URL
           any: true
-      - notContains:
-          path: spec.template.spec.containers[0].env
-          content:
-            name: GATEWAY_HUB_SHARED_SECRET
-          any: true
-
   - it: should default TENANT_NAME to the release fullname and allow an override
     template: templates/lunar-ai-gateway-deployment.yaml
     asserts:
@@ -144,7 +114,8 @@ tests:
             name: gateway-config
             emptyDir: {}
 
-  - it: should omit LUNAR_DEFAULT_UPSTREAM unless configured
+  # The destination comes from the request, never from the chart.
+  - it: should never set LUNAR_DEFAULT_UPSTREAM
     template: templates/lunar-ai-gateway-deployment.yaml
     asserts:
       - notContains:
@@ -153,16 +124,96 @@ tests:
             name: LUNAR_DEFAULT_UPSTREAM
           any: true
 
-  - it: should set LUNAR_DEFAULT_UPSTREAM when configured
+  - it: should allow an upstream through extraEnvVars
     template: templates/lunar-ai-gateway-deployment.yaml
     set:
-      gateway.defaultUpstream: https://api.anthropic.com
+      gateway.extraEnvVars:
+        - name: LUNAR_DEFAULT_UPSTREAM
+          value: https://api.anthropic.com
     asserts:
       - contains:
           path: spec.template.spec.containers[0].env
           content:
             name: LUNAR_DEFAULT_UPSTREAM
             value: "https://api.anthropic.com"
+
+  - it: should read REDIS_URL from the same embedded secret as every other service
+    template: templates/lunar-ai-gateway-deployment.yaml
+    set:
+      redis.enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].envFrom
+          content:
+            secretRef:
+              name: RELEASE-NAME-lunar-mcpx-webapp-embedded
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: REDIS_URL
+          any: true
+
+  # A container's own `env` overrides `envFrom`, so setting it here would shadow
+  # the Secret's value.
+  - it: should leave REDIS_USE_CLUSTER to the embedded secret rather than shadowing it
+    template: templates/lunar-ai-gateway-deployment.yaml
+    set:
+      redis.enabled: true
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: REDIS_USE_CLUSTER
+          any: true
+
+  # An operator-supplied Secret carries REDIS_IS_CLUSTER, the Node spelling.
+  - it: should translate the cluster flag when redis comes from outside the chart
+    template: templates/lunar-ai-gateway-deployment.yaml
+    set:
+      redis.enabled: false
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: REDIS_USE_CLUSTER
+            value: "$(REDIS_IS_CLUSTER)"
+
+  - it: should always set the retry knobs, since a missing one panics the client
+    template: templates/lunar-ai-gateway-deployment.yaml
+    set:
+      redis.enabled: false
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: REDIS_MAX_RETRY_ATTEMPTS
+            value: "10"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: REDIS_MAX_OPTIMISTIC_LOCKING_RETRY_ATTEMPTS
+            value: "50"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: REDIS_RETRY_BACKOFF_MILLIS
+            value: "50"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: REDIS_PREFIX
+            value: "lunar-llm-gateway"
+
+  - it: should omit REDIS_PREFIX when the prefix is cleared
+    template: templates/lunar-ai-gateway-deployment.yaml
+    set:
+      gateway.redis.prefix: ""
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: REDIS_PREFIX
+          any: true
 
   - it: should probe the admin server, not the proxy port
     template: templates/lunar-ai-gateway-deployment.yaml

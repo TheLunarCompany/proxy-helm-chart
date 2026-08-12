@@ -144,12 +144,18 @@ spec:
             runAsUser: 1000
             runAsGroup: 1000
             {{- end }}
-          {{- if or .Values.global.extraEnvFromSecrets .Values.gateway.extraEnvFromSecrets }}
           envFrom:
+            # Same source as every other service in this chart. REDIS_URL and
+            # REDIS_USE_CLUSTER come from here.
+            - secretRef:
+                name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
+          {{- with .Values.global.extraEnvFromSecrets }}
           {{- range $.Values.global.extraEnvFromSecrets }}
             - secretRef:
                 name: {{ . }}
           {{- end }}
+          {{- end }}
+          {{- with .Values.gateway.extraEnvFromSecrets }}
           {{- range $.Values.gateway.extraEnvFromSecrets }}
             - secretRef:
                 name: {{ . }}
@@ -200,21 +206,26 @@ spec:
               value: {{ $backupDir | quote }}
             - name: DISCOVERY_STATE_LOCATION
               value: {{ printf "%s/discovery-state.json" $dataDir | quote }}
-            {{- with .Values.gateway.defaultUpstream }}
-            # What a base-URL client needs: it names no destination itself, and
-            # the gateway refuses a request it cannot resolve rather than
-            # guessing a vendor host.
-            - name: LUNAR_DEFAULT_UPSTREAM
-              value: {{ . | quote }}
-            {{- end }}
+            {{/*
+            Redis backs the quota counters and the processors' shared memory.
+            With no REDIS_URL the engine falls back to in-memory state, which is
+            correct at one replica and wrong above it: each pod would then count
+            its own budget.
+            */}}
+            {{- include "lunar-mcpx-webapp.gatewayRedisEnv" . | nindent 12 }}
+            {{/*
+            No LUNAR_DEFAULT_UPSTREAM. The destination comes from the request:
+            an absolute-form target, Forwarded, X-Forwarded-Host or x-lunar-host.
+            */}}
             {{/* No `| default true`: Helm's default() treats false as empty,
             which would make gateway.hub.enabled=false unsettable. */}}
             {{- if .Values.gateway.hub.enabled }}
             - name: GATEWAY_HUB_ENABLED
               value: "true"
+            # Port 80 on the Service maps to the hub's 8080. The path is fixed
+            # by gateway-hub's WS_PATH.
             - name: GATEWAY_HUB_URL
-              value: {{ include "lunar-mcpx-webapp.gatewayHubUrl" . | quote }}
-            {{- include "lunar-mcpx-webapp.gatewayHubSecretEnv" . | nindent 12 }}
+              value: ws://{{ include "lunar-mcpx-webapp.fullname" . }}-gateway-hub/v1/gateway
             {{- with .Values.gateway.hub.queueSize }}
             - name: GATEWAY_HUB_QUEUE_SIZE
               value: {{ . | quote }}

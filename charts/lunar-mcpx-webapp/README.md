@@ -432,6 +432,7 @@ When enabled, the chart will:
 - Create a ClusterIP service on port 8123
 - Add a ClickHouse migration init container to both hub and webserver (runs after the Prisma migration)
 - Inject `CLICKHOUSE_URL` into hub and webserver main containers
+- Do the same for gateway-hub when `gatewayHub.enabled` is `true`
 
 If `clickhouse.enabled` is `true` but the credentials secret is missing or empty, `helm install` will fail with a schema validation error.
 
@@ -441,6 +442,123 @@ If `clickhouse.enabled` is `true` but the credentials secret is missing or empty
 kubectl exec -it <release>-clickhouse-0 -n <namespace> -- clickhouse-client \
   --user <user> --password <password>
 ```
+
+### AI Gateway and gateway-hub
+
+Two services that carry LLM traffic, off by default:
+
+- **`gateway`** (`mcpx-ai-gateway`) is the AI gateway itself. An agent points its
+  provider base URL at it (`ANTHROPIC_BASE_URL`, `OPENAI_BASE_URL`, an
+  `HTTP_PROXY`, ...) and the gateway forwards the call to the real provider,
+  recording usage on the way. It speaks each provider's own API, so a client
+  needs no change beyond the base URL.
+- **`gatewayHub`** (`mcpx-gateway-hub`) is what the gateway reports that usage
+  to, over a WebSocket, and what delivers the gateway its flow and provider
+  configuration on the handshake. It writes usage to ClickHouse, which is where
+  the Admin UI's LLM usage views read from.
+
+Both carry their own defaults. The chart configures no flow, quota or provider
+document for either of them.
+
+#### Minimum configuration
+
+```yaml
+clickhouse:
+  enabled: true
+  credentialsSecret: ch-creds
+
+gatewayHub:
+  enabled: true
+
+gateway:
+  enabled: true
+```
+
+That is the whole minimum.
+
+The gateway takes each request's destination from the request itself, through an
+absolute-form target, `Forwarded`, `X-Forwarded-Host` or `x-lunar-host`, and
+refuses a request that names none.
+
+#### How the gateway finds the hub
+
+The gateway dials the gateway-hub Service of the same release,
+`ws://<release>-gateway-hub/v1/gateway`, addressed the same way the controller
+addresses the hub. It is not configurable.
+
+Set `gateway.hub.enabled: false` to run the gateway with no hub at all. The
+connection is entirely off the request path either way: a hub that is absent,
+unreachable or misbehaving never affects an LLM request.
+
+#### Exposing the gateway
+
+The gateway Service listens on port 80 like every other service in this chart,
+so it is reached through the Ingress by adding a key named `gateway` to
+`ingress.domains`:
+
+```yaml
+ingress:
+  domains:
+    gateway:
+      - mcpx-gateway.example.com
+```
+
+Add it only together with `gateway.enabled: true` - a rule for a Service that
+was never rendered is a dead backend (and, on `gce`, a managed certificate that
+never resolves). On `gce` the chart also renders a BackendConfig with a 3600s
+backend timeout, because an LLM call streams for as long as the model takes to
+answer and the 30s default would cut long completions mid-stream.
+
+#### Redis and scaling the gateway
+
+The gateway reads `REDIS_URL` and `REDIS_IS_CLUSTER` from the same `-embedded`
+Secret as every other service in this chart, so `redis.enabled: true` (or your
+own Secret through `gateway.extraEnvFromSecrets`) is all it takes. The chart
+translates `REDIS_IS_CLUSTER` into `REDIS_USE_CLUSTER`, which is the name this
+engine reads.
+
+Redis backs the gateway's quota counters and its processors' shared memory.
+Without it the engine keeps that state in memory, which is correct at
+`replicaCount: 1`. Above one replica each pod counts its own budget, so a
+budget of 10M tokens across 3 replicas would be enforced as 10M per pod. Scale
+the gateway out only with Redis in place.
+
+`gateway.redis` carries what the image does not default: the retry knobs. The
+chart always sets them, even with no Redis configured, because each is read
+with a bare integer parse whose failure is a panic - a `REDIS_URL` arriving
+from any Secret without them would crash-loop the gateway. TLS to Redis is not
+wired: pass `REDIS_USE_CA_CERT` and the cert paths through
+`gateway.extraEnvVars` along with a volume for the certificates.
+
+#### Credentials for providers
+
+A provider that needs a server-side credential reads it from the environment
+variable named by its `secret_ref`. Supply those on the gateway, never inline in
+configuration:
+
+```yaml
+gateway:
+  extraEnvFromSecrets:
+    - my-provider-keys
+```
+
+A host with no provider entry is passthrough: the client's own credentials go
+upstream untouched.
+
+#### Notes
+
+- Keep `gatewayHub.replicaCount` at 1. Deduplication, the budget store and the
+  live gateway sessions are all in-process, so a second replica keeps its own
+  separate copy of each.
+- gateway-hub reports `/readyz` 503 until it can write to ClickHouse, which is
+  what its readiness probe checks. A gateway-hub enabled with no ClickHouse at
+  all - neither `clickhouse.enabled` nor an external `CLICKHOUSE_URL` through
+  `gatewayHub.extraEnvVars` - therefore never becomes Ready, which is the probe
+  correctly reporting that there is nowhere to write. Its liveness probe
+  deliberately does not consult ClickHouse: restarting on an outage would drop
+  the usage buffered in memory.
+- The gateway exports Prometheus metrics on the `metrics` port (3000) of its
+  Service, at `/metrics`. It is not exposed through the Ingress.
 
 ### Installation
 

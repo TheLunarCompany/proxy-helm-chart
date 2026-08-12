@@ -414,21 +414,6 @@ gatewayHub:
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
 
-  # -- sharedSecret is the bearer secret the AI gateway sends on the WebSocket
-  # upgrade. Both sides read it from the same k8s Secret, so they cannot drift.
-  # Required when gatewayHub.enabled or gateway.enabled is true - a hub with no
-  # secret would accept every connection.
-  # Generate with: openssl rand -hex 32
-  sharedSecret: ""
-
-  # -- existingSecret points at a pre-existing Secret holding the shared secret
-  # instead of having the chart render one from sharedSecret above.
-  existingSecret:
-    # -- Name of the existing Secret. Empty means the chart renders its own.
-    name: ""
-    # -- Key inside that Secret.
-    key: GATEWAY_HUB_SHARED_SECRET
-
   # -- logLevel for the hub process (error|warn|info|http|verbose|debug|silly).
   logLevel: "info"
 
@@ -530,13 +515,10 @@ gateway:
   # fullname. The process refuses to start without one.
   tenantName: ""
 
-  # -- defaultUpstream is where a request that names no destination of its own
-  # goes (the ANTHROPIC_BASE_URL / OPENAI_BASE_URL case). Requests carrying a
-  # destination - absolute-form target, Forwarded, X-Forwarded-Host,
-  # x-lunar-host - ignore this. Empty means a request with no resolvable
-  # upstream is refused rather than sent somewhere plausible.
-  # e.g. https://api.anthropic.com
-  defaultUpstream: ""
+  # The destination comes from the request itself: an absolute-form target,
+  # Forwarded, X-Forwarded-Host or x-lunar-host. A request that names none is
+  # refused rather than sent to a vendor the caller never asked for, carrying
+  # the caller's credentials.
 
   # -- Port the gateway serves LLM traffic on. Exposed on the Service as port 80.
   bindPort: 8000
@@ -552,14 +534,45 @@ gateway:
   # fails, instead of failing the request.
   failsafeEnabled: true
 
+  # -- Redis backs the gateway's quota counters and its processors' shared
+  # memory. The connection itself is not configured here: REDIS_URL and the
+  # cluster flag reach the gateway through the same `-embedded` Secret every
+  # other service in this chart reads them from, so enabling redis.enabled is
+  # all it takes.
+  #
+  # That Secret carries the flag under both names, REDIS_IS_CLUSTER for the
+  # Node services and REDIS_USE_CLUSTER for this engine, so nothing has to be
+  # derived. A Secret you supply yourself through extraEnvFromSecrets only
+  # needs REDIS_IS_CLUSTER, as documented: the chart still translates it into
+  # the engine's name when the embedded Redis is off.
+  #
+  # Without a Redis URL the engine keeps that state in memory, which is correct
+  # at one replica. Above one replica each pod would count its own budget, so a
+  # scaled-out gateway needs Redis.
+  #
+  # What remains below is what the image does not default and the engine will
+  # not tolerate missing: each is read with a bare strconv.Atoi whose failure is
+  # a panic, so they are always set. TLS to Redis (REDIS_USE_CA_CERT and the
+  # cert paths) is not wired here - add those through extraEnvVars along with a
+  # volume for the certificates.
+  redis:
+    # -- Times a command is retried before it fails.
+    maxRetryAttempts: 10
+    # -- Times an optimistic-locking transaction is retried on contention.
+    maxOptimisticLockingRetryAttempts: 50
+    # -- Backoff between retries, in ms.
+    retryBackoffMillis: 50
+    # -- Key prefix, so gateway keys do not collide with anything else sharing
+    # the same Redis. Empty leaves REDIS_PREFIX unset.
+    prefix: "lunar-llm-gateway"
+
   hub:
     # -- Report usage to gateway-hub. Off the request path entirely: a hub that
     # is absent, unreachable or misbehaving never affects an LLM request.
     enabled: true
-    # -- url overrides the gateway-hub WebSocket URL. Empty uses the in-cluster
-    # gateway-hub Service of this release
-    # (ws://<release>-gateway-hub/v1/gateway).
-    url: ""
+    # The URL is not configurable. The gateway dials the gateway-hub Service of
+    # this release, ws://<release>-gateway-hub/v1/gateway, addressed the same
+    # way the controller addresses the hub.
     # -- Capacity of the in-memory usage queue. Unset uses the gateway default (10000).
     queueSize: null
     # -- Max usage events per batch frame. Unset uses the gateway default (200).
