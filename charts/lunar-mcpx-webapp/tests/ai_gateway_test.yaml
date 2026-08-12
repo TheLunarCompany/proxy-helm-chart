@@ -74,45 +74,56 @@ tests:
       - contains:
           path: spec.template.spec.containers[0].env
           content:
-            name: LUNAR_PROXY_FLOW_DIRECTORY
-            value: "/etc/lunar-proxy/flows"
-      - contains:
-          path: spec.template.spec.containers[0].env
-          content:
             name: LUNAR_PROXY_PROCESSORS_DIRECTORY
             value: "/etc/lunar-proxy/processors"
       - contains:
           path: spec.template.spec.containers[0].env
           content:
-            name: LUNAR_PROVIDERS_FILE
-            value: "/etc/lunar-proxy/providers.yaml"
-      - contains:
-          path: spec.template.spec.containers[0].env
-          content:
             name: LUNAR_PROXY_METRICS_CONFIG
             value: "/etc/lunar-proxy/metrics.yaml"
+
+  # The flow and the budgets arrive over the hub socket and are held in memory, so a
+  # volume here would only be somewhere for a stale copy to sit.
+  - it: should mount nothing and seed nothing
+    template: templates/lunar-ai-gateway-deployment.yaml
+    asserts:
+      - notExists:
+          path: spec.template.spec.initContainers
+      - notExists:
+          path: spec.template.spec.volumes
+      - notExists:
+          path: spec.template.spec.containers[0].volumeMounts
+
+  # Every config path points into the image. A flows, quotas, providers or backup path
+  # would each need somewhere writable.
+  - it: should read its config only from read-only paths in the image
+    template: templates/lunar-ai-gateway-deployment.yaml
+    asserts:
       - contains:
           path: spec.template.spec.containers[0].env
           content:
             name: DISCOVERY_STATE_LOCATION
-            value: "/var/log/lunar-proxy/discovery-state.json"
-
-  - it: should mount a writable config directory seeded from the image
-    template: templates/lunar-ai-gateway-deployment.yaml
-    asserts:
-      - equal:
-          path: spec.template.spec.initContainers[0].name
-          value: mcpx-gateway-config-seed
-      - contains:
-          path: spec.template.spec.containers[0].volumeMounts
+            value: "/etc/lunar-proxy/discovery-state.json"
+      - notContains:
+          path: spec.template.spec.containers[0].env
           content:
-            name: gateway-config
-            mountPath: /etc/lunar-proxy
-      - contains:
-          path: spec.template.spec.volumes
+            name: LUNAR_PROXY_FLOW_DIRECTORY
+          any: true
+      - notContains:
+          path: spec.template.spec.containers[0].env
           content:
-            name: gateway-config
-            emptyDir: {}
+            name: LUNAR_PROXY_QUOTAS_DIRECTORY
+          any: true
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: LUNAR_PROVIDERS_FILE
+          any: true
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: LUNAR_PROXY_CONFIG_BACKUP_DIR
+          any: true
 
   # The destination comes from the request, never from the chart.
   - it: should never set LUNAR_DEFAULT_UPSTREAM

@@ -3,8 +3,6 @@
 {{- $repository := include "lunar-mcpx-webapp.webappImage" (dict "repo" .Values.gateway.image.repository "context" .) -}}
 {{- $image := printf "%s:%s" $repository (.Values.gateway.image.tag | default .Values.global.appVersion | default .Chart.AppVersion) -}}
 {{- $configDir := "/etc/lunar-proxy" -}}
-{{- $backupDir := "/etc/lunar-proxy-backup" -}}
-{{- $dataDir := "/var/log/lunar-proxy" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -48,68 +46,9 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      initContainers:
-        # The config directory has to be writable: gateway-hub delivers flows
-        # and providers.yaml on the handshake and the gateway persists them
-        # there (plus a backup) so they survive a restart. A bare image path
-        # would be read-only under readOnlyRootFilesystem, so the image's own
-        # config is copied into an emptyDir once, at startup. The chart supplies
-        # no configuration of its own - everything here comes from the image or
-        # from the hub.
-        - name: mcpx-gateway-config-seed
-          image: "{{ $image }}"
-          imagePullPolicy: {{ .Values.gateway.image.pullPolicy }}
-          {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
-          resources:
-            {{- if .Values.global.manageResources.limits }}
-            limits:
-              {{- with .Values.gateway.resources.limits }}
-              {{- toYaml . | nindent 14 }}
-              {{- end }}
-            {{- end }}
-            {{- if .Values.global.manageResources.requests }}
-            requests:
-              {{- with .Values.gateway.resources.requests }}
-                {{- toYaml . | nindent 14 }}
-                {{- end }}
-            {{- end }}
-          {{- end }}
-          securityContext:
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            allowPrivilegeEscalation: false
-            {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
-            runAsUser: 1000
-            runAsGroup: 1000
-            {{- end }}
-          command: ["/bin/sh"]
-          args:
-            - "-c"
-            - |
-              set -e
-              # This container does NOT mount the emptyDir over {{ $configDir }},
-              # so {{ $configDir }} here is still the image's own config - the
-              # defaults the gateway ships with - and /config is the emptyDir the
-              # main container will read and write. Copy once: a later restart
-              # keeps whatever the hub delivered.
-              if [ ! -f /config/.seeded ]; then
-                if [ -d {{ $configDir }} ]; then
-                  cp -a {{ $configDir }}/. /config/
-                fi
-                touch /config/.seeded
-              fi
-              mkdir -p /config/flows /config/processors /config/quotas
-              # The metric manager builds an api_call_count collector
-              # unconditionally and will not start without this file.
-              [ -f {{ $dataDir }}/discovery-state.json ] || echo '{}' > {{ $dataDir }}/discovery-state.json
-          volumeMounts:
-            - name: gateway-config
-              mountPath: /config
-            - name: gateway-data
-              mountPath: {{ $dataDir }}
-        {{- with concat (.Values.global.extraInitContainers | default (list)) (.Values.gateway.extraInitContainers | default (list)) }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
+      # No initContainers and no volumes: the flow and the budgets arrive over the hub
+      # socket and are held in memory, and every file this gateway reads ships
+      # read-only in the image.
       containers:
         - name: mcpx-gateway-container
           image: "{{ $image }}"
@@ -188,24 +127,20 @@ spec:
             # silently. LUNAR_PROXY_PROCESSORS_DIRECTORY unset means "no
             # processors directory found", and a delivered flow then loads no
             # processors at all.
+            #
+            # All of them point into the image and are read-only. No flows, quotas,
+            # providers or backup path: those come from the hub and live in memory.
             - name: LUNAR_PROXY_CONFIG_DIR
               value: {{ $configDir | quote }}
             - name: LUNAR_PROXY_CONFIG
               value: {{ printf "%s/gateway_config.yaml" $configDir | quote }}
-            - name: LUNAR_PROXY_FLOW_DIRECTORY
-              value: {{ printf "%s/flows" $configDir | quote }}
             - name: LUNAR_PROXY_PROCESSORS_DIRECTORY
               value: {{ printf "%s/processors" $configDir | quote }}
-            - name: LUNAR_PROXY_QUOTAS_DIRECTORY
-              value: {{ printf "%s/quotas" $configDir | quote }}
-            - name: LUNAR_PROVIDERS_FILE
-              value: {{ printf "%s/providers.yaml" $configDir | quote }}
             - name: LUNAR_PROXY_METRICS_CONFIG
               value: {{ printf "%s/metrics.yaml" $configDir | quote }}
-            - name: LUNAR_PROXY_CONFIG_BACKUP_DIR
-              value: {{ $backupDir | quote }}
+            # Read by the api_call_count collector on every scrape, never written.
             - name: DISCOVERY_STATE_LOCATION
-              value: {{ printf "%s/discovery-state.json" $dataDir | quote }}
+              value: {{ printf "%s/discovery-state.json" $configDir | quote }}
             {{/*
             Redis backs the quota counters and the processors' shared memory.
             With no REDIS_URL the engine falls back to in-memory state, which is
@@ -287,47 +222,28 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 10
 
+          {{- with .Values.global.caCerts }}
+          {{- with .secretName }}
           volumeMounts:
-            - name: gateway-config
-              mountPath: {{ $configDir }}
-            - name: gateway-backup
-              mountPath: {{ $backupDir }}
-            - name: gateway-data
-              mountPath: {{ $dataDir }}
-            - name: tmp
-              mountPath: /tmp
-            {{- with .Values.global.caCerts }}
-            {{- with .secretName }}
             - name: {{ . }}
               mountPath: "/usr/local/share/ca-certificates/"
               readOnly: true
-            {{- end }}
-            {{- end }}
+          {{- end }}
+          {{- end }}
         {{- with concat (.Values.global.extraContainers | default (list)) (.Values.gateway.extraContainers | default (list)) }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+      {{- with .Values.global.caCerts }}
+      {{- with .secretName }}
       volumes:
-        - name: tmp
-          emptyDir: {}
-        # Writable: hub-delivered flows and providers.yaml land here.
-        - name: gateway-config
-          emptyDir: {}
-        # Written before every delivery, so a half-applied config can be rolled back.
-        - name: gateway-backup
-          emptyDir: {}
-        # discovery state, the engine's log file and the file exporter's output.
-        - name: gateway-data
-          emptyDir: {}
-        {{- with .Values.global.caCerts }}
-        {{- with .secretName }}
         - name: {{ . }}
           secret:
             secretName: {{ . }}
             items:
               - key: ca.crt
                 path: {{ . }}.crt
-        {{- end }}
-        {{- end }}
+      {{- end }}
+      {{- end }}
       {{- with mergeOverwrite (deepCopy (.Values.global.affinity | default dict)) (.Values.gateway.affinity | default dict) }}
       affinity:
         {{- toYaml . | nindent 8 }}
