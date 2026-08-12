@@ -403,7 +403,7 @@ gatewayHub:
   # -- Enable gateway-hub, the WebSocket ingestion service for LLM usage
   # reported by the AI gateway. Writes to ClickHouse, so it is only useful with
   # clickhouse.enabled (or an external ClickHouse via extraEnvVars).
-  enabled: false
+  enabled: true
 
   image:
     # -- Lunar mcpx-gateway-hub image repository
@@ -500,7 +500,7 @@ gatewayHub:
 gateway:
   # -- Enable the AI gateway (LLM gateway). Agents point their provider base URL
   # at it and it forwards to the real provider, recording usage on the way.
-  enabled: false
+  enabled: true
 
   image:
     # -- Lunar mcpx-ai-gateway image repository
