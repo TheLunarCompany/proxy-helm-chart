@@ -46,7 +46,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      # No initContainers and no volumes: the flow and the budgets arrive over the hub
+      # No initContainers and no volumes: the flow and the quotas arrive over the hub
       # socket and are held in memory, and every file this gateway reads ships
       # read-only in the image.
       containers:
@@ -145,7 +145,7 @@ spec:
             Redis backs the quota counters and the processors' shared memory.
             With no REDIS_URL the engine falls back to in-memory state, which is
             correct at one replica and wrong above it: each pod would then count
-            its own budget.
+            its own quota.
             */}}
             {{- include "lunar-mcpx-webapp.gatewayRedisEnv" . | nindent 12 }}
             {{/*

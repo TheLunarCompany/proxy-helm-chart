@@ -171,7 +171,7 @@
         },
         "replicaCount": {
           "type": "integer",
-          "description": "Keep at 1: dedup, the budget store and the live gateway sessions are all in-process.",
+          "description": "Keep at 1: dedup, the quota store and the live gateway sessions are all in-process.",
           "minimum": 0,
           "maximum": 1
         },

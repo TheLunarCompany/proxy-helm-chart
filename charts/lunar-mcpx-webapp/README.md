@@ -519,8 +519,8 @@ engine reads.
 
 Redis backs the gateway's quota counters and its processors' shared memory.
 Without it the engine keeps that state in memory, which is correct at
-`replicaCount: 1`. Above one replica each pod counts its own budget, so a
-budget of 10M tokens across 3 replicas would be enforced as 10M per pod. Scale
+`replicaCount: 1`. Above one replica each pod counts its own quota, so a
+quota of 10M tokens across 3 replicas would be enforced as 10M per pod. Scale
 the gateway out only with Redis in place.
 
 `gateway.redis` carries what the image does not default: the retry knobs. The
@@ -547,7 +547,7 @@ upstream untouched.
 
 #### Notes
 
-- Keep `gatewayHub.replicaCount` at 1. Deduplication, the budget store and the
+- Keep `gatewayHub.replicaCount` at 1. Deduplication, the quota store and the
   live gateway sessions are all in-process, so a second replica keeps its own
   separate copy of each.
 - gateway-hub reports `/readyz` 503 until it can write to ClickHouse, which is

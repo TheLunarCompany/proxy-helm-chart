@@ -445,7 +445,7 @@ gatewayHub:
   # https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
   topologySpreadConstraints: []
 
-  # -- number of replicas to run. Keep at 1: dedup, the budget store and the
+  # -- number of replicas to run. Keep at 1: dedup, the quota store and the
   # live gateway sessions are all in-process, so a second replica keeps its own
   # separate copy of each.
   replicaCount: 1
@@ -547,7 +547,7 @@ gateway:
   # the engine's name when the embedded Redis is off.
   #
   # Without a Redis URL the engine keeps that state in memory, which is correct
-  # at one replica. Above one replica each pod would count its own budget, so a
+  # at one replica. Above one replica each pod would count its own quota, so a
   # scaled-out gateway needs Redis.
   #
   # What remains below is what the image does not default and the engine will

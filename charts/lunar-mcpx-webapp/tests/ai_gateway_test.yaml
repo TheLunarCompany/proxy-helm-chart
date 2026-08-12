@@ -82,7 +82,7 @@ tests:
             name: LUNAR_PROXY_METRICS_CONFIG
             value: "/etc/lunar-proxy/metrics.yaml"
 
-  # The flow and the budgets arrive over the hub socket and are held in memory, so a
+  # The flow and the quotas arrive over the hub socket and are held in memory, so a
   # volume here would only be somewhere for a stale copy to sit.
   - it: should mount nothing and seed nothing
     template: templates/lunar-ai-gateway-deployment.yaml

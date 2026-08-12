@@ -15,7 +15,7 @@ metadata:
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
-  # Dedup, the budget store and the live gateway sessions are in-process, so a
+  # Dedup, the quota store and the live gateway sessions are in-process, so a
   # second replica keeps its own copy of all three. Keep this at 1.
   replicas: {{ .Values.gatewayHub.replicaCount | default 1 }}
   selector:
