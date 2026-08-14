@@ -581,6 +581,26 @@
           "type": "string"
         }
       }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "properties": {
+        "create": {
+          "type": "boolean",
+          "description": "Create a ServiceAccount for the app workloads (deployments and cronjobs, excluding hive-controller)",
+          "default": false
+        },
+        "name": {
+          "type": "string",
+          "description": "ServiceAccount name. Empty means the chart fullname when create is true, otherwise the namespace default ServiceAccount",
+          "default": ""
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Annotations for the created ServiceAccount, e.g. an EKS IRSA role ARN",
+          "default": {}
+        }
+      }
     }
   }
 }

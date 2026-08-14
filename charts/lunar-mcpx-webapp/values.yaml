@@ -134,6 +134,17 @@ global:
   # priorityClassName: "custom"
   priorityClassName: ""
 
+serviceAccount:
+  # -- create a ServiceAccount for the app workloads (deployments and cronjobs, excluding hive-controller).
+  create: false
+  # -- name of the ServiceAccount to use. If create is true and name is empty, the chart fullname is used.
+  # If create is false and name is empty, pods run on the namespace default ServiceAccount.
+  name: ""
+  # -- annotations for the created ServiceAccount, e.g. an EKS IRSA role:
+  # annotations:
+  #   eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/my-role
+  annotations: {}
+
 webserver:
   image:
     # -- Lunar mcpx-webserver image repository

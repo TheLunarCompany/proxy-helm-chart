@@ -44,6 +44,9 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
+      serviceAccountName: {{ include "lunar-mcpx-webapp.serviceAccountName" . }}
+      {{- end }}
       initContainers:
         - name: mcpx-hub-prisma-migration
           image: "{{ $repository }}:{{ .Values.hub.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
