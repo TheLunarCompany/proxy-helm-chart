@@ -10,7 +10,7 @@ tests:
       - hasDocuments:
           count: 0
 
-  - it: renders a PDB with maxUnavailable when enabled with enough replicas
+  - it: renders a PDB with maxUnavailable when enabled per service with enough replicas
     release:
       name: my-release
     set:
@@ -33,26 +33,73 @@ tests:
           path: spec.selector.matchLabels.app
           value: my-release-lunar-mcpx-webapp-webserver
 
-  - it: renders one PDB per enabled service
+  - it: global pdb enables all app deployments
     release:
       name: my-release
     set:
+      global:
+        pdb:
+          enabled: true
       webserver:
         replicaCount: 3
-        pdb:
-          enabled: true
       hub:
         replicaCount: 3
-        pdb:
-          enabled: true
+      admin:
+        replicaCount: 3
+      auth:
+        replicaCount: 3
+      router:
+        replicaCount: 3
+      ui:
+        replicaCount: 3
     asserts:
       - hasDocuments:
-          count: 2
+          count: 6
 
-  - it: minAvailable overrides maxUnavailable
+  - it: service-level enabled false overrides global
     release:
       name: my-release
     set:
+      global:
+        pdb:
+          enabled: true
+      webserver:
+        replicaCount: 3
+      hub:
+        replicaCount: 3
+      admin:
+        pdb:
+          enabled: false
+      auth:
+        replicaCount: 3
+      router:
+        replicaCount: 3
+      ui:
+        replicaCount: 3
+    asserts:
+      - hasDocuments:
+          count: 5
+
+  - it: global pdb fails when a service has a single replica
+    release:
+      name: my-release
+    set:
+      global:
+        pdb:
+          enabled: true
+      webserver:
+        replicaCount: 3
+    asserts:
+      - failedTemplate:
+          errorMessage: "pdb is enabled for hub but hub.replicaCount < 2 (a PDB on a single replica blocks node drains); raise the replicas or set hub.pdb.enabled=false"
+
+  - it: service-level minAvailable overrides global maxUnavailable
+    release:
+      name: my-release
+    set:
+      global:
+        pdb:
+          maxUnavailable: 2
       hub:
         replicaCount: 2
         pdb:
@@ -74,7 +121,7 @@ tests:
           enabled: true
     asserts:
       - failedTemplate:
-          errorMessage: "webserver.pdb.enabled requires webserver.replicaCount >= 2 (a PDB on a single replica blocks node drains)"
+          errorMessage: "pdb is enabled for webserver but webserver.replicaCount < 2 (a PDB on a single replica blocks node drains); raise the replicas or set webserver.pdb.enabled=false"
 
   - it: renders nothing for a disabled service
     release:

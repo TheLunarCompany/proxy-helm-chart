@@ -1,10 +1,16 @@
 {{- $root := . }}
+{{- $gpdb := .Values.global.pdb | default dict }}
 {{- range $key := list "webserver" "hub" "admin" "auth" "router" "ui" }}
 {{- $svc := get $root.Values $key }}
+{{- $spdb := $svc.pdb | default dict }}
+{{- /* service-level keys override global; hasKey (not coalesce/default) so an explicit false or 0 wins */}}
+{{- $enabled := ternary $spdb.enabled ($gpdb.enabled | default false) (hasKey $spdb "enabled") }}
+{{- $maxUnavailable := ternary $spdb.maxUnavailable ($gpdb.maxUnavailable | default 1) (hasKey $spdb "maxUnavailable") }}
+{{- $minAvailable := ternary $spdb.minAvailable ($gpdb.minAvailable | default "") (hasKey $spdb "minAvailable") }}
 {{- /* not `enabled | default true`: sprig default treats false as unset, which would ignore enabled: false */}}
-{{- if and (ne ($svc.enabled | toString) "false") (($svc.pdb).enabled) }}
+{{- if and (ne ($svc.enabled | toString) "false") $enabled }}
 {{- if lt (int ($svc.replicaCount | default 1)) 2 }}
-{{- fail (printf "%s.pdb.enabled requires %s.replicaCount >= 2 (a PDB on a single replica blocks node drains)" $key $key) }}
+{{- fail (printf "pdb is enabled for %s but %s.replicaCount < 2 (a PDB on a single replica blocks node drains); raise the replicas or set %s.pdb.enabled=false" $key $key $key) }}
 {{- end }}
 ---
 apiVersion: policy/v1
@@ -18,10 +24,10 @@ metadata:
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
-  {{- if ($svc.pdb).minAvailable }}
-  minAvailable: {{ ($svc.pdb).minAvailable }}
+  {{- if $minAvailable }}
+  minAvailable: {{ $minAvailable }}
   {{- else }}
-  maxUnavailable: {{ ($svc.pdb).maxUnavailable | default 1 }}
+  maxUnavailable: {{ $maxUnavailable }}
   {{- end }}
   selector:
     matchLabels:

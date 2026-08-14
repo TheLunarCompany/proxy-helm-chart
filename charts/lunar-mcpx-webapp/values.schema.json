@@ -75,6 +75,9 @@
         },
         "serviceAccount": {
           "$ref": "#/$defs/serviceAccount"
+        },
+        "pdb": {
+          "$ref": "#/$defs/pdb"
         }
       }
     },

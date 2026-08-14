@@ -145,6 +145,17 @@ global:
     #   eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/my-role
     annotations: {}
 
+  # -- pdb creates a PodDisruptionBudget for every app deployment during voluntary
+  # disruptions (node drains, cluster upgrades). Enabling this requires replicaCount >= 2
+  # on every app deployment (or a per-service pdb override with enabled: false),
+  # otherwise the chart fails to render: a PDB on a single replica blocks node drains.
+  pdb:
+    enabled: false
+    # -- maxUnavailable pods during a voluntary disruption. Ignored if minAvailable is set.
+    maxUnavailable: 1
+    # -- minAvailable pods (absolute number or percentage). Overrides maxUnavailable when set.
+    minAvailable: ""
+
 webserver:
   # -- serviceAccount overrides global.serviceAccount for this service.
   # Same fields as global (create, name, annotations). When create is true
@@ -206,15 +217,9 @@ webserver:
   # -- number of replicas to run
   replicaCount: 1
 
-  # -- pdb creates a PodDisruptionBudget for this deployment during voluntary
-  # disruptions (node drains, cluster upgrades). Only enable with replicaCount >= 2,
-  # otherwise the chart fails to render (a PDB on a single replica blocks node drains).
-  pdb:
-    enabled: false
-    # -- maxUnavailable pods during a voluntary disruption. Ignored if minAvailable is set.
-    maxUnavailable: 1
-    # -- minAvailable pods (absolute number or percentage). Overrides maxUnavailable when set.
-    minAvailable: ""
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
 
   # -- Set pod resource requests & limits
   resources:
@@ -338,15 +343,9 @@ hub:
   # -- number of replicas to run
   replicaCount: 1
 
-  # -- pdb creates a PodDisruptionBudget for this deployment during voluntary
-  # disruptions (node drains, cluster upgrades). Only enable with replicaCount >= 2,
-  # otherwise the chart fails to render (a PDB on a single replica blocks node drains).
-  pdb:
-    enabled: false
-    # -- maxUnavailable pods during a voluntary disruption. Ignored if minAvailable is set.
-    maxUnavailable: 1
-    # -- minAvailable pods (absolute number or percentage). Overrides maxUnavailable when set.
-    minAvailable: ""
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
 
   # -- Set pod resource requests & limits
   resources:
@@ -489,15 +488,9 @@ admin:
   # -- number of replicas to run
   replicaCount: 1
 
-  # -- pdb creates a PodDisruptionBudget for this deployment during voluntary
-  # disruptions (node drains, cluster upgrades). Only enable with replicaCount >= 2,
-  # otherwise the chart fails to render (a PDB on a single replica blocks node drains).
-  pdb:
-    enabled: false
-    # -- maxUnavailable pods during a voluntary disruption. Ignored if minAvailable is set.
-    maxUnavailable: 1
-    # -- minAvailable pods (absolute number or percentage). Overrides maxUnavailable when set.
-    minAvailable: ""
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
 
   # -- Set pod resource requests & limits
   resources:
@@ -612,15 +605,9 @@ auth:
   # -- number of replicas to run
   replicaCount: 1
 
-  # -- pdb creates a PodDisruptionBudget for this deployment during voluntary
-  # disruptions (node drains, cluster upgrades). Only enable with replicaCount >= 2,
-  # otherwise the chart fails to render (a PDB on a single replica blocks node drains).
-  pdb:
-    enabled: false
-    # -- maxUnavailable pods during a voluntary disruption. Ignored if minAvailable is set.
-    maxUnavailable: 1
-    # -- minAvailable pods (absolute number or percentage). Overrides maxUnavailable when set.
-    minAvailable: ""
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
 
   # -- Set pod resource requests & limits
   resources:
@@ -909,15 +896,9 @@ router:
   # -- number of replicas to run
   replicaCount: 1
 
-  # -- pdb creates a PodDisruptionBudget for this deployment during voluntary
-  # disruptions (node drains, cluster upgrades). Only enable with replicaCount >= 2,
-  # otherwise the chart fails to render (a PDB on a single replica blocks node drains).
-  pdb:
-    enabled: false
-    # -- maxUnavailable pods during a voluntary disruption. Ignored if minAvailable is set.
-    maxUnavailable: 1
-    # -- minAvailable pods (absolute number or percentage). Overrides maxUnavailable when set.
-    minAvailable: ""
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
 
   # -- Set pod resource requests & limits
   resources:
@@ -1029,15 +1010,9 @@ ui:
   # -- number of replicas to run
   replicaCount: 1
 
-  # -- pdb creates a PodDisruptionBudget for this deployment during voluntary
-  # disruptions (node drains, cluster upgrades). Only enable with replicaCount >= 2,
-  # otherwise the chart fails to render (a PDB on a single replica blocks node drains).
-  pdb:
-    enabled: false
-    # -- maxUnavailable pods during a voluntary disruption. Ignored if minAvailable is set.
-    maxUnavailable: 1
-    # -- minAvailable pods (absolute number or percentage). Overrides maxUnavailable when set.
-    minAvailable: ""
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
 
   # -- Set pod resource requests & limits
   resources:
