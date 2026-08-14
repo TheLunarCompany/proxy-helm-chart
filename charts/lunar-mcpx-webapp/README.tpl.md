@@ -181,16 +181,30 @@ By default the app pods run on the namespace `default` service account and no Se
 To attach cloud IAM to the workloads, let the chart create a dedicated ServiceAccount and annotate it:
 
 ```yaml
-serviceAccount:
-  create: true
-  # name: my-sa   # optional, defaults to the chart fullname
-  annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/my-role
+global:
+  serviceAccount:
+    create: true
+    # name: my-sa   # optional, defaults to the chart fullname
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/my-role
 ```
 
 The ServiceAccount is used by all app deployments and cronjobs. The hive-controller keeps its own
 RBAC-bound service account and is not affected. To use an existing ServiceAccount instead, set
-`serviceAccount.name` and leave `create: false`.
+`global.serviceAccount.name` and leave `create: false`.
+
+Each service (`webserver`, `hub`, `admin`, `auth`, `router`, `ui`, `jobs`) also accepts its own
+`serviceAccount` block with the same fields, which takes priority over the global one for that
+service. With `create: true` and no name, the per-service ServiceAccount is named
+`<fullname>-<service>`, so different services can carry different IAM roles:
+
+```yaml
+hub:
+  serviceAccount:
+    create: true
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/hub-role
+```
 
 ### Pod Disruption Budgets
 

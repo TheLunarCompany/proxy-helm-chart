@@ -44,8 +44,8 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
-      serviceAccountName: {{ include "lunar-mcpx-webapp.serviceAccountName" . }}
+      {{- with include "lunar-mcpx-webapp.serviceAccountName" (dict "root" $ "svc" .Values.admin "key" "admin") }}
+      serviceAccountName: {{ . }}
       {{- end }}
       {{- with concat (.Values.global.extraInitContainers | default (list)) (.Values.admin.extraInitContainers | default (list)) }}
       initContainers:

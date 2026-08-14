@@ -35,11 +35,19 @@
         },
         "webappRepository": {
           "type": "string",
-          "enum": ["prod", "dev", "boomipoc"]
+          "enum": [
+            "prod",
+            "dev",
+            "boomipoc"
+          ]
         },
         "mcpxRepository": {
           "type": "string",
-          "enum": ["prod", "dev", "boomipoc"]
+          "enum": [
+            "prod",
+            "dev",
+            "boomipoc"
+          ]
         },
         "webappRepositoryDev": {
           "type": "string"
@@ -64,6 +72,9 @@
         },
         "priorityClassName": {
           "type": "string"
+        },
+        "serviceAccount": {
+          "$ref": "#/$defs/serviceAccount"
         }
       }
     },
@@ -74,10 +85,16 @@
           "type": "object",
           "properties": {
             "connectionLimit": {
-              "type": ["integer", "null"]
+              "type": [
+                "integer",
+                "null"
+              ]
             },
             "poolTimeoutSeconds": {
-              "type": ["integer", "null"]
+              "type": [
+                "integer",
+                "null"
+              ]
             }
           }
         },
@@ -154,6 +171,9 @@
         },
         "priorityClassName": {
           "type": "string"
+        },
+        "serviceAccount": {
+          "$ref": "#/$defs/serviceAccount"
         }
       }
     },
@@ -167,10 +187,16 @@
           "type": "object",
           "properties": {
             "connectionLimit": {
-              "type": ["integer", "null"]
+              "type": [
+                "integer",
+                "null"
+              ]
             },
             "poolTimeoutSeconds": {
-              "type": ["integer", "null"]
+              "type": [
+                "integer",
+                "null"
+              ]
             }
           }
         },
@@ -196,6 +222,9 @@
         },
         "priorityClassName": {
           "type": "string"
+        },
+        "serviceAccount": {
+          "$ref": "#/$defs/serviceAccount"
         }
       }
     },
@@ -243,15 +272,23 @@
       "description": "Embedded ClickHouse for event store analytics",
       "if": {
         "properties": {
-          "enabled": { "const": true }
+          "enabled": {
+            "const": true
+          }
         },
-        "required": ["enabled"]
+        "required": [
+          "enabled"
+        ]
       },
       "then": {
         "properties": {
-          "credentialsSecret": { "minLength": 1 }
+          "credentialsSecret": {
+            "minLength": 1
+          }
         },
-        "required": ["credentialsSecret"]
+        "required": [
+          "credentialsSecret"
+        ]
       },
       "properties": {
         "enabled": {
@@ -398,11 +435,18 @@
               "type": "object",
               "description": "Flat map of editable system-config env keys to seed as DB overrides via the seed-system-config jobs. Sparse: list only keys you actually set. Existing DB overrides are never overwritten.",
               "additionalProperties": {
-                "type": ["string", "number", "boolean"]
+                "type": [
+                  "string",
+                  "number",
+                  "boolean"
+                ]
               },
               "default": {}
             }
           }
+        },
+        "serviceAccount": {
+          "$ref": "#/$defs/serviceAccount"
         }
       }
     },
@@ -530,10 +574,16 @@
           "type": "object",
           "properties": {
             "connectionLimit": {
-              "type": ["integer", "null"]
+              "type": [
+                "integer",
+                "null"
+              ]
             },
             "poolTimeoutSeconds": {
-              "type": ["integer", "null"]
+              "type": [
+                "integer",
+                "null"
+              ]
             }
           }
         },
@@ -547,7 +597,10 @@
             "llmProvider": {
               "type": "string",
               "description": "LLM provider for Sandbox Analysis",
-              "enum": ["openai", "google-gen-ai"]
+              "enum": [
+                "openai",
+                "google-gen-ai"
+              ]
             },
             "llmModel": {
               "type": "string",
@@ -610,6 +663,9 @@
         },
         "priorityClassName": {
           "type": "string"
+        },
+        "serviceAccount": {
+          "$ref": "#/$defs/serviceAccount"
         }
       }
     },
@@ -618,6 +674,9 @@
       "properties": {
         "pdb": {
           "$ref": "#/$defs/pdb"
+        },
+        "serviceAccount": {
+          "$ref": "#/$defs/serviceAccount"
         }
       }
     },
@@ -626,6 +685,9 @@
       "properties": {
         "pdb": {
           "$ref": "#/$defs/pdb"
+        },
+        "serviceAccount": {
+          "$ref": "#/$defs/serviceAccount"
         }
       }
     },
@@ -634,6 +696,31 @@
       "properties": {
         "pdb": {
           "$ref": "#/$defs/pdb"
+        },
+        "serviceAccount": {
+          "$ref": "#/$defs/serviceAccount"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "pdb": {
+      "type": "object",
+      "description": "PodDisruptionBudget for this deployment. Requires replicaCount >= 2 when enabled",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "maxUnavailable": {
+          "type": ["integer", "string"],
+          "description": "Max pods down during a voluntary disruption. Ignored if minAvailable is set",
+          "default": 1
+        },
+        "minAvailable": {
+          "type": ["integer", "string"],
+          "description": "Min pods that must stay up (number or percentage). Overrides maxUnavailable when set",
+          "default": ""
         }
       }
     },
@@ -655,7 +742,8 @@
           "description": "Annotations for the created ServiceAccount, e.g. an EKS IRSA role ARN",
           "default": {}
         }
-      }
+      },
+      "description": "ServiceAccount settings. A service-level serviceAccount block overrides global.serviceAccount"
     }
   }
 }

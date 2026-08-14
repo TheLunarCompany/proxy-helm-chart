@@ -37,8 +37,8 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
         spec:
-          {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
-          serviceAccountName: {{ include "lunar-mcpx-webapp.serviceAccountName" . }}
+          {{- with include "lunar-mcpx-webapp.serviceAccountName" (dict "root" $ "svc" .Values.jobs "key" "jobs") }}
+          serviceAccountName: {{ . }}
           {{- end }}
           restartPolicy: OnFailure
           containers:
@@ -137,8 +137,8 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
         spec:
-          {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
-          serviceAccountName: {{ include "lunar-mcpx-webapp.serviceAccountName" . }}
+          {{- with include "lunar-mcpx-webapp.serviceAccountName" (dict "root" $ "svc" .Values.jobs "key" "jobs") }}
+          serviceAccountName: {{ . }}
           {{- end }}
           restartPolicy: OnFailure
           containers:
@@ -240,8 +240,8 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
         spec:
-          {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
-          serviceAccountName: {{ include "lunar-mcpx-webapp.serviceAccountName" . }}
+          {{- with include "lunar-mcpx-webapp.serviceAccountName" (dict "root" $ "svc" .Values.jobs "key" "jobs") }}
+          serviceAccountName: {{ . }}
           {{- end }}
           restartPolicy: OnFailure
           containers:
