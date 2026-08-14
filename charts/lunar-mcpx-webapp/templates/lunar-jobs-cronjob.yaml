@@ -37,6 +37,9 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
         spec:
+          {{- with include "lunar-mcpx-webapp.serviceAccountName" (dict "root" $ "svc" .Values.jobs "key" "jobs") }}
+          serviceAccountName: {{ . }}
+          {{- end }}
           restartPolicy: OnFailure
           containers:
             - name: job-runner
@@ -134,6 +137,9 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
         spec:
+          {{- with include "lunar-mcpx-webapp.serviceAccountName" (dict "root" $ "svc" .Values.jobs "key" "jobs") }}
+          serviceAccountName: {{ . }}
+          {{- end }}
           restartPolicy: OnFailure
           containers:
             - name: job-runner
@@ -234,6 +240,9 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
         spec:
+          {{- with include "lunar-mcpx-webapp.serviceAccountName" (dict "root" $ "svc" .Values.jobs "key" "jobs") }}
+          serviceAccountName: {{ . }}
+          {{- end }}
           restartPolicy: OnFailure
           containers:
             - name: job-runner

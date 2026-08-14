@@ -43,6 +43,9 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
         spec:
+          {{- with include "lunar-mcpx-webapp.serviceAccountName" (dict "root" .root "svc" .root.Values.admin "key" "admin") }}
+          serviceAccountName: {{ . }}
+          {{- end }}
           restartPolicy: Never
           containers:
             - name: {{ .jobName }}

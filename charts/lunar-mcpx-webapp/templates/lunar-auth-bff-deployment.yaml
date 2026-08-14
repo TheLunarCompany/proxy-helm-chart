@@ -49,6 +49,9 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      {{- with include "lunar-mcpx-webapp.serviceAccountName" (dict "root" $ "svc" .Values.auth "key" "auth") }}
+      serviceAccountName: {{ . }}
+      {{- end }}
       initContainers:
         - name: mcpx-auth-prisma-migration
           image: "{{ $repository }}:{{ .Values.auth.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"

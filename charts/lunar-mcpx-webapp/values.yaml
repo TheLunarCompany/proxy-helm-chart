@@ -134,7 +134,33 @@ global:
   # priorityClassName: "custom"
   priorityClassName: ""
 
+  serviceAccount:
+    # -- create a ServiceAccount for the app workloads (deployments and cronjobs, excluding hive-controller).
+    create: false
+    # -- name of the ServiceAccount to use. If create is true and name is empty, the chart fullname is used.
+    # If create is false and name is empty, pods run on the namespace default ServiceAccount.
+    name: ""
+    # -- annotations for the created ServiceAccount, e.g. an EKS IRSA role:
+    # annotations:
+    #   eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/my-role
+    annotations: {}
+
+  # -- pdb creates a PodDisruptionBudget for every app deployment during voluntary
+  # disruptions (node drains, cluster upgrades). Enabling this requires replicaCount >= 2
+  # on every app deployment (or a per-service pdb override with enabled: false),
+  # otherwise the chart fails to render: a PDB on a single replica blocks node drains.
+  pdb:
+    enabled: false
+    # -- maxUnavailable pods during a voluntary disruption. Ignored if minAvailable is set.
+    maxUnavailable: 1
+    # -- minAvailable pods (absolute number or percentage). Overrides maxUnavailable when set.
+    minAvailable: ""
+
 webserver:
+  # -- serviceAccount overrides global.serviceAccount for this service.
+  # Same fields as global (create, name, annotations). When create is true
+  # and name is empty, the ServiceAccount is named <fullname>-<service>.
+  serviceAccount: {}
   image:
     # -- Lunar mcpx-webserver image repository
     repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-webserver
@@ -190,6 +216,10 @@ webserver:
 
   # -- number of replicas to run
   replicaCount: 1
+
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
 
   # -- Set pod resource requests & limits
   resources:
@@ -253,6 +283,10 @@ webserver:
   extraContainers: []
 
 hub:
+  # -- serviceAccount overrides global.serviceAccount for this service.
+  # Same fields as global (create, name, annotations). When create is true
+  # and name is empty, the ServiceAccount is named <fullname>-<service>.
+  serviceAccount: {}
   image:
     # -- Lunar mcpx-webserver image repository
     repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hub
@@ -308,6 +342,10 @@ hub:
 
   # -- number of replicas to run
   replicaCount: 1
+
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
 
   # -- Set pod resource requests & limits
   resources:
@@ -400,6 +438,10 @@ hub:
   priorityClassName: ""
 
 admin:
+  # -- serviceAccount overrides global.serviceAccount for this service.
+  # Same fields as global (create, name, annotations). When create is true
+  # and name is empty, the ServiceAccount is named <fullname>-<service>.
+  serviceAccount: {}
   image:
     # -- Lunar mcpx-webserver image repository
     repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-admin-ui
@@ -445,6 +487,10 @@ admin:
 
   # -- number of replicas to run
   replicaCount: 1
+
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
 
   # -- Set pod resource requests & limits
   resources:
@@ -499,6 +545,10 @@ admin:
   priorityClassName: ""
 
 auth:
+  # -- serviceAccount overrides global.serviceAccount for this service.
+  # Same fields as global (create, name, annotations). When create is true
+  # and name is empty, the ServiceAccount is named <fullname>-<service>.
+  serviceAccount: {}
   image:
     # -- Lunar mcpx-webserver image repository
     repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-auth-bff
@@ -554,6 +604,10 @@ auth:
 
   # -- number of replicas to run
   replicaCount: 1
+
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
 
   # -- Set pod resource requests & limits
   resources:
@@ -615,6 +669,9 @@ auth:
   priorityClassName: ""
 
 controller:
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
   image:
     # -- Lunar mcpx-hive-controller image repository
     repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-controller
@@ -792,6 +849,10 @@ controller:
   priorityClassName: ""
 
 router:
+  # -- serviceAccount overrides global.serviceAccount for this service.
+  # Same fields as global (create, name, annotations). When create is true
+  # and name is empty, the ServiceAccount is named <fullname>-<service>.
+  serviceAccount: {}
   image:
     # -- Lunar mcpx-router image repository
     repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-router
@@ -837,6 +898,10 @@ router:
 
   # -- number of replicas to run
   replicaCount: 1
+
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
 
   # -- Set pod resource requests & limits
   resources:
@@ -899,6 +964,10 @@ router:
   priorityClassName: ""
 
 ui:
+  # -- serviceAccount overrides global.serviceAccount for this service.
+  # Same fields as global (create, name, annotations). When create is true
+  # and name is empty, the ServiceAccount is named <fullname>-<service>.
+  serviceAccount: {}
   image:
     # -- Lunar mcpx-ui image repository
     repository: us-central1-docker.pkg.dev/prj-common-442813/mcpx/mcpx-ui
@@ -943,6 +1012,10 @@ ui:
 
   # -- number of replicas to run
   replicaCount: 1
+
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
 
   # -- Set pod resource requests & limits
   resources:
@@ -997,6 +1070,10 @@ ui:
   priorityClassName: ""
 
 jobs:
+  # -- serviceAccount overrides global.serviceAccount for this service.
+  # Same fields as global (create, name, annotations). When create is true
+  # and name is empty, the ServiceAccount is named <fullname>-<service>.
+  serviceAccount: {}
   image:
     # -- Lunar mcpx-jobs image repository
     repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-jobs
