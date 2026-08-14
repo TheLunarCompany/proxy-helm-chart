@@ -192,6 +192,24 @@ The ServiceAccount is used by all app deployments and cronjobs. The hive-control
 RBAC-bound service account and is not affected. To use an existing ServiceAccount instead, set
 `serviceAccount.name` and leave `create: false`.
 
+### Pod Disruption Budgets
+
+Each app deployment (`webserver`, `hub`, `admin`, `auth`, `router`, `ui`) can get a PodDisruptionBudget
+to keep it available during node drains and cluster upgrades:
+
+```yaml
+webserver:
+  replicaCount: 3
+  pdb:
+    enabled: true
+    maxUnavailable: 1   # or set minAvailable (number or percentage) instead
+```
+
+Off by default. Enabling it requires `replicaCount >= 2` for that service, otherwise rendering fails:
+a PDB over a single replica blocks node drains entirely. If you already manage your own PDBs for these
+pods outside the chart, remove them before enabling this, since pods covered by two PDBs cannot be
+evicted at all.
+
 ### Admin DB Migration Jobs
 
 This chart includes four **suspended CronJobs** for DB migration management. They never run automatically — admins create one-off jobs from them using `kubectl create job`.

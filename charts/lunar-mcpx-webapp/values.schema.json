@@ -1,6 +1,28 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
+  "$defs": {
+    "pdb": {
+      "type": "object",
+      "description": "PodDisruptionBudget for this deployment. Requires replicaCount >= 2 when enabled",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "maxUnavailable": {
+          "type": ["integer", "string"],
+          "description": "Max pods down during a voluntary disruption. Ignored if minAvailable is set",
+          "default": 1
+        },
+        "minAvailable": {
+          "type": ["integer", "string"],
+          "description": "Min pods that must stay up (number or percentage). Overrides maxUnavailable when set",
+          "default": ""
+        }
+      }
+    }
+  },
   "properties": {
     "global": {
       "type": "object",
@@ -90,6 +112,9 @@
         "replicaCount": {
           "type": "integer"
         },
+        "pdb": {
+          "$ref": "#/$defs/pdb"
+        },
         "resources": {
           "type": "object",
           "properties": {
@@ -135,6 +160,9 @@
     "auth": {
       "type": "object",
       "properties": {
+        "pdb": {
+          "$ref": "#/$defs/pdb"
+        },
         "db": {
           "type": "object",
           "properties": {
@@ -544,6 +572,9 @@
         "replicaCount": {
           "type": "integer"
         },
+        "pdb": {
+          "$ref": "#/$defs/pdb"
+        },
         "resources": {
           "type": "object",
           "properties": {
@@ -579,6 +610,30 @@
         },
         "priorityClassName": {
           "type": "string"
+        }
+      }
+    },
+    "admin": {
+      "type": "object",
+      "properties": {
+        "pdb": {
+          "$ref": "#/$defs/pdb"
+        }
+      }
+    },
+    "router": {
+      "type": "object",
+      "properties": {
+        "pdb": {
+          "$ref": "#/$defs/pdb"
+        }
+      }
+    },
+    "ui": {
+      "type": "object",
+      "properties": {
+        "pdb": {
+          "$ref": "#/$defs/pdb"
         }
       }
     },

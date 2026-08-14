@@ -1,0 +1,31 @@
+{{- $root := . }}
+{{- range $key := list "webserver" "hub" "admin" "auth" "router" "ui" }}
+{{- $svc := get $root.Values $key }}
+{{- /* not `enabled | default true`: sprig default treats false as unset, which would ignore enabled: false */}}
+{{- if and (ne ($svc.enabled | toString) "false") (($svc.pdb).enabled) }}
+{{- if lt (int ($svc.replicaCount | default 1)) 2 }}
+{{- fail (printf "%s.pdb.enabled requires %s.replicaCount >= 2 (a PDB on a single replica blocks node drains)" $key $key) }}
+{{- end }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" $root }}-{{ $key }}
+  labels:
+    service: {{ include "lunar-mcpx-webapp.fullname" $root }}-{{ $key }}
+    {{- include "lunar-mcpx-webapp.labels" $root | nindent 4 }}
+    {{- with $root.Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if ($svc.pdb).minAvailable }}
+  minAvailable: {{ ($svc.pdb).minAvailable }}
+  {{- else }}
+  maxUnavailable: {{ ($svc.pdb).maxUnavailable | default 1 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ include "lunar-mcpx-webapp.fullname" $root }}-{{ $key }}
+      {{- include "lunar-mcpx-webapp.selectorLabels" $root | nindent 6 }}
+{{- end }}
+{{- end }}
