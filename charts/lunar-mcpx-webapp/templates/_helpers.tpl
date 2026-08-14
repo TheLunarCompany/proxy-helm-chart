@@ -125,23 +125,23 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{/*
 Resolve the ServiceAccount name for a workload.
 Call with (dict "root" $ "svc" .Values.<service> "key" "<service>").
-The service-level serviceAccount block wins over global.serviceAccount.
-Returns "" when neither is configured (pod falls back to the namespace default SA).
+The service serviceAccount block applies if it sets create or name, otherwise
+global.serviceAccount does. Then: create defaults the name (chart fullname,
+suffixed with the service key for service-level SAs), no create means use the
+name as-is. Returns "" when nothing is configured (pod falls back to the
+namespace default SA).
 */}}
 {{- define "lunar-mcpx-webapp.serviceAccountName" -}}
-{{- $svc := .svc | default dict -}}
-{{- $sa := $svc.serviceAccount | default dict -}}
-{{- $global := .root.Values.global.serviceAccount -}}
-{{- if or $sa.create $sa.name -}}
+{{- $sa := (.svc | default dict).serviceAccount | default dict -}}
+{{- $defaultName := printf "%s-%s" (include "lunar-mcpx-webapp.fullname" .root) .key -}}
+{{- if not (or $sa.create $sa.name) -}}
+{{- $sa = .root.Values.global.serviceAccount -}}
+{{- $defaultName = include "lunar-mcpx-webapp.fullname" .root -}}
+{{- end -}}
 {{- if $sa.create -}}
-{{- default (printf "%s-%s" (include "lunar-mcpx-webapp.fullname" .root) .key) $sa.name -}}
+{{- default $defaultName $sa.name -}}
 {{- else -}}
 {{- $sa.name -}}
-{{- end -}}
-{{- else if $global.create -}}
-{{- default (include "lunar-mcpx-webapp.fullname" .root) $global.name -}}
-{{- else -}}
-{{- $global.name -}}
 {{- end -}}
 {{- end }}
 
