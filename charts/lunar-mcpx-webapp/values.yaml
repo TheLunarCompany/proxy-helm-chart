@@ -669,6 +669,9 @@ auth:
   priorityClassName: ""
 
 controller:
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
   image:
     # -- Lunar mcpx-hive-controller image repository
     repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-controller

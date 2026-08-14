@@ -488,6 +488,9 @@
     "controller": {
       "type": "object",
       "properties": {
+        "pdb": {
+          "$ref": "#/$defs/pdb"
+        },
         "mcpxRuntimeAuth": {
           "type": "object",
           "description": "Runtime auth/config files injected into each MCPX instance pod",

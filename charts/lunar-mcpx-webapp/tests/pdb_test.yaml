@@ -52,9 +52,15 @@ tests:
         replicaCount: 3
       ui:
         replicaCount: 3
+      controller:
+        replicaCount: 3
     asserts:
       - hasDocuments:
-          count: 6
+          count: 7
+      - documentIndex: 6
+        equal:
+          path: metadata.name
+          value: my-release-lunar-mcpx-webapp-controller
 
   - it: service-level enabled false overrides global
     release:
@@ -76,9 +82,11 @@ tests:
         replicaCount: 3
       ui:
         replicaCount: 3
+      controller:
+        replicaCount: 3
     asserts:
       - hasDocuments:
-          count: 5
+          count: 6
 
   - it: global pdb fails when a service has a single replica
     release:

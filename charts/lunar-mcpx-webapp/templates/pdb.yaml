@@ -1,6 +1,7 @@
 {{- $root := . }}
 {{- $gpdb := .Values.global.pdb | default dict }}
-{{- range $key := list "webserver" "hub" "admin" "auth" "router" "ui" }}
+{{- /* the concerned services */}}
+{{- range $key := list "webserver" "hub" "admin" "auth" "router" "ui" "controller" }}
 {{- $svc := get $root.Values $key }}
 {{- $spdb := $svc.pdb | default dict }}
 {{- /* service-level keys override global; hasKey (not coalesce/default) so an explicit false or 0 wins */}}

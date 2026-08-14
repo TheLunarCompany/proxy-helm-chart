@@ -208,7 +208,7 @@ hub:
 
 ### Pod Disruption Budgets
 
-Each app deployment (`webserver`, `hub`, `admin`, `auth`, `router`, `ui`) can get a PodDisruptionBudget
+Each app deployment (`webserver`, `hub`, `admin`, `auth`, `router`, `ui`, `controller`) can get a PodDisruptionBudget
 to keep it available during node drains and cluster upgrades. Set the default under `global.pdb`, and
 override per service with the same fields (`enabled`, `maxUnavailable`, `minAvailable`); service-level
 settings win:
