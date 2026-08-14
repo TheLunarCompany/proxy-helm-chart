@@ -206,6 +206,35 @@ hub:
       eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/hub-role
 ```
 
+### Pod Disruption Budgets
+
+Each app deployment (`webserver`, `hub`, `admin`, `auth`, `router`, `ui`, `controller`) can get a PodDisruptionBudget
+to keep it available during node drains and cluster upgrades. Set the default under `global.pdb`, and
+override per service with the same fields (`enabled`, `maxUnavailable`, `minAvailable`); service-level
+settings win:
+
+```yaml
+global:
+  pdb:
+    enabled: true
+    maxUnavailable: 1   # or set minAvailable (number or percentage) instead
+
+webserver:
+  replicaCount: 3
+hub:
+  replicaCount: 3
+# ...
+
+admin:
+  pdb:
+    enabled: false      # opt a single-replica service out
+```
+
+Off by default. Rendering fails if a PDB is enabled for a service with `replicaCount < 2`:
+a PDB over a single replica blocks node drains entirely. If you already manage your own PDBs for these
+pods outside the chart, remove them before enabling this, since pods covered by two PDBs cannot be
+evicted at all.
+
 ### Admin DB Migration Jobs
 
 This chart includes four **suspended CronJobs** for DB migration management. They never run automatically — admins create one-off jobs from them using `kubectl create job`.

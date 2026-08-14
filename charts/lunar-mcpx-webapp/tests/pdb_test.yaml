@@ -1,0 +1,145 @@
+suite: PodDisruptionBudget wiring
+templates:
+  - templates/pdb.yaml
+
+tests:
+  - it: renders no PDB by default
+    release:
+      name: my-release
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders a PDB with maxUnavailable when enabled per service with enough replicas
+    release:
+      name: my-release
+    set:
+      webserver:
+        replicaCount: 3
+        pdb:
+          enabled: true
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: PodDisruptionBudget
+      - equal:
+          path: metadata.name
+          value: my-release-lunar-mcpx-webapp-webserver
+      - equal:
+          path: spec.maxUnavailable
+          value: 1
+      - equal:
+          path: spec.selector.matchLabels.app
+          value: my-release-lunar-mcpx-webapp-webserver
+
+  - it: global pdb enables all app deployments
+    release:
+      name: my-release
+    set:
+      global:
+        pdb:
+          enabled: true
+      webserver:
+        replicaCount: 3
+      hub:
+        replicaCount: 3
+      admin:
+        replicaCount: 3
+      auth:
+        replicaCount: 3
+      router:
+        replicaCount: 3
+      ui:
+        replicaCount: 3
+      controller:
+        replicaCount: 3
+    asserts:
+      - hasDocuments:
+          count: 7
+      - documentIndex: 6
+        equal:
+          path: metadata.name
+          value: my-release-lunar-mcpx-webapp-controller
+
+  - it: service-level enabled false overrides global
+    release:
+      name: my-release
+    set:
+      global:
+        pdb:
+          enabled: true
+      webserver:
+        replicaCount: 3
+      hub:
+        replicaCount: 3
+      admin:
+        pdb:
+          enabled: false
+      auth:
+        replicaCount: 3
+      router:
+        replicaCount: 3
+      ui:
+        replicaCount: 3
+      controller:
+        replicaCount: 3
+    asserts:
+      - hasDocuments:
+          count: 6
+
+  - it: global pdb fails when a service has a single replica
+    release:
+      name: my-release
+    set:
+      global:
+        pdb:
+          enabled: true
+      webserver:
+        replicaCount: 3
+    asserts:
+      - failedTemplate:
+          errorMessage: "pdb is enabled for hub but hub.replicaCount < 2 (a PDB on a single replica blocks node drains); raise the replicas or set hub.pdb.enabled=false"
+
+  - it: service-level minAvailable overrides global maxUnavailable
+    release:
+      name: my-release
+    set:
+      global:
+        pdb:
+          maxUnavailable: 2
+      hub:
+        replicaCount: 2
+        pdb:
+          enabled: true
+          minAvailable: 50%
+    asserts:
+      - equal:
+          path: spec.minAvailable
+          value: 50%
+      - isNull:
+          path: spec.maxUnavailable
+
+  - it: fails when enabled with a single replica
+    release:
+      name: my-release
+    set:
+      webserver:
+        pdb:
+          enabled: true
+    asserts:
+      - failedTemplate:
+          errorMessage: "pdb is enabled for webserver but webserver.replicaCount < 2 (a PDB on a single replica blocks node drains); raise the replicas or set webserver.pdb.enabled=false"
+
+  - it: renders nothing for a disabled service
+    release:
+      name: my-release
+    set:
+      router:
+        enabled: false
+        replicaCount: 3
+        pdb:
+          enabled: true
+    asserts:
+      - hasDocuments:
+          count: 0
