@@ -51,6 +51,14 @@ spec:
             - name: {{ .jobName }}
               image: "{{ include "lunar-mcpx-webapp.webappImage" (dict "repo" .root.Values.jobs.image.repository "context" .root) }}:{{ .root.Values.jobs.image.tag | default .root.Values.global.appVersion | default .root.Chart.AppVersion }}"
               command: {{ .command | toJson }}
+              securityContext:
+                runAsNonRoot: true
+                allowPrivilegeEscalation: false
+                {{- include "lunar-mcpx-webapp.restrictedSeccompAndCaps" .root | nindent 16 }}
+                {{- if not (.root.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
+                runAsUser: 1000
+                runAsGroup: 1000
+                {{- end }}
               {{- if or (.root.Values.global.manageResources.limits) (.root.Values.global.manageResources.requests) }}
               resources:
                 {{- if .root.Values.global.manageResources.limits }}

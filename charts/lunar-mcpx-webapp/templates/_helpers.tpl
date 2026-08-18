@@ -184,3 +184,17 @@ Usage:
 {{- end }}
 {{- end }}
 {{- end }}
+
+{{/*
+Container securityContext fields required by Pod Security Standards
+"restricted" beyond what each template already sets: a seccomp profile
+and dropping all capabilities.
+Usage:
+{{- include "lunar-mcpx-webapp.restrictedSeccompAndCaps" . | nindent 12 }}
+*/}}
+{{- define "lunar-mcpx-webapp.restrictedSeccompAndCaps" -}}
+seccompProfile:
+  type: RuntimeDefault
+capabilities:
+  drop: ["ALL"]
+{{- end }}
