@@ -11,14 +11,31 @@
           "default": false
         },
         "maxUnavailable": {
-          "type": ["integer", "string"],
+          "type": [
+            "integer",
+            "string"
+          ],
           "description": "Max pods down during a voluntary disruption. Ignored if minAvailable is set",
           "default": 1
         },
         "minAvailable": {
-          "type": ["integer", "string"],
+          "type": [
+            "integer",
+            "string"
+          ],
           "description": "Min pods that must stay up (number or percentage). Overrides maxUnavailable when set",
           "default": ""
+        }
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "description": "The permissionless ServiceAccount the chart always creates and assigns to all app deployments and cronjobs (the hive-controller keeps its own RBAC-bound one)",
+      "properties": {
+        "annotations": {
+          "type": "object",
+          "description": "Annotations for the shared ServiceAccount, e.g. an EKS IRSA role ARN",
+          "default": {}
         }
       }
     }
@@ -174,9 +191,6 @@
         },
         "priorityClassName": {
           "type": "string"
-        },
-        "serviceAccount": {
-          "$ref": "#/$defs/serviceAccount"
         }
       }
     },
@@ -225,9 +239,6 @@
         },
         "priorityClassName": {
           "type": "string"
-        },
-        "serviceAccount": {
-          "$ref": "#/$defs/serviceAccount"
         }
       }
     },
@@ -447,9 +458,6 @@
               "default": {}
             }
           }
-        },
-        "serviceAccount": {
-          "$ref": "#/$defs/serviceAccount"
         }
       }
     },
@@ -669,9 +677,6 @@
         },
         "priorityClassName": {
           "type": "string"
-        },
-        "serviceAccount": {
-          "$ref": "#/$defs/serviceAccount"
         }
       }
     },
@@ -680,9 +685,6 @@
       "properties": {
         "pdb": {
           "$ref": "#/$defs/pdb"
-        },
-        "serviceAccount": {
-          "$ref": "#/$defs/serviceAccount"
         }
       }
     },
@@ -691,9 +693,6 @@
       "properties": {
         "pdb": {
           "$ref": "#/$defs/pdb"
-        },
-        "serviceAccount": {
-          "$ref": "#/$defs/serviceAccount"
         }
       }
     },
@@ -702,54 +701,8 @@
       "properties": {
         "pdb": {
           "$ref": "#/$defs/pdb"
-        },
-        "serviceAccount": {
-          "$ref": "#/$defs/serviceAccount"
         }
       }
-    }
-  },
-  "$defs": {
-    "pdb": {
-      "type": "object",
-      "description": "PodDisruptionBudget for this deployment. Requires replicaCount >= 2 when enabled",
-      "properties": {
-        "enabled": {
-          "type": "boolean",
-          "default": false
-        },
-        "maxUnavailable": {
-          "type": ["integer", "string"],
-          "description": "Max pods down during a voluntary disruption. Ignored if minAvailable is set",
-          "default": 1
-        },
-        "minAvailable": {
-          "type": ["integer", "string"],
-          "description": "Min pods that must stay up (number or percentage). Overrides maxUnavailable when set",
-          "default": ""
-        }
-      }
-    },
-    "serviceAccount": {
-      "type": "object",
-      "properties": {
-        "create": {
-          "type": "boolean",
-          "description": "Create a ServiceAccount for the app workloads (deployments and cronjobs, excluding hive-controller)",
-          "default": false
-        },
-        "name": {
-          "type": "string",
-          "description": "ServiceAccount name. Empty means the chart fullname when create is true, otherwise the namespace default ServiceAccount",
-          "default": ""
-        },
-        "annotations": {
-          "type": "object",
-          "description": "Annotations for the created ServiceAccount, e.g. an EKS IRSA role ARN",
-          "default": {}
-        }
-      },
-      "description": "ServiceAccount settings. A service-level serviceAccount block overrides global.serviceAccount"
     }
   }
 }
