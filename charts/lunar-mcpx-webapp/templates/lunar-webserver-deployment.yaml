@@ -188,6 +188,13 @@ spec:
             - name: ROUTER_INTERNAL_URL
               value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-router:{{ .Values.router.internalPort | default 4000 }}"
             {{- end }}
+            {{- if .Values.gatewayHub.enabled | default false }}
+            # Without this the webserver falls back to a localhost default and
+            # every HITL dry-run, decision push and diagnostics read silently
+            # fails open.
+            - name: GATEWAY_HUB_INTERNAL_URL
+              value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-gateway-hub"
+            {{- end }}
             {{- if or .Values.hibernation.cronSchedule (gt (int .Values.hibernation.idleMinutes) 0) }}
             - name: HIBERNATION_ENABLED
               value: "true"
