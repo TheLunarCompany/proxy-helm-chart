@@ -123,29 +123,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Resolve the ServiceAccount name for a workload.
-Call with (dict "root" $ "svc" .Values.<service> "key" "<service>").
-The service serviceAccount block applies if it sets create or name, otherwise
-global.serviceAccount does. Then: create defaults the name (chart fullname,
-suffixed with the service key for service-level SAs), no create means use the
-name as-is. Returns "" when nothing is configured (pod falls back to the
-namespace default SA).
-*/}}
-{{- define "lunar-mcpx-webapp.serviceAccountName" -}}
-{{- $sa := (.svc | default dict).serviceAccount | default dict -}}
-{{- $defaultName := printf "%s-%s" (include "lunar-mcpx-webapp.fullname" .root) .key -}}
-{{- if not (or $sa.create $sa.name) -}}
-{{- $sa = .root.Values.global.serviceAccount -}}
-{{- $defaultName = include "lunar-mcpx-webapp.fullname" .root -}}
-{{- end -}}
-{{- if $sa.create -}}
-{{- default $defaultName $sa.name -}}
-{{- else -}}
-{{- $sa.name -}}
-{{- end -}}
-{{- end }}
-
-{{/*
 Renders a value that contains template.
 Usage:
 {{ include "lunar-mcpx-webapp.tplvalues.render" ( dict "value" .Values.path.to.the.Value "context" $) }}

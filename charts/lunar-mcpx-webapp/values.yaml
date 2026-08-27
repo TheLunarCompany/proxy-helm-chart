@@ -134,13 +134,12 @@ global:
   # priorityClassName: "custom"
   priorityClassName: ""
 
+  # -- serviceAccount configures the permissionless ServiceAccount (named after the chart
+  # fullname) that the chart always creates and assigns to all app deployments and cronjobs,
+  # so pods never run on the namespace default ServiceAccount. The hive-controller keeps its
+  # own RBAC-bound ServiceAccount.
   serviceAccount:
-    # -- create a ServiceAccount for the app workloads (deployments and cronjobs, excluding hive-controller).
-    create: false
-    # -- name of the ServiceAccount to use. If create is true and name is empty, the chart fullname is used.
-    # If create is false and name is empty, pods run on the namespace default ServiceAccount.
-    name: ""
-    # -- annotations for the created ServiceAccount, e.g. an EKS IRSA role:
+    # -- annotations for the shared ServiceAccount, e.g. a cloud IAM role (EKS IRSA):
     # annotations:
     #   eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/my-role
     annotations: {}
@@ -157,10 +156,6 @@ global:
     minAvailable: ""
 
 webserver:
-  # -- serviceAccount overrides global.serviceAccount for this service.
-  # Same fields as global (create, name, annotations). When create is true
-  # and name is empty, the ServiceAccount is named <fullname>-<service>.
-  serviceAccount: {}
   image:
     # -- Lunar mcpx-webserver image repository
     repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-webserver
@@ -283,10 +278,6 @@ webserver:
   extraContainers: []
 
 hub:
-  # -- serviceAccount overrides global.serviceAccount for this service.
-  # Same fields as global (create, name, annotations). When create is true
-  # and name is empty, the ServiceAccount is named <fullname>-<service>.
-  serviceAccount: {}
   image:
     # -- Lunar mcpx-webserver image repository
     repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hub
@@ -438,10 +429,6 @@ hub:
   priorityClassName: ""
 
 admin:
-  # -- serviceAccount overrides global.serviceAccount for this service.
-  # Same fields as global (create, name, annotations). When create is true
-  # and name is empty, the ServiceAccount is named <fullname>-<service>.
-  serviceAccount: {}
   image:
     # -- Lunar mcpx-webserver image repository
     repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-admin-ui
@@ -545,10 +532,6 @@ admin:
   priorityClassName: ""
 
 auth:
-  # -- serviceAccount overrides global.serviceAccount for this service.
-  # Same fields as global (create, name, annotations). When create is true
-  # and name is empty, the ServiceAccount is named <fullname>-<service>.
-  serviceAccount: {}
   image:
     # -- Lunar mcpx-webserver image repository
     repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-auth-bff
@@ -849,10 +832,6 @@ controller:
   priorityClassName: ""
 
 router:
-  # -- serviceAccount overrides global.serviceAccount for this service.
-  # Same fields as global (create, name, annotations). When create is true
-  # and name is empty, the ServiceAccount is named <fullname>-<service>.
-  serviceAccount: {}
   image:
     # -- Lunar mcpx-router image repository
     repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-router
@@ -964,10 +943,6 @@ router:
   priorityClassName: ""
 
 ui:
-  # -- serviceAccount overrides global.serviceAccount for this service.
-  # Same fields as global (create, name, annotations). When create is true
-  # and name is empty, the ServiceAccount is named <fullname>-<service>.
-  serviceAccount: {}
   image:
     # -- Lunar mcpx-ui image repository
     repository: us-central1-docker.pkg.dev/prj-common-442813/mcpx/mcpx-ui
@@ -1070,10 +1045,6 @@ ui:
   priorityClassName: ""
 
 jobs:
-  # -- serviceAccount overrides global.serviceAccount for this service.
-  # Same fields as global (create, name, annotations). When create is true
-  # and name is empty, the ServiceAccount is named <fullname>-<service>.
-  serviceAccount: {}
   image:
     # -- Lunar mcpx-jobs image repository
     repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-jobs

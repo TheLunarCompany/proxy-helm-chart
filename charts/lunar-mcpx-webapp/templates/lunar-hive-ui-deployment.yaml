@@ -44,9 +44,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- with include "lunar-mcpx-webapp.serviceAccountName" (dict "root" $ "svc" .Values.ui "key" "ui") }}
-      serviceAccountName: {{ . }}
-      {{- end }}
+      serviceAccountName: {{ include "lunar-mcpx-webapp.fullname" . }}
       securityContext:
         runAsNonRoot: true
         {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
