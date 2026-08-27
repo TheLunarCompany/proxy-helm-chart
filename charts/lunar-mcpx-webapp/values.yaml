@@ -1388,6 +1388,9 @@ ingress:
     # the AI gateway the same way `webserver` reaches the webserver. Agents then
     # point their provider base URL at it, e.g.
     # ANTHROPIC_BASE_URL=https://mcpx-gateway.example.com.
+    # Setting this also hands the address to the Admin UI as LLM_GATEWAY_URL, so
+    # its "How to use" panel prints a copy-pasteable command. Left unset, that
+    # panel guesses the address from the Admin UI's own host.
     # Add it only together with gateway.enabled=true: a rule for a Service that
     # was never rendered is a dead backend (and, on gce, a managed certificate
     # that never resolves).

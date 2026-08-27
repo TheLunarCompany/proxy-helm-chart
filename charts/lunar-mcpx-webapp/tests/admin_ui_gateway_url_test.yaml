@@ -1,0 +1,49 @@
+suite: Admin UI gateway address
+templates:
+  - templates/lunar-admin-ui-deployment.yaml
+
+tests:
+  - it: should hand the gateway domain to the Admin UI
+    set:
+      gateway.enabled: true
+      ingress.domains.gateway:
+        - mcpx-gateway.example.com
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: LLM_GATEWAY_URL
+            value: "https://mcpx-gateway.example.com"
+
+  - it: should take the first domain when several are listed
+    set:
+      gateway.enabled: true
+      ingress.domains.gateway:
+        - mcpx-gateway.example.com
+        - gateway-alias.example.com
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: LLM_GATEWAY_URL
+            value: "https://mcpx-gateway.example.com"
+
+  - it: should send no gateway address when no gateway domain is set
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: LLM_GATEWAY_URL
+          any: true
+
+  - it: should send no gateway address when the ingress is off
+    set:
+      ingress.enabled: false
+      ingress.domains.gateway:
+        - mcpx-gateway.example.com
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: LLM_GATEWAY_URL
+          any: true

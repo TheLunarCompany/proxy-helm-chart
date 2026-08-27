@@ -109,6 +109,14 @@ spec:
               value: "https://{{ first .Values.ingress.domains.auth }}"
             - name: MCPX_UI_URL
               value: "https://{{ first .Values.ingress.domains.ui }}"
+            {{- if .Values.ingress.domains.gateway }}
+            # The address agents point their provider base URL at, shown in the
+            # Admin UI's "How to use" panel next to the key they just generated.
+            # Absent when no gateway domain is set: the panel then falls back to
+            # deriving one from the Admin UI's own host, which is a guess.
+            - name: LLM_GATEWAY_URL
+              value: "https://{{ first .Values.ingress.domains.gateway }}"
+            {{- end }}
           {{- end }}
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
