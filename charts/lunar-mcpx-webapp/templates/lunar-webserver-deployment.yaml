@@ -226,7 +226,7 @@ spec:
             {{- end }}
             {{- if not (has "HIVE_DEFAULT_MCPX_IMAGE_TAG" $webserverExtraEnvNames) }}
             - name: HIVE_DEFAULT_MCPX_IMAGE_TAG
-              value: {{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) }}
+              value: {{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) | quote }}
             {{- end }}
           {{- if .Values.ingress.enabled }}
             - name: CORS_ALLOWED_ORIGINS
