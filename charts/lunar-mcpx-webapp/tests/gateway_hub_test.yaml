@@ -4,7 +4,12 @@ templates:
   - templates/lunar-gateway-hub-service.yaml
 
 tests:
+  # Set explicitly rather than leaning on the chart defaults, which flipped to
+  # true and silently turned this into an assertion about nothing.
   - it: should render nothing when both gateway-hub and gateway are disabled
+    set:
+      gatewayHub.enabled: false
+      gateway.enabled: false
     asserts:
       - hasDocuments:
           count: 0
