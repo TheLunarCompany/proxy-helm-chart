@@ -69,6 +69,10 @@ spec:
           volumeMounts:
             - name: lunar-packages-ui
               mountPath: /tmp/lunar/packages/ui/
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            {{- include "lunar-mcpx-webapp.restrictedSeccompAndCaps" . | nindent 12 }}
         {{- with concat (.Values.global.extraInitContainers | default (list)) (.Values.ui.extraInitContainers | default (list)) }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -96,6 +100,7 @@ spec:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
             allowPrivilegeEscalation: false
+            {{- include "lunar-mcpx-webapp.restrictedSeccompAndCaps" . | nindent 12 }}
           envFrom:
             - secretRef:
                 name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded

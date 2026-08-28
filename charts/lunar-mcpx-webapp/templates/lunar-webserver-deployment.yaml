@@ -48,6 +48,14 @@ spec:
       initContainers:
         - name: mcpx-webserver-prisma-migration
           image: "{{ $repository }}:{{ .Values.webserver.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            {{- include "lunar-mcpx-webapp.restrictedSeccompAndCaps" . | nindent 12 }}
+            {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
+            runAsUser: 1000
+            runAsGroup: 1000
+            {{- end }}
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
             {{- if .Values.global.manageResources.limits }}
@@ -93,6 +101,14 @@ spec:
         {{- if .Values.clickhouse.enabled }}
         - name: mcpx-webserver-clickhouse-migration
           image: "{{ $repository }}:{{ .Values.webserver.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            {{- include "lunar-mcpx-webapp.restrictedSeccompAndCaps" . | nindent 12 }}
+            {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
+            runAsUser: 1000
+            runAsGroup: 1000
+            {{- end }}
           {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
           resources:
             {{- if .Values.global.manageResources.limits }}
@@ -144,6 +160,7 @@ spec:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
             allowPrivilegeEscalation: false
+            {{- include "lunar-mcpx-webapp.restrictedSeccompAndCaps" . | nindent 12 }}
             {{- if not ( .Capabilities.APIVersions.Has "security.openshift.io/v1")  }}
             runAsUser: 1000
             runAsGroup: 1000
@@ -209,7 +226,7 @@ spec:
             {{- end }}
             {{- if not (has "HIVE_DEFAULT_MCPX_IMAGE_TAG" $webserverExtraEnvNames) }}
             - name: HIVE_DEFAULT_MCPX_IMAGE_TAG
-              value: {{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) }}
+              value: {{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) | quote }}
             {{- end }}
           {{- if .Values.ingress.enabled }}
             - name: CORS_ALLOWED_ORIGINS

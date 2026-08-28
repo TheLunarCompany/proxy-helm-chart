@@ -44,6 +44,14 @@ spec:
               image: "{{ $repository }}:{{ .Values.jobs.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
               args:
                 - clean-terminated-sessions
+              securityContext:
+                runAsNonRoot: true
+                allowPrivilegeEscalation: false
+                {{- include "lunar-mcpx-webapp.restrictedSeccompAndCaps" . | nindent 16 }}
+                {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
+                runAsUser: 1000
+                runAsGroup: 1000
+                {{- end }}
               {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
               resources:
                 {{- if .Values.global.manageResources.limits }}
@@ -142,6 +150,14 @@ spec:
               image: "{{ $repository }}:{{ .Values.jobs.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
               args:
                 - hibernate-instances
+              securityContext:
+                runAsNonRoot: true
+                allowPrivilegeEscalation: false
+                {{- include "lunar-mcpx-webapp.restrictedSeccompAndCaps" . | nindent 16 }}
+                {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
+                runAsUser: 1000
+                runAsGroup: 1000
+                {{- end }}
               {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
               resources:
                 {{- if .Values.global.manageResources.limits }}
@@ -243,6 +259,14 @@ spec:
               image: "{{ $repository }}:{{ .Values.jobs.image.tag | default .Values.global.appVersion | default .Chart.AppVersion }}"
               args:
                 - prune-audit-logs
+              securityContext:
+                runAsNonRoot: true
+                allowPrivilegeEscalation: false
+                {{- include "lunar-mcpx-webapp.restrictedSeccompAndCaps" . | nindent 16 }}
+                {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
+                runAsUser: 1000
+                runAsGroup: 1000
+                {{- end }}
               {{- if or (.Values.global.manageResources.limits) (.Values.global.manageResources.requests) }}
               resources:
                 {{- if .Values.global.manageResources.limits }}
