@@ -304,9 +304,8 @@ spec:
                 path: {{ . }}.crt
         {{- end }}
         {{- end }}
-      {{- with mergeOverwrite (deepCopy (.Values.global.affinity | default dict)) (.Values.webserver.affinity | default dict) }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
+      {{- with include "lunar-mcpx-webapp.affinity" (dict "key" "webserver" "context" $) }}
+      {{- . | nindent 6 }}
       {{- end }}
       {{- with concat (.Values.global.topologySpreadConstraints | default list) (.Values.webserver.topologySpreadConstraints | default list) }}
       topologySpreadConstraints:

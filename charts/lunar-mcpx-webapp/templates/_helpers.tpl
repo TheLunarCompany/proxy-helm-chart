@@ -163,6 +163,65 @@ Usage:
 {{- end }}
 
 {{/*
+Affinity block for an app deployment. The podAntiAffinity mode ("soft",
+"hard" or "off"; service value overrides global.podAntiAffinity) picks one
+of the two literal blocks below, targeting the deployment's own app label.
+global.affinity and the service's affinity are layered on top (service
+wins), and a hand-written podAntiAffinity inside those values replaces the
+generated block entirely. Emits nothing when the result is empty.
+Usage:
+{{- with include "lunar-mcpx-webapp.affinity" (dict "key" "admin" "context" $) }}
+{{- . | nindent 6 }}
+{{- end }}
+*/}}
+{{- define "lunar-mcpx-webapp.affinity" -}}
+{{- $ctx := .context -}}
+{{- $key := .key -}}
+{{- $svc := get $ctx.Values $key -}}
+
+{{- /* service overrides global, "" falls through. An unquoted off is YAML for false; count it as "off" */ -}}
+{{- $svcMode := $svc.podAntiAffinity -}}
+{{- $globalMode := $ctx.Values.global.podAntiAffinity -}}
+{{- if eq (toString $svcMode) "false" }}{{- $svcMode = "off" -}}{{- end -}}
+{{- if eq (toString $globalMode) "false" }}{{- $globalMode = "off" -}}{{- end -}}
+{{- $mode := coalesce $svcMode $globalMode "off" -}}
+{{- if not (has $mode (list "soft" "hard" "off")) -}}
+{{- fail (printf "%s.podAntiAffinity must be \"soft\", \"hard\" or \"off\", got %v" $key $mode) -}}
+{{- end -}}
+
+{{- $appLabel := printf "%s-%s" (include "lunar-mcpx-webapp.fullname" $ctx) $key -}}
+{{- $generated := dict -}}
+{{- if eq $mode "soft" -}}
+{{- $generated = fromYaml (printf `
+podAntiAffinity:
+  preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        topologyKey: kubernetes.io/hostname
+        labelSelector:
+          matchLabels:
+            app: %s` $appLabel) -}}
+{{- else if eq $mode "hard" -}}
+{{- $generated = fromYaml (printf `
+podAntiAffinity:
+  requiredDuringSchedulingIgnoredDuringExecution:
+    - topologyKey: kubernetes.io/hostname
+      labelSelector:
+        matchLabels:
+          app: %s` $appLabel) -}}
+{{- end -}}
+
+{{- $userAffinity := mergeOverwrite (deepCopy ($ctx.Values.global.affinity | default dict)) (deepCopy ($svc.affinity | default dict)) -}}
+{{- if hasKey $userAffinity "podAntiAffinity" -}}
+{{- $generated = dict -}}
+{{- end -}}
+{{- with mergeOverwrite $generated $userAffinity -}}
+affinity:
+  {{- toYaml . | nindent 2 }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Container securityContext fields required by Pod Security Standards
 "restricted" beyond what each template already sets: a seccomp profile
 and dropping all capabilities.

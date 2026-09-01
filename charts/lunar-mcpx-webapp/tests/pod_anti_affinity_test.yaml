@@ -1,0 +1,166 @@
+suite: Pod anti-affinity wiring
+templates:
+  - templates/lunar-webserver-deployment.yaml
+  - templates/lunar-hub-deployment.yaml
+  - templates/lunar-admin-ui-deployment.yaml
+  - templates/lunar-auth-bff-deployment.yaml
+  - templates/lunar-hive-router-deployment.yaml
+  - templates/lunar-hive-ui-deployment.yaml
+  - templates/lunar-hive-controller-deployment.yaml
+
+tests:
+  - it: renders no affinity by default
+    release:
+      name: my-release
+    asserts:
+      - isNull:
+          path: spec.template.spec.affinity
+
+  - it: global soft mode renders preferred anti-affinity on every deployment's own app label
+    release:
+      name: my-release
+    set:
+      global:
+        podAntiAffinity: "soft"
+    asserts:
+      - isNotNull:
+          path: spec.template.spec.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution
+      - template: templates/lunar-admin-ui-deployment.yaml
+        equal:
+          path: spec.template.spec.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution
+          value:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app: my-release-lunar-mcpx-webapp-admin
+      - template: templates/lunar-hive-router-deployment.yaml
+        equal:
+          path: spec.template.spec.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchLabels.app
+          value: my-release-lunar-mcpx-webapp-router
+
+  - it: global hard mode renders required anti-affinity
+    release:
+      name: my-release
+    set:
+      global:
+        podAntiAffinity: "hard"
+    asserts:
+      - isNull:
+          path: spec.template.spec.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution
+      - template: templates/lunar-webserver-deployment.yaml
+        equal:
+          path: spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution
+          value:
+            - topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  app: my-release-lunar-mcpx-webapp-webserver
+
+  - it: service-level mode overrides global
+    release:
+      name: my-release
+    set:
+      global:
+        podAntiAffinity: "soft"
+      admin:
+        podAntiAffinity: "off"
+      router:
+        podAntiAffinity: "hard"
+    asserts:
+      - template: templates/lunar-admin-ui-deployment.yaml
+        isNull:
+          path: spec.template.spec.affinity
+      - template: templates/lunar-hive-router-deployment.yaml
+        isNotNull:
+          path: spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution
+      - template: templates/lunar-hub-deployment.yaml
+        isNotNull:
+          path: spec.template.spec.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution
+
+  - it: service-level mode alone enables only that deployment
+    release:
+      name: my-release
+    set:
+      admin:
+        podAntiAffinity: "soft"
+    asserts:
+      - template: templates/lunar-admin-ui-deployment.yaml
+        isNotNull:
+          path: spec.template.spec.affinity.podAntiAffinity
+      - template: templates/lunar-webserver-deployment.yaml
+        isNull:
+          path: spec.template.spec.affinity
+
+  - it: an unquoted off (YAML boolean false) is treated as disabled
+    release:
+      name: my-release
+    set:
+      global:
+        podAntiAffinity: "soft"
+      admin:
+        podAntiAffinity: false
+    asserts:
+      - template: templates/lunar-admin-ui-deployment.yaml
+        isNull:
+          path: spec.template.spec.affinity
+
+  - it: generated anti-affinity merges under user affinity values
+    release:
+      name: my-release
+    set:
+      global:
+        podAntiAffinity: "soft"
+      admin:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: role
+                      operator: In
+                      values: ["web"]
+    asserts:
+      - template: templates/lunar-admin-ui-deployment.yaml
+        isNotNull:
+          path: spec.template.spec.affinity.nodeAffinity
+      - template: templates/lunar-admin-ui-deployment.yaml
+        isNotNull:
+          path: spec.template.spec.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution
+
+  - it: an explicit podAntiAffinity inside affinity values replaces the generated block
+    release:
+      name: my-release
+    set:
+      global:
+        podAntiAffinity: "soft"
+      admin:
+        affinity:
+          podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              - topologyKey: topology.kubernetes.io/zone
+                labelSelector:
+                  matchLabels:
+                    custom: label
+    asserts:
+      - template: templates/lunar-admin-ui-deployment.yaml
+        isNull:
+          path: spec.template.spec.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution
+      - template: templates/lunar-admin-ui-deployment.yaml
+        equal:
+          path: spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].topologyKey
+          value: topology.kubernetes.io/zone
+
+  - it: fails the render on an invalid mode
+    release:
+      name: my-release
+    set:
+      admin:
+        podAntiAffinity: "both"
+    asserts:
+      # the values schema rejects it before the template's own fail() backstop runs;
+      # match loosely since the schema error wording differs between helm 3 and 4
+      - template: templates/lunar-admin-ui-deployment.yaml
+        failedTemplate:
+          errorPattern: "podAntiAffinity.*must be one of"

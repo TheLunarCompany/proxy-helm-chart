@@ -223,6 +223,29 @@ a PDB over a single replica blocks node drains entirely. If you already manage y
 pods outside the chart, remove them before enabling this, since pods covered by two PDBs cannot be
 evicted at all.
 
+### Pod Anti-Affinity
+
+Each app deployment (`webserver`, `hub`, `admin`, `auth`, `router`, `ui`, `controller`) can spread its
+replicas across nodes, so a single node failure or drain never takes out all replicas of a component
+at once (a PDB only guards *voluntary* disruptions; anti-affinity covers node loss too). Set the
+default mode under `global.podAntiAffinity` and override per service; service-level settings win:
+
+```yaml
+global:
+  podAntiAffinity: "soft"   # best effort: schedules together only when it cannot spread
+
+router:
+  podAntiAffinity: "hard"   # required: pods stay Pending when they cannot spread
+
+admin:
+  podAntiAffinity: "off"    # opt a service out
+```
+
+Off by default. `soft` renders a `preferredDuringSchedulingIgnoredDuringExecution` pod anti-affinity
+on the deployment's own `app` label over `kubernetes.io/hostname`; `hard` renders the `required`
+variant. The generated block merges under any `affinity` you set in values, and an explicit
+`podAntiAffinity` key inside those `affinity` values replaces the generated one entirely.
+
 ### Admin DB Migration Jobs
 
 This chart includes four **suspended CronJobs** for DB migration management. They never run automatically — admins create one-off jobs from them using `kubectl create job`.

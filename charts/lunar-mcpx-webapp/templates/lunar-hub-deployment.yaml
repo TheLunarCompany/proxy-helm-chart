@@ -265,9 +265,8 @@ spec:
                 path: {{ . }}.crt
         {{- end }}
         {{- end }}
-      {{- with mergeOverwrite (deepCopy (.Values.global.affinity | default dict)) (.Values.hub.affinity | default dict) }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
+      {{- with include "lunar-mcpx-webapp.affinity" (dict "key" "hub" "context" $) }}
+      {{- . | nindent 6 }}
       {{- end }}
       {{- with concat (.Values.global.topologySpreadConstraints | default list) (.Values.hub.topologySpreadConstraints | default list) }}
       topologySpreadConstraints:

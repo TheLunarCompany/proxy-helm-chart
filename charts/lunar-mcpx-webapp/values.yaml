@@ -155,6 +155,13 @@ global:
     # -- minAvailable pods (absolute number or percentage). Overrides maxUnavailable when set.
     minAvailable: ""
 
+  # -- podAntiAffinity spreads each app deployment's replicas across nodes:
+  # "soft" = best effort (preferredDuringScheduling), "hard" = required
+  # (pods stay Pending when they cannot spread), "off" / "" = disabled.
+  # Per-service podAntiAffinity overrides this; an explicit podAntiAffinity
+  # key inside affinity values replaces the generated block entirely.
+  podAntiAffinity: ""
+
 webserver:
   image:
     # -- Lunar mcpx-webserver image repository
@@ -215,6 +222,10 @@ webserver:
   # -- pdb overrides global.pdb for this deployment.
   # Same fields as global (enabled, maxUnavailable, minAvailable).
   pdb: {}
+
+  # -- podAntiAffinity overrides global.podAntiAffinity for this deployment
+  # ("soft", "hard" or "off").
+  podAntiAffinity: ""
 
   # -- Set pod resource requests & limits
   resources:
@@ -337,6 +348,10 @@ hub:
   # -- pdb overrides global.pdb for this deployment.
   # Same fields as global (enabled, maxUnavailable, minAvailable).
   pdb: {}
+
+  # -- podAntiAffinity overrides global.podAntiAffinity for this deployment
+  # ("soft", "hard" or "off").
+  podAntiAffinity: ""
 
   # -- Set pod resource requests & limits
   resources:
@@ -479,6 +494,10 @@ admin:
   # Same fields as global (enabled, maxUnavailable, minAvailable).
   pdb: {}
 
+  # -- podAntiAffinity overrides global.podAntiAffinity for this deployment
+  # ("soft", "hard" or "off").
+  podAntiAffinity: ""
+
   # -- Set pod resource requests & limits
   resources:
     limits:
@@ -592,6 +611,10 @@ auth:
   # Same fields as global (enabled, maxUnavailable, minAvailable).
   pdb: {}
 
+  # -- podAntiAffinity overrides global.podAntiAffinity for this deployment
+  # ("soft", "hard" or "off").
+  podAntiAffinity: ""
+
   # -- Set pod resource requests & limits
   resources:
     limits:
@@ -655,6 +678,10 @@ controller:
   # -- pdb overrides global.pdb for this deployment.
   # Same fields as global (enabled, maxUnavailable, minAvailable).
   pdb: {}
+
+  # -- podAntiAffinity overrides global.podAntiAffinity for this deployment
+  # ("soft", "hard" or "off").
+  podAntiAffinity: ""
   image:
     # -- Lunar mcpx-hive-controller image repository
     repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-controller
@@ -882,6 +909,10 @@ router:
   # Same fields as global (enabled, maxUnavailable, minAvailable).
   pdb: {}
 
+  # -- podAntiAffinity overrides global.podAntiAffinity for this deployment
+  # ("soft", "hard" or "off").
+  podAntiAffinity: ""
+
   # -- Set pod resource requests & limits
   resources:
     limits:
@@ -991,6 +1022,10 @@ ui:
   # -- pdb overrides global.pdb for this deployment.
   # Same fields as global (enabled, maxUnavailable, minAvailable).
   pdb: {}
+
+  # -- podAntiAffinity overrides global.podAntiAffinity for this deployment
+  # ("soft", "hard" or "off").
+  podAntiAffinity: ""
 
   # -- Set pod resource requests & limits
   resources:

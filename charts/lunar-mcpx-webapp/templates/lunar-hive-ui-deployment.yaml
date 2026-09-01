@@ -170,9 +170,8 @@ spec:
       volumes:
       - name: lunar-packages-ui
         emptyDir: {}
-      {{- with mergeOverwrite (deepCopy (.Values.global.affinity | default dict)) (.Values.ui.affinity | default dict) }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
+      {{- with include "lunar-mcpx-webapp.affinity" (dict "key" "ui" "context" $) }}
+      {{- . | nindent 6 }}
       {{- end }}
       {{- with concat (.Values.global.topologySpreadConstraints | default list) (.Values.ui.topologySpreadConstraints | default list) }}
       topologySpreadConstraints:

@@ -28,6 +28,21 @@
         }
       }
     },
+    "podAntiAffinity": {
+      "type": [
+        "string",
+        "boolean"
+      ],
+      "description": "Spread this deployment's replicas across nodes: soft (best effort), hard (required), off/empty (disabled). Boolean false is an unquoted YAML `off` and means disabled",
+      "enum": [
+        "soft",
+        "hard",
+        "off",
+        "",
+        false
+      ],
+      "default": ""
+    },
     "serviceAccount": {
       "type": "object",
       "description": "The permissionless ServiceAccount the chart always creates and assigns to all app deployments and cronjobs (the hive-controller keeps its own RBAC-bound one)",
@@ -95,6 +110,9 @@
         },
         "pdb": {
           "$ref": "#/$defs/pdb"
+        },
+        "podAntiAffinity": {
+          "$ref": "#/$defs/podAntiAffinity"
         }
       }
     },
@@ -152,6 +170,9 @@
         "pdb": {
           "$ref": "#/$defs/pdb"
         },
+        "podAntiAffinity": {
+          "$ref": "#/$defs/podAntiAffinity"
+        },
         "resources": {
           "type": "object",
           "properties": {
@@ -199,6 +220,9 @@
       "properties": {
         "pdb": {
           "$ref": "#/$defs/pdb"
+        },
+        "podAntiAffinity": {
+          "$ref": "#/$defs/podAntiAffinity"
         },
         "db": {
           "type": "object",
@@ -499,6 +523,9 @@
         "pdb": {
           "$ref": "#/$defs/pdb"
         },
+        "podAntiAffinity": {
+          "$ref": "#/$defs/podAntiAffinity"
+        },
         "mcpxRuntimeAuth": {
           "type": "object",
           "description": "Runtime auth/config files injected into each MCPX instance pod",
@@ -642,6 +669,9 @@
         "pdb": {
           "$ref": "#/$defs/pdb"
         },
+        "podAntiAffinity": {
+          "$ref": "#/$defs/podAntiAffinity"
+        },
         "resources": {
           "type": "object",
           "properties": {
@@ -685,6 +715,9 @@
       "properties": {
         "pdb": {
           "$ref": "#/$defs/pdb"
+        },
+        "podAntiAffinity": {
+          "$ref": "#/$defs/podAntiAffinity"
         }
       }
     },
@@ -693,6 +726,9 @@
       "properties": {
         "pdb": {
           "$ref": "#/$defs/pdb"
+        },
+        "podAntiAffinity": {
+          "$ref": "#/$defs/podAntiAffinity"
         }
       }
     },
@@ -701,6 +737,9 @@
       "properties": {
         "pdb": {
           "$ref": "#/$defs/pdb"
+        },
+        "podAntiAffinity": {
+          "$ref": "#/$defs/podAntiAffinity"
         }
       }
     }
