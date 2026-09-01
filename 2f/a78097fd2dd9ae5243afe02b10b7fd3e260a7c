@@ -1,0 +1,48 @@
+charts/lunar-mcpx-webapp/templates/_helpers.tpl
+  s_0d50f50c9d81c1::t_46ed58d414c5af 166-171,181-182,185-186,191-192,194-211,213
+  s_0d50f50c9d81c1::t_9556ca325f425a 183-184,187
+  s_0d50f50c9d81c1::t_15db4cdee02f46 172-180,188-190,193,212,214-223
+  s_0d50f50c9d81c1::t_2178a1c0c10a87 165
+charts/lunar-mcpx-webapp/README.tpl.md
+  s_0d50f50c9d81c1::t_bd378ca7ed666d 226-248
+charts/lunar-mcpx-webapp/templates/lunar-webserver-deployment.yaml
+  s_0d50f50c9d81c1::t_e397ffe35b8f6e 307-308
+charts/lunar-mcpx-webapp/templates/lunar-auth-bff-deployment.yaml
+  s_0d50f50c9d81c1::t_7811145d7609da 242-243
+charts/lunar-mcpx-webapp/templates/lunar-hive-controller-deployment.yaml
+  s_0d50f50c9d81c1::t_a41142067b28a6 236-237
+charts/lunar-mcpx-webapp/tests/pod_anti_affinity_test.yaml
+  s_0d50f50c9d81c1::t_68130a1a9dbb4f 1-161,164-165
+  s_0d50f50c9d81c1::t_d76028b4f78971 162-163,166
+charts/lunar-mcpx-webapp/templates/lunar-hub-deployment.yaml
+  s_0d50f50c9d81c1::t_2acd961c930f45 268-269
+charts/lunar-mcpx-webapp/templates/lunar-hive-router-deployment.yaml
+  s_0d50f50c9d81c1::t_580ba15ad84562 184-185
+charts/lunar-mcpx-webapp/templates/lunar-hive-ui-deployment.yaml
+  s_0d50f50c9d81c1::t_112edb91aba81e 173-174
+charts/lunar-mcpx-webapp/templates/lunar-admin-ui-deployment.yaml
+  s_0d50f50c9d81c1::t_ba0608be8e4ea7 172-173
+charts/lunar-mcpx-webapp/values.schema.json
+  s_0d50f50c9d81c1::t_6ad0bf2a0d0144 113-115,173-175,224-226,526-528,672-674,718-720,729-731,740-742
+  s_0d50f50c9d81c1::t_ebb9b4956fcadb 31-45
+charts/lunar-mcpx-webapp/values.yaml
+  s_0d50f50c9d81c1::t_07ad04686f1df0 158-164
+  s_0d50f50c9d81c1::t_1aa7a3bd866711 226-229,352-355,497-500,614-617,681-684,912-915,1026-1028
+  s_0d50f50c9d81c1::t_576aa9cf9c790a 1029
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "2fa78097fd2dd9ae5243afe02b10b7fd3e260a7c",
+  "prompts": {},
+  "sessions": {
+    "s_0d50f50c9d81c1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "82749059-9d4a-44a1-abb8-3bde9727149b",
+        "model": "claude-fable-5"
+      },
+      "human_author": "EliavLunar <eliavl@lunar.dev>"
+    }
+  }
+}
