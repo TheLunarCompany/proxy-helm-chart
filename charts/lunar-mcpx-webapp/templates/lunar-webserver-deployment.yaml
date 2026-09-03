@@ -233,6 +233,10 @@ spec:
               value: "https://{{ first .Values.ingress.domains.admin }},https://{{ first .Values.ingress.domains.ui }}"
             - name: PUBLIC_URL
               value: "https://{{ first .Values.ingress.domains.webserver }}"
+            {{- if not (has "MCPX_PUBLIC_URL" $webserverExtraEnvNames) }}
+            - name: MCPX_PUBLIC_URL
+              value: {{ first .Values.ingress.domains.router | quote }}
+            {{- end }}
           {{- end }}
           {{- with .Values.webserver.sandboxAnalysis }}
           {{- if .llmProvider }}
