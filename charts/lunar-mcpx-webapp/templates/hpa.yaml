@@ -1,0 +1,67 @@
+{{- $root := . }}
+{{- $ghpa := .Values.global.hpa | default dict }}
+{{- /* the concerned services */}}
+{{- range $key := list "webserver" "hub" "admin" "auth" "router" "ui" "controller" }}
+{{- $svc := get $root.Values $key }}
+{{- $shpa := $svc.hpa | default dict }}
+{{- /* service-level keys override global; hasKey (not coalesce/default) so an explicit false or 0 wins */}}
+{{- $enabled := ternary $shpa.enabled ($ghpa.enabled | default false) (hasKey $shpa "enabled") }}
+{{- /* not `enabled | default true`: sprig default treats false as unset, which would ignore enabled: false */}}
+{{- if and (ne ($svc.enabled | toString) "false") $enabled }}
+{{- /* no `| default N` here: values.yaml already ships real defaults for these, and
+       sprig's default would otherwise silently override an intentional falsy value
+       (targetCPU: "", scaleDownStabilizationSeconds: 0) with its fallback */}}
+{{- $minReplicas := ternary $shpa.minReplicas $ghpa.minReplicas (hasKey $shpa "minReplicas") }}
+{{- $maxReplicas := ternary $shpa.maxReplicas $ghpa.maxReplicas (hasKey $shpa "maxReplicas") }}
+{{- $targetCPU := ternary $shpa.targetCPUUtilizationPercentage $ghpa.targetCPUUtilizationPercentage (hasKey $shpa "targetCPUUtilizationPercentage") }}
+{{- $targetMemory := ternary $shpa.targetMemoryUtilizationPercentage $ghpa.targetMemoryUtilizationPercentage (hasKey $shpa "targetMemoryUtilizationPercentage") }}
+{{- $stabilization := ternary $shpa.scaleDownStabilizationSeconds $ghpa.scaleDownStabilizationSeconds (hasKey $shpa "scaleDownStabilizationSeconds") }}
+{{- if lt (int $maxReplicas) (int $minReplicas) }}
+{{- fail (printf "hpa is enabled for %s but %s.hpa.maxReplicas (%v) is less than minReplicas (%v)" $key $key $maxReplicas $minReplicas) }}
+{{- end }}
+{{- if and (not $targetCPU) (not $targetMemory) }}
+{{- fail (printf "hpa is enabled for %s but neither %s.hpa.targetCPUUtilizationPercentage nor targetMemoryUtilizationPercentage is set; an HPA needs at least one metric" $key $key) }}
+{{- end }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" $root }}-{{ $key }}
+  labels:
+    service: {{ include "lunar-mcpx-webapp.fullname" $root }}-{{ $key }}
+    {{- include "lunar-mcpx-webapp.labels" $root | nindent 4 }}
+    {{- with $root.Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "lunar-mcpx-webapp.fullname" $root }}-{{ $key }}
+  minReplicas: {{ $minReplicas }}
+  maxReplicas: {{ $maxReplicas }}
+  metrics:
+    {{- if $targetCPU }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ $targetCPU }}
+    {{- end }}
+    {{- if $targetMemory }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ $targetMemory }}
+    {{- end }}
+  {{- /* not `if $stabilization`: that would also skip an intentional 0 (immediate scale-down) */}}
+  {{- if and (not (kindIs "invalid" $stabilization)) (ne (toString $stabilization) "") }}
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: {{ $stabilization }}
+  {{- end }}
+{{- end }}
+{{- end }}

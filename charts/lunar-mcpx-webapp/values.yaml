@@ -155,6 +155,22 @@ global:
     # -- minAvailable pods (absolute number or percentage). Overrides maxUnavailable when set.
     minAvailable: ""
 
+  # -- hpa creates a HorizontalPodAutoscaler for every app deployment. Opt-in, like pdb.
+  # While enabled, that Deployment's `replicas` field is omitted so the HPA owns it.
+  hpa:
+    enabled: false
+    # -- minReplicas the HPA will never scale below.
+    minReplicas: 2
+    # -- maxReplicas the HPA will never scale above.
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 70
+    # -- No memory metric by default. Set a number to enable it. To opt a
+    # service back out when a global value is set, override it with "" —
+    # deleting the per-service key instead falls back to the global value.
+    targetMemoryUtilizationPercentage: ""
+    # -- Lookback window before scaling down. 0 = immediate.
+    scaleDownStabilizationSeconds: 300
+
 webserver:
   image:
     # -- Lunar mcpx-webserver image repository
@@ -215,6 +231,9 @@ webserver:
   # -- pdb overrides global.pdb for this deployment.
   # Same fields as global (enabled, maxUnavailable, minAvailable).
   pdb: {}
+
+  # -- hpa overrides global.hpa for this deployment. Same fields as global.
+  hpa: {}
 
   # -- Set pod resource requests & limits
   resources:
@@ -337,6 +356,9 @@ hub:
   # -- pdb overrides global.pdb for this deployment.
   # Same fields as global (enabled, maxUnavailable, minAvailable).
   pdb: {}
+
+  # -- hpa overrides global.hpa for this deployment. Same fields as global.
+  hpa: {}
 
   # -- Set pod resource requests & limits
   resources:
@@ -479,6 +501,9 @@ admin:
   # Same fields as global (enabled, maxUnavailable, minAvailable).
   pdb: {}
 
+  # -- hpa overrides global.hpa for this deployment. Same fields as global.
+  hpa: {}
+
   # -- Set pod resource requests & limits
   resources:
     limits:
@@ -592,6 +617,9 @@ auth:
   # Same fields as global (enabled, maxUnavailable, minAvailable).
   pdb: {}
 
+  # -- hpa overrides global.hpa for this deployment. Same fields as global.
+  hpa: {}
+
   # -- Set pod resource requests & limits
   resources:
     limits:
@@ -655,6 +683,9 @@ controller:
   # -- pdb overrides global.pdb for this deployment.
   # Same fields as global (enabled, maxUnavailable, minAvailable).
   pdb: {}
+
+  # -- hpa overrides global.hpa for this deployment. Same fields as global.
+  hpa: {}
   image:
     # -- Lunar mcpx-hive-controller image repository
     repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-controller
@@ -882,6 +913,9 @@ router:
   # Same fields as global (enabled, maxUnavailable, minAvailable).
   pdb: {}
 
+  # -- hpa overrides global.hpa for this deployment. Same fields as global.
+  hpa: {}
+
   # -- Set pod resource requests & limits
   resources:
     limits:
@@ -991,6 +1025,9 @@ ui:
   # -- pdb overrides global.pdb for this deployment.
   # Same fields as global (enabled, maxUnavailable, minAvailable).
   pdb: {}
+
+  # -- hpa overrides global.hpa for this deployment. Same fields as global.
+  hpa: {}
 
   # -- Set pod resource requests & limits
   resources:

@@ -10,8 +10,15 @@
 {{- $minAvailable := ternary $spdb.minAvailable ($gpdb.minAvailable | default "") (hasKey $spdb "minAvailable") }}
 {{- /* not `enabled | default true`: sprig default treats false as unset, which would ignore enabled: false */}}
 {{- if and (ne ($svc.enabled | toString) "false") $enabled }}
-{{- if lt (int ($svc.replicaCount | default 1)) 2 }}
+{{- /* if HPA owns this service's replicas, its minReplicas is the real floor */}}
+{{- $hpaOn := eq (include "lunar-mcpx-webapp.hpaEnabled" (dict "key" $key "context" $root)) "true" }}
+{{- $floor := ternary (include "lunar-mcpx-webapp.hpaMinReplicas" (dict "key" $key "context" $root)) ($svc.replicaCount | default 1) $hpaOn }}
+{{- if lt (int $floor) 2 }}
+{{- if $hpaOn }}
+{{- fail (printf "pdb is enabled for %s but %s.hpa.minReplicas < 2 (a PDB on a single replica blocks node drains); raise %s.hpa.minReplicas or set %s.pdb.enabled=false" $key $key $key $key) }}
+{{- else }}
 {{- fail (printf "pdb is enabled for %s but %s.replicaCount < 2 (a PDB on a single replica blocks node drains); raise the replicas or set %s.pdb.enabled=false" $key $key $key) }}
+{{- end }}
 {{- end }}
 ---
 apiVersion: policy/v1
