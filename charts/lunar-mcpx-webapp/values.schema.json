@@ -38,6 +38,46 @@
           "default": {}
         }
       }
+    },
+    "hpa": {
+      "type": "object",
+      "description": "HorizontalPodAutoscaler for this deployment. Requires replicaCount >= 2 when enabled",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "minReplicas": {
+          "type": "integer",
+          "default": 2
+        },
+        "maxReplicas": {
+          "type": "integer",
+          "default": 8
+        },
+        "targetCPUUtilizationPercentage": {
+          "type": [
+            "integer",
+            "string"
+          ],
+          "default": 70
+        },
+        "targetMemoryUtilizationPercentage": {
+          "type": [
+            "integer",
+            "string"
+          ],
+          "description": "\"\" (default) disables the memory metric. Set explicitly to \"\" to opt a service out per-service",
+          "default": ""
+        },
+        "scaleDownStabilizationSeconds": {
+          "type": [
+            "integer",
+            "string"
+          ],
+          "default": 300
+        }
+      }
     }
   },
   "properties": {
@@ -95,6 +135,9 @@
         },
         "pdb": {
           "$ref": "#/$defs/pdb"
+        },
+        "hpa": {
+          "$ref": "#/$defs/hpa"
         }
       }
     },
@@ -152,6 +195,9 @@
         "pdb": {
           "$ref": "#/$defs/pdb"
         },
+        "hpa": {
+          "$ref": "#/$defs/hpa"
+        },
         "resources": {
           "type": "object",
           "properties": {
@@ -199,6 +245,9 @@
       "properties": {
         "pdb": {
           "$ref": "#/$defs/pdb"
+        },
+        "hpa": {
+          "$ref": "#/$defs/hpa"
         },
         "db": {
           "type": "object",
@@ -499,6 +548,9 @@
         "pdb": {
           "$ref": "#/$defs/pdb"
         },
+        "hpa": {
+          "$ref": "#/$defs/hpa"
+        },
         "mcpxRuntimeAuth": {
           "type": "object",
           "description": "Runtime auth/config files injected into each MCPX instance pod",
@@ -642,6 +694,9 @@
         "pdb": {
           "$ref": "#/$defs/pdb"
         },
+        "hpa": {
+          "$ref": "#/$defs/hpa"
+        },
         "resources": {
           "type": "object",
           "properties": {
@@ -685,6 +740,9 @@
       "properties": {
         "pdb": {
           "$ref": "#/$defs/pdb"
+        },
+        "hpa": {
+          "$ref": "#/$defs/hpa"
         }
       }
     },
@@ -693,6 +751,9 @@
       "properties": {
         "pdb": {
           "$ref": "#/$defs/pdb"
+        },
+        "hpa": {
+          "$ref": "#/$defs/hpa"
         }
       }
     },
@@ -701,6 +762,9 @@
       "properties": {
         "pdb": {
           "$ref": "#/$defs/pdb"
+        },
+        "hpa": {
+          "$ref": "#/$defs/hpa"
         }
       }
     }

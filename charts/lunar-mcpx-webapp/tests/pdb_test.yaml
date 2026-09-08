@@ -143,3 +143,45 @@ tests:
     asserts:
       - hasDocuments:
           count: 0
+
+  - it: hpa minReplicas covers the floor check when hpa is enabled, even at the default replicaCount
+    release:
+      name: my-release
+    set:
+      global:
+        pdb:
+          enabled: true
+        hpa:
+          enabled: true
+    asserts:
+      - hasDocuments:
+          count: 7
+
+  - it: still fails on the replicaCount floor when hpa is not enabled for that service
+    release:
+      name: my-release
+    set:
+      global:
+        pdb:
+          enabled: true
+      router:
+        hpa:
+          enabled: true
+    asserts:
+      - failedTemplate:
+          errorMessage: "pdb is enabled for webserver but webserver.replicaCount < 2 (a PDB on a single replica blocks node drains); raise the replicas or set webserver.pdb.enabled=false"
+
+  - it: fails on the hpa.minReplicas floor, with a message pointing at hpa.minReplicas not replicaCount
+    release:
+      name: my-release
+    set:
+      global:
+        pdb:
+          enabled: true
+      webserver:
+        hpa:
+          enabled: true
+          minReplicas: 1
+    asserts:
+      - failedTemplate:
+          errorMessage: "pdb is enabled for webserver but webserver.hpa.minReplicas < 2 (a PDB on a single replica blocks node drains); raise webserver.hpa.minReplicas or set webserver.pdb.enabled=false"

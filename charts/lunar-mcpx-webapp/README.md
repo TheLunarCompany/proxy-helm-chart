@@ -223,6 +223,35 @@ a PDB over a single replica blocks node drains entirely. If you already manage y
 pods outside the chart, remove them before enabling this, since pods covered by two PDBs cannot be
 evicted at all.
 
+### Horizontal Pod Autoscalers
+
+Each app deployment (`webserver`, `hub`, `admin`, `auth`, `router`, `ui`, `controller`) can get a
+HorizontalPodAutoscaler scaling on CPU/memory utilization. Set the default under `global.hpa`,
+override per service with the same fields; service-level wins:
+
+```yaml
+global:
+  hpa:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: "" # set a number to also scale on memory
+    scaleDownStabilizationSeconds: 300
+
+router:
+  hpa:
+    enabled: true
+    minReplicas: 3
+```
+
+Off by default. Once enabled for a service, its Deployment's `replicas` field is omitted so the HPA
+owns the live count (`replicaCount` still sets the initial count on first install). No memory metric
+by default; if you set a global memory target and want one service to opt back out, override it with
+`""` on that service — deleting the per-service key instead falls back to the global value.
+Rendering fails if `maxReplicas < minReplicas` or if no metric is set. With a PDB also enabled, the
+HPA's `minReplicas` covers the "2+ replicas" floor check instead of `replicaCount`.
+
 ### Admin DB Migration Jobs
 
 This chart includes four **suspended CronJobs** for DB migration management. They never run automatically — admins create one-off jobs from them using `kubectl create job`.

@@ -15,7 +15,9 @@ metadata:
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
+  {{- if not (include "lunar-mcpx-webapp.hpaEnabled" (dict "key" "hub" "context" .)) }}
   replicas: {{ .Values.hub.replicaCount | default 1 }}
+  {{- end }}
   selector:
     matchLabels:
       app: {{ include "lunar-mcpx-webapp.fullname" . }}-hub
