@@ -1,0 +1,37 @@
+charts/lunar-mcpx-webapp/templates/lunar-admin-drain-swaps-execute-cronjob.yaml
+  s_0d48f869691d5d::t_e0dfa8df0f8fff 4
+charts/lunar-mcpx-webapp/templates/lunar-admin-migrate-rollback-execute-cronjob.yaml
+  s_0d48f869691d5d::t_e0dfa8df0f8fff 4
+charts/lunar-mcpx-webapp/README.tpl.md
+  s_0d48f869691d5d::t_80c963d53eec36 377,384-385
+  s_0d48f869691d5d::t_e0dfa8df0f8fff 265,285,395,402-403,414,419
+charts/lunar-mcpx-webapp/templates/lunar-admin-seed-system-config-execute-cronjob.yaml
+  s_0d48f869691d5d::t_e0dfa8df0f8fff 8
+charts/lunar-mcpx-webapp/templates/lunar-admin-prune-clickhouse-system-logs-execute-cronjob.yaml
+  s_0d48f869691d5d::t_80c963d53eec36 5
+charts/lunar-mcpx-webapp/templates/lunar-admin-seed-system-config-dry-cronjob.yaml
+  s_0d48f869691d5d::t_e0dfa8df0f8fff 8
+charts/lunar-mcpx-webapp/templates/_admin-job-helpers.tpl
+  s_0d48f869691d5d::t_e0dfa8df0f8fff 2
+charts/lunar-mcpx-webapp/templates/lunar-admin-migrate-tool-groups-to-skills-cronjob.yaml
+  s_0d48f869691d5d::t_e0dfa8df0f8fff 4
+charts/lunar-mcpx-webapp/tests/cronjob_name_length_test.yaml
+  s_0d48f869691d5d::t_80c963d53eec36 78
+  s_0d48f869691d5d::t_e0dfa8df0f8fff 81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "262789ebea0ad86e24c98b906f3833fc0ff403ff",
+  "prompts": {},
+  "sessions": {
+    "s_0d48f869691d5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d18ce43b-185a-42f5-a2a4-e4f1e65f88fb",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "EliavLunar <eliavl@lunar.dev>"
+    }
+  }
+}
