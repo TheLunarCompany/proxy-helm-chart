@@ -75,10 +75,10 @@ tests:
     asserts:
       - equal:
           path: metadata.name
-          value: psrconnect40416948-g2w-migrate-tool-groups-to-skills
+          value: psrconnect40416948-g2wbg7-lunar-migrate-tg-to-skills
       - matchRegex:
           path: metadata.name
-          pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?-migrate-tool-groups-to-skills$
+          pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?-migrate-tg-to-skills$
 
   - it: caps admin CronJob names at 52 chars for a long release name
     release:
