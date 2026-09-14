@@ -1,0 +1,19 @@
+charts/lunar-mcpx-webapp/tests/cronjob_name_length_test.yaml
+  s_0d48f869691d5d::t_55e16419e0caec 52-56,63-64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "9098a86b881a884069c7be9513bdb6d5ff9771d3",
+  "prompts": {},
+  "sessions": {
+    "s_0d48f869691d5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d18ce43b-185a-42f5-a2a4-e4f1e65f88fb",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "EliavLunar <eliavl@lunar.dev>"
+    }
+  }
+}
