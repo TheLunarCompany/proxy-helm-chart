@@ -262,7 +262,7 @@ This chart includes four **suspended CronJobs** for DB migration management. The
 |:--------|:--------|
 | `<release>-migrate-status` | Shows the current state of all migrations |
 | `<release>-migrate-rollback-dry` | Dry-run rollback (no changes are made) |
-| `<release>-migrate-rollback-execute` | **Executes** a rollback — this will modify the database |
+| `<release>-migrate-rollback-exec` | **Executes** a rollback — this will modify the database |
 | `<release>-migrate-resolve-failed` | Marks a failed migration as resolved so Prisma can move past it |
 
 In the examples below, `<release>` is the full CronJob name prefix — composed of your Helm release name and the chart name (e.g. `mcpx-webapp`). Run `kubectl get cronjobs -n <namespace> | grep migrate` to find the exact names.
@@ -282,7 +282,7 @@ kubectl create job rollback-dry-$(date +%s) \
 **Execute a rollback:**
 ```bash
 kubectl create job rollback-$(date +%s) \
-  --from=cronjob/<release>-migrate-rollback-execute -n <namespace>
+  --from=cronjob/<release>-migrate-rollback-exec -n <namespace>
 ```
 
 **Resolve a failed migration (allows Prisma to proceed on next deploy):**
@@ -374,15 +374,15 @@ When `clickhouse.enabled` is set, `clickhouse.systemLogConfig` disables ClickHou
 | CronJob | Purpose |
 |:--------|:--------|
 | `<release>-prune-ch-logs-dry` | Reports which tables would be dropped and how many bytes would be freed (no changes) |
-| `<release>-prune-ch-logs-execute` | **Drops** the noisy system-log tables |
+| `<release>-prune-ch-logs-exec` | **Drops** the noisy system-log tables |
 
 **Run a dry run, then execute:**
 ```bash
 kubectl create job prune-ch-logs-dry-$(date +%s) \
   --from=cronjob/<release>-prune-ch-logs-dry -n <namespace>
 
-kubectl create job prune-ch-logs-execute-$(date +%s) \
-  --from=cronjob/<release>-prune-ch-logs-execute -n <namespace>
+kubectl create job prune-ch-logs-exec-$(date +%s) \
+  --from=cronjob/<release>-prune-ch-logs-exec -n <namespace>
 ```
 
 ### Drain Space-Editing Swaps
@@ -392,15 +392,15 @@ Restores each user's real ACTIVE setup before moving to the new space-editing me
 | CronJob | Purpose |
 |:--------|:--------|
 | `<release>-drain-swaps-dry` | Lists every affected user (email + space name), makes no changes |
-| `<release>-drain-swaps-execute` | **Restores** each affected user's real ACTIVE setup |
+| `<release>-drain-swaps-exec` | **Restores** each affected user's real ACTIVE setup |
 
 **Run a dry run, then execute:**
 ```bash
 kubectl create job drain-swaps-dry-$(date +%s) \
   --from=cronjob/<release>-drain-swaps-dry -n <namespace>
 
-kubectl create job drain-swaps-execute-$(date +%s) \
-  --from=cronjob/<release>-drain-swaps-execute -n <namespace>
+kubectl create job drain-swaps-exec-$(date +%s) \
+  --from=cronjob/<release>-drain-swaps-exec -n <namespace>
 ```
 
 > **Note:** Once you upgrade the MCPX pods in the system, any affected setup will be the correct one.
@@ -411,12 +411,12 @@ Turns each active setup's tool groups into skills before enabling the skills fea
 
 | CronJob | Purpose |
 |:--------|:--------|
-| `<release>-migrate-tool-groups-to-skills` | Creates a skill per tool group; logs a report of what was created, skipped, and dropped |
+| `<release>-migrate-tg-to-skills` | Creates a skill per tool group; logs a report of what was created, skipped, and dropped |
 
 **Run it:**
 ```bash
 kubectl create job migrate-tgs-$(date +%s) \
-  --from=cronjob/<release>-migrate-tool-groups-to-skills -n <namespace>
+  --from=cronjob/<release>-migrate-tg-to-skills -n <namespace>
 ```
 
 > **Note:** Run this job first and check its log, then enable the skills feature flag on the MCPX instances. Order matters: migrate, then turn on.

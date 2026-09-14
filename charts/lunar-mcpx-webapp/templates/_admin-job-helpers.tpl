@@ -1,5 +1,5 @@
 {{/*
-Shared template for admin suspended CronJobs (migrate-status, migrate-rollback-dry, migrate-rollback-execute, migrate-resolve-failed, host-backfill).
+Shared template for admin suspended CronJobs (migrate-status, migrate-rollback-dry, migrate-rollback-exec, migrate-resolve-failed, host-backfill).
 Expects a dict with keys:
   - root: top-level Helm context (.)
   - jobName: suffix for the CronJob name and labels
@@ -11,9 +11,9 @@ Expects a dict with keys:
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" .root }}-{{ .jobName }}
+  name: {{ include "lunar-mcpx-webapp.cronjobName" (dict "root" .root "suffix" .jobName) }}
   labels:
-    service: {{ include "lunar-mcpx-webapp.fullname" .root }}-{{ .jobName }}
+    service: {{ include "lunar-mcpx-webapp.cronjobName" (dict "root" .root "suffix" .jobName) }}
     {{- with .root.Values.global.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -31,7 +31,7 @@ spec:
       template:
         metadata:
           labels:
-            service: {{ include "lunar-mcpx-webapp.fullname" .root }}-{{ .jobName }}
+            service: {{ include "lunar-mcpx-webapp.cronjobName" (dict "root" .root "suffix" .jobName) }}
             {{- include "lunar-mcpx-webapp.selectorLabels" .root | nindent 12 }}
             {{- with .root.Values.global.labels }}
             {{- toYaml . | nindent 12 }}
@@ -74,7 +74,7 @@ spec:
               {{- end }}
               envFrom:
                 - secretRef:
-                    name: {{ include "lunar-mcpx-webapp.fullname" .root }}-embedded
+                    name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" .root "suffix" "embedded") }}
               {{- if and .clickhouse (.root.Values.clickhouse.enabled | default false) }}
                 - secretRef:
                     name: {{ .root.Values.clickhouse.credentialsSecret }}
