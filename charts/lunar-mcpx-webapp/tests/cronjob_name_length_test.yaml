@@ -49,14 +49,19 @@ tests:
           pattern: ^.{1,52}$
 
   - it: truncates the prefix and preserves the suffix for a long release name
+    # fullname is "<release>-lunar-mcpx-webapp" (44 chars). With the 19-char suffix the prefix
+    # budget is 51 - 19 = 32, so "-mcpx-webapp" is dropped and the trailing "-" trimmed:
+    #   psrconnect40416948-g2wbg7-lunar-mcpx-webapp  ->  psrconnect40416948-g2wbg7-lunar
+    # The hibernate job only renders when hibernation.cronSchedule is set, hence the unique schedule
+    # used to select the document.
     release:
       name: psrconnect40416948-g2wbg7
     set:
       hibernation.cronSchedule: "*/5 * * * *"
     template: templates/lunar-jobs-cronjob.yaml
     documentSelector:
-      path: metadata.name
-      value: psrconnect40416948-g2wbg7-lunar-hibernate-instances
+      path: spec.schedule
+      value: "*/5 * * * *"
     asserts:
       - equal:
           path: metadata.name
