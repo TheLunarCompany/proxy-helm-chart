@@ -1,0 +1,19 @@
+charts/lunar-mcpx-webapp/tests/common_secrets_datastore_urls_test.yaml
+  s_0d48f869691d5d::t_879d353d06cb63 1-59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "a6acbdff1911f1ae58fc83cac0deeb524d6d0c80",
+  "prompts": {},
+  "sessions": {
+    "s_0d48f869691d5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d18ce43b-185a-42f5-a2a4-e4f1e65f88fb",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "EliavLunar <eliavl@lunar.dev>"
+    }
+  }
+}
