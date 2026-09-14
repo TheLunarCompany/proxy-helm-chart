@@ -74,7 +74,7 @@ spec:
               {{- end }}
               envFrom:
                 - secretRef:
-                    name: {{ include "lunar-mcpx-webapp.fullname" .root }}-embedded
+                    name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" .root "suffix" "embedded") }}
               {{- if and .clickhouse (.root.Values.clickhouse.enabled | default false) }}
                 - secretRef:
                     name: {{ .root.Values.clickhouse.credentialsSecret }}

@@ -1,8 +1,10 @@
-suite: CronJob name length
-# CronJob names are capped at 52 chars by Kubernetes (Job names get an 11-char timestamp appended).
-# The chart truncates the release prefix, never the job suffix, and only when the full name would not fit.
+suite: Resource name length
+# Kubernetes caps Service names and label values at 63 chars and CronJob names at 52
+# (Job names get an 11-char timestamp appended). The chart truncates the release prefix,
+# never the component suffix, and only when the full name would not fit.
 templates:
   - templates/lunar-jobs-cronjob.yaml
+  - templates/lunar-hive-controller-service.yaml
   - templates/lunar-admin-migrate-tool-groups-to-skills-cronjob.yaml
   - templates/lunar-admin-migrate-status-cronjob.yaml
 
@@ -116,3 +118,28 @@ tests:
       - matchRegex:
           path: metadata.name
           pattern: ^.{1,52}$
+
+  - it: keeps Service names unchanged when the release name is short
+    release:
+      name: my-release
+    template: templates/lunar-hive-controller-service.yaml
+    asserts:
+      - equal:
+          path: metadata.name
+          value: my-release-lunar-mcpx-webapp-controller
+
+  - it: caps Service names and selector labels at 63 chars for a very long release name
+    # fullname would be "<45 t's>-lunar-mcpx-webapp" (63 chars); the "-controller" suffix must still fit.
+    release:
+      name: ttttttttttttttttttttttttttttttttttttttttttttt
+    template: templates/lunar-hive-controller-service.yaml
+    asserts:
+      - equal:
+          path: metadata.name
+          value: ttttttttttttttttttttttttttttttttttttttttttttt-lunar-controller
+      - matchRegex:
+          path: metadata.name
+          pattern: ^.{1,63}$
+      - matchRegex:
+          path: spec.selector.app
+          pattern: ^.{1,63}$

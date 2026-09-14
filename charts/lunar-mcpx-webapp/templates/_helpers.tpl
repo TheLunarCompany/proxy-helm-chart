@@ -132,7 +132,7 @@ ClickHouse connection URL built at runtime via K8s variable substitution.
 CLICKHOUSE_USER and CLICKHOUSE_PASSWORD must be available via envFrom.
 */}}
 {{- define "lunar-mcpx-webapp.clickhouseUrl" -}}
-http://$(CLICKHOUSE_USER):$(CLICKHOUSE_PASSWORD)@{{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse:8123
+http://$(CLICKHOUSE_USER):$(CLICKHOUSE_PASSWORD)@{{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "clickhouse") }}:8123
 {{- end }}
 
 {{- define "lunar-mcpx-webapp.tplvalues.render" -}}
@@ -199,18 +199,35 @@ capabilities:
 {{- end }}
 
 {{/*
-CronJob-safe name: "<fullname>-<suffix>" capped at 52 chars.
-CronJob names are limited to 52 because Kubernetes appends an 11-char timestamp to the Jobs it spawns.
-The fullname is truncated first so the suffix (which identifies the job) is always kept intact.
-Output is identical to the plain "<fullname>-<suffix>" whenever that already fits, so existing releases are not renamed.
-Usage: include "lunar-mcpx-webapp.cronjobName" (dict "root" . "suffix" "db-ses-rtn")
+Length-safe "<fullname>-<suffix>" for any resource name.
+Kubernetes caps Service names, StatefulSet pod hostnames and label values at 63 chars, and CronJob
+names at 52 (an 11-char timestamp is appended to spawned Jobs). The fullname is truncated first so the
+suffix, which identifies the component, is always kept intact. Output is identical to the plain
+"<fullname>-<suffix>" whenever that already fits, so existing releases are not renamed.
+Usage: include "lunar-mcpx-webapp.suffixedName" (dict "root" . "suffix" "controller" "max" 63)
 */}}
-{{- define "lunar-mcpx-webapp.cronjobName" -}}
+{{- define "lunar-mcpx-webapp.suffixedName" -}}
 {{- $suffix := .suffix -}}
-{{- $max := sub 51 (len $suffix) | int -}}
+{{- $max := sub (sub .max 1) (len $suffix) | int -}}
 {{- if lt $max 1 -}}
-{{- fail (printf "cronjobName: suffix %q is too long to fit in a 52-char CronJob name" $suffix) -}}
+{{- fail (printf "suffixedName: suffix %q is too long to fit in a %d-char name" $suffix (int .max)) -}}
 {{- end -}}
 {{- $base := include "lunar-mcpx-webapp.fullname" .root | trunc $max | trimSuffix "-" -}}
 {{- printf "%s-%s" $base $suffix -}}
+{{- end }}
+
+{{/*
+Resource name capped at 63 chars (Services, Deployments, Secrets, labels...).
+Usage: include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "controller")
+*/}}
+{{- define "lunar-mcpx-webapp.resourceName" -}}
+{{- include "lunar-mcpx-webapp.suffixedName" (dict "root" .root "suffix" .suffix "max" 63) -}}
+{{- end }}
+
+{{/*
+CronJob name capped at 52 chars.
+Usage: include "lunar-mcpx-webapp.cronjobName" (dict "root" . "suffix" "db-ses-rtn")
+*/}}
+{{- define "lunar-mcpx-webapp.cronjobName" -}}
+{{- include "lunar-mcpx-webapp.suffixedName" (dict "root" .root "suffix" .suffix "max" 52) -}}
 {{- end }}
