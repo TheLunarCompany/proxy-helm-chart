@@ -26,9 +26,9 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" $root }}-{{ $key }}
+  name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" $root "suffix" $key) }}
   labels:
-    service: {{ include "lunar-mcpx-webapp.fullname" $root }}-{{ $key }}
+    service: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" $root "suffix" $key) }}
     {{- include "lunar-mcpx-webapp.labels" $root | nindent 4 }}
     {{- with $root.Values.global.labels }}
     {{- toYaml . | nindent 4 }}
@@ -37,7 +37,7 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "lunar-mcpx-webapp.fullname" $root }}-{{ $key }}
+    name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" $root "suffix" $key) }}
   minReplicas: {{ $minReplicas }}
   maxReplicas: {{ $maxReplicas }}
   metrics:
