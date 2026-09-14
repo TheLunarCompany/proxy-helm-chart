@@ -1,0 +1,113 @@
+suite: CronJob name length
+# CronJob names are capped at 52 chars by Kubernetes (Job names get an 11-char timestamp appended).
+# The chart truncates the release prefix, never the job suffix, and only when the full name would not fit.
+templates:
+  - templates/lunar-jobs-cronjob.yaml
+  - templates/lunar-admin-migrate-tool-groups-to-skills-cronjob.yaml
+  - templates/lunar-admin-migrate-status-cronjob.yaml
+
+tests:
+  - it: keeps names unchanged when the release name is short
+    release:
+      name: my-release
+    template: templates/lunar-jobs-cronjob.yaml
+    documentSelector:
+      path: metadata.name
+      value: my-release-lunar-mcpx-webapp-db-ses-rtn
+    asserts:
+      - equal:
+          path: metadata.name
+          value: my-release-lunar-mcpx-webapp-db-ses-rtn
+      - equal:
+          path: metadata.labels.service
+          value: my-release-lunar-mcpx-webapp-db-ses-rtn
+      - equal:
+          path: spec.jobTemplate.spec.template.metadata.labels.service
+          value: my-release-lunar-mcpx-webapp-db-ses-rtn
+
+  - it: keeps admin job names unchanged when the release name is short
+    release:
+      name: my-release
+    template: templates/lunar-admin-migrate-status-cronjob.yaml
+    asserts:
+      - equal:
+          path: metadata.name
+          value: my-release-lunar-mcpx-webapp-migrate-status
+
+  - it: caps every scheduled CronJob name at 52 chars for a long release name
+    release:
+      name: psrconnect40416948-g2wbg7
+    template: templates/lunar-jobs-cronjob.yaml
+    asserts:
+      - isKind:
+          of: CronJob
+      - matchRegex:
+          path: metadata.name
+          pattern: ^.{1,52}$
+      - matchRegex:
+          path: metadata.labels.service
+          pattern: ^.{1,52}$
+
+  - it: truncates the prefix and preserves the suffix for a long release name
+    release:
+      name: psrconnect40416948-g2wbg7
+    set:
+      hibernation.cronSchedule: "*/5 * * * *"
+    template: templates/lunar-jobs-cronjob.yaml
+    documentSelector:
+      path: metadata.name
+      value: psrconnect40416948-g2wbg7-lunar-hibernate-instances
+    asserts:
+      - equal:
+          path: metadata.name
+          value: psrconnect40416948-g2wbg7-lunar-hibernate-instances
+      - equal:
+          path: metadata.labels.service
+          value: psrconnect40416948-g2wbg7-lunar-hibernate-instances
+      - equal:
+          path: spec.jobTemplate.spec.template.metadata.labels.service
+          value: psrconnect40416948-g2wbg7-lunar-hibernate-instances
+
+  - it: does not leave a trailing dash on the truncated prefix
+    release:
+      name: psrconnect40416948-g2wbg7
+    template: templates/lunar-admin-migrate-tool-groups-to-skills-cronjob.yaml
+    asserts:
+      - equal:
+          path: metadata.name
+          value: psrconnect40416948-g2w-migrate-tool-groups-to-skills
+      - matchRegex:
+          path: metadata.name
+          pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?-migrate-tool-groups-to-skills$
+
+  - it: caps admin CronJob names at 52 chars for a long release name
+    release:
+      name: psrconnect40416948-g2wbg7
+    template: templates/lunar-admin-migrate-tool-groups-to-skills-cronjob.yaml
+    asserts:
+      - matchRegex:
+          path: metadata.name
+          pattern: ^.{1,52}$
+      - matchRegex:
+          path: metadata.labels.service
+          pattern: ^.{1,52}$
+      - matchRegex:
+          path: spec.jobTemplate.spec.template.metadata.labels.service
+          pattern: ^.{1,52}$
+
+  - it: honours fullnameOverride and still caps at 52 chars
+    release:
+      name: irrelevant
+    set:
+      fullnameOverride: a-very-long-fullname-override-that-goes-past-fifty-two-chars
+    template: templates/lunar-jobs-cronjob.yaml
+    documentSelector:
+      path: metadata.name
+      value: a-very-long-fullname-override-that-prune-audit-logs
+    asserts:
+      - equal:
+          path: metadata.name
+          value: a-very-long-fullname-override-that-prune-audit-logs
+      - matchRegex:
+          path: metadata.name
+          pattern: ^.{1,52}$

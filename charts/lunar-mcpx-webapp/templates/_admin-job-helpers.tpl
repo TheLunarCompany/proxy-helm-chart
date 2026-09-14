@@ -11,9 +11,9 @@ Expects a dict with keys:
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" .root }}-{{ .jobName }}
+  name: {{ include "lunar-mcpx-webapp.cronjobName" (dict "root" .root "suffix" .jobName) }}
   labels:
-    service: {{ include "lunar-mcpx-webapp.fullname" .root }}-{{ .jobName }}
+    service: {{ include "lunar-mcpx-webapp.cronjobName" (dict "root" .root "suffix" .jobName) }}
     {{- with .root.Values.global.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -31,7 +31,7 @@ spec:
       template:
         metadata:
           labels:
-            service: {{ include "lunar-mcpx-webapp.fullname" .root }}-{{ .jobName }}
+            service: {{ include "lunar-mcpx-webapp.cronjobName" (dict "root" .root "suffix" .jobName) }}
             {{- include "lunar-mcpx-webapp.selectorLabels" .root | nindent 12 }}
             {{- with .root.Values.global.labels }}
             {{- toYaml . | nindent 12 }}

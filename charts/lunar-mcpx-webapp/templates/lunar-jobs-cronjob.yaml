@@ -4,9 +4,9 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" . }}-db-ses-rtn
+  name: {{ include "lunar-mcpx-webapp.cronjobName" (dict "root" . "suffix" "db-ses-rtn") }}
   labels:
-    service: {{ include "lunar-mcpx-webapp.fullname" . }}-db-ses-rtn
+    service: {{ include "lunar-mcpx-webapp.cronjobName" (dict "root" . "suffix" "db-ses-rtn") }}
     {{- with .Values.global.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -25,7 +25,7 @@ spec:
       template:
         metadata:
           labels:
-            service: {{ include "lunar-mcpx-webapp.fullname" . }}-db-ses-rtn
+            service: {{ include "lunar-mcpx-webapp.cronjobName" (dict "root" . "suffix" "db-ses-rtn") }}
             {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 12 }}
             {{- with .Values.global.labels }}
             {{- toYaml . | nindent 12 }}
@@ -110,9 +110,9 @@ spec:
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" . }}-hibernate-instances
+  name: {{ include "lunar-mcpx-webapp.cronjobName" (dict "root" . "suffix" "hibernate-instances") }}
   labels:
-    service: {{ include "lunar-mcpx-webapp.fullname" . }}-hibernate-instances
+    service: {{ include "lunar-mcpx-webapp.cronjobName" (dict "root" . "suffix" "hibernate-instances") }}
     {{- with .Values.global.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -131,7 +131,7 @@ spec:
       template:
         metadata:
           labels:
-            service: {{ include "lunar-mcpx-webapp.fullname" . }}-hibernate-instances
+            service: {{ include "lunar-mcpx-webapp.cronjobName" (dict "root" . "suffix" "hibernate-instances") }}
             {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 12 }}
             {{- with .Values.global.labels }}
             {{- toYaml . | nindent 12 }}
@@ -219,9 +219,9 @@ spec:
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" . }}-prune-audit-logs
+  name: {{ include "lunar-mcpx-webapp.cronjobName" (dict "root" . "suffix" "prune-audit-logs") }}
   labels:
-    service: {{ include "lunar-mcpx-webapp.fullname" . }}-prune-audit-logs
+    service: {{ include "lunar-mcpx-webapp.cronjobName" (dict "root" . "suffix" "prune-audit-logs") }}
     {{- with .Values.global.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -240,7 +240,7 @@ spec:
       template:
         metadata:
           labels:
-            service: {{ include "lunar-mcpx-webapp.fullname" . }}-prune-audit-logs
+            service: {{ include "lunar-mcpx-webapp.cronjobName" (dict "root" . "suffix" "prune-audit-logs") }}
             {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 12 }}
             {{- with .Values.global.labels }}
             {{- toYaml . | nindent 12 }}

@@ -197,3 +197,20 @@ seccompProfile:
 capabilities:
   drop: ["ALL"]
 {{- end }}
+
+{{/*
+CronJob-safe name: "<fullname>-<suffix>" capped at 52 chars.
+CronJob names are limited to 52 because Kubernetes appends an 11-char timestamp to the Jobs it spawns.
+The fullname is truncated first so the suffix (which identifies the job) is always kept intact.
+Output is identical to the plain "<fullname>-<suffix>" whenever that already fits, so existing releases are not renamed.
+Usage: include "lunar-mcpx-webapp.cronjobName" (dict "root" . "suffix" "db-ses-rtn")
+*/}}
+{{- define "lunar-mcpx-webapp.cronjobName" -}}
+{{- $suffix := .suffix -}}
+{{- $max := sub 51 (len $suffix) | int -}}
+{{- if lt $max 1 -}}
+{{- fail (printf "cronjobName: suffix %q is too long to fit in a 52-char CronJob name" $suffix) -}}
+{{- end -}}
+{{- $base := include "lunar-mcpx-webapp.fullname" .root | trunc $max | trimSuffix "-" -}}
+{{- printf "%s-%s" $base $suffix -}}
+{{- end }}
