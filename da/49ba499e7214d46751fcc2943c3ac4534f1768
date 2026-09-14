@@ -1,0 +1,21 @@
+charts/lunar-mcpx-webapp/templates/pdb.yaml
+  s_0d48f869691d5d::t_04252e3404d92e 27,29,42
+charts/lunar-mcpx-webapp/templates/hpa.yaml
+  s_0d48f869691d5d::t_4cfd31f6bad853 29,31,40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "da49ba499e7214d46751fcc2943c3ac4534f1768",
+  "prompts": {},
+  "sessions": {
+    "s_0d48f869691d5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d18ce43b-185a-42f5-a2a4-e4f1e65f88fb",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "EliavLunar <eliavl@lunar.dev>"
+    }
+  }
+}
