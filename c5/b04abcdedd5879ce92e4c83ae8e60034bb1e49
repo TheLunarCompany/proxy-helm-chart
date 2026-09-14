@@ -1,0 +1,82 @@
+charts/lunar-mcpx-webapp/templates/redis-service.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 5,7-8,23
+charts/lunar-mcpx-webapp/templates/clickhouse-configmap.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 5,7-8
+charts/lunar-mcpx-webapp/templates/lunar-hive-controller-service.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 5,7-8,18,30,49
+charts/lunar-mcpx-webapp/templates/lunar-hive-router-deployment.yaml
+  s_0d48f869691d5d::t_2f03f07ca86f8c 122
+  s_0d48f869691d5d::t_f75bd4ab2914c3 7,9-10,23,37,88,121
+charts/lunar-mcpx-webapp/templates/lunar-jobs-cronjob.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 72,178,193,287
+charts/lunar-mcpx-webapp/templates/lunar-auth-bff-deployment.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 12,14-15,28,42,85,141
+charts/lunar-mcpx-webapp/templates/lunar-webserver-deployment.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 7,9-10,23,37,80,172,205,209
+charts/lunar-mcpx-webapp/templates/lunar-admin-ui-deployment.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 7,9-10,23,37,85
+charts/lunar-mcpx-webapp/templates/lunar-hive-controller-deployment.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 7,9-10,23,37,49,92,128,130
+charts/lunar-mcpx-webapp/templates/prometheus-sericemonitor.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 6,8-9
+charts/lunar-mcpx-webapp/tests/resource_name_length_test.yaml
+  s_0d48f869691d5d::t_080b85f723acfa 1-143,145
+  s_0d48f869691d5d::t_246b16d3de6052 144
+charts/lunar-mcpx-webapp/templates/lunar-hub-service.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 5,7-8,18,30
+charts/lunar-mcpx-webapp/templates/lunar-webserver-service.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 5,7-8,18,34,53
+charts/lunar-mcpx-webapp/templates/clickhouse-service.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 5,7-8,23
+charts/lunar-mcpx-webapp/templates/lunar-hive-ui-deployment.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 7,9-10,23,37,108
+charts/lunar-mcpx-webapp/templates/postgresql-secrets.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 5,7-8
+charts/lunar-mcpx-webapp/templates/postgresql-service.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 5,7-8,23
+charts/lunar-mcpx-webapp/templates/redis-statefulset.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 6,8-9,19,35,101
+charts/lunar-mcpx-webapp/templates/_helpers.tpl
+  s_0d48f869691d5d::t_f75bd4ab2914c3 135,202-207,209,211,213,218-233
+charts/lunar-mcpx-webapp/templates/redis-configmaps.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 5,7-8
+charts/lunar-mcpx-webapp/templates/lunar-admin-ui-service.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 5,7-8,18,30,49
+charts/lunar-mcpx-webapp/templates/lunar-hive-controller-rbac.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 5,7-8,20,22-23,56,58-59,69,72
+charts/lunar-mcpx-webapp/templates/lunar-common-ingress.yaml
+  s_0d48f869691d5d::t_2f03f07ca86f8c 9,11-12,64,93,101
+charts/lunar-mcpx-webapp/templates/lunar-auth-bff-service.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 5,7-8,18,30,49
+charts/lunar-mcpx-webapp/templates/clickhouse-statefulset.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 6,8-9,19,30,36,107
+charts/lunar-mcpx-webapp/templates/lunar-hive-ui-service.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 5,7-8,18,30,49
+charts/lunar-mcpx-webapp/templates/lunar-hub-deployment.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 7,9-10,23,37,80,172,201
+charts/lunar-mcpx-webapp/templates/lunar-common-secrets.yaml
+  s_0d48f869691d5d::t_e7dccda426a180 12-13,18,21
+  s_0d48f869691d5d::t_f75bd4ab2914c3 4,6
+charts/lunar-mcpx-webapp/templates/_admin-job-helpers.tpl
+  s_0d48f869691d5d::t_f75bd4ab2914c3 77
+charts/lunar-mcpx-webapp/templates/lunar-hive-router-service.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 5,7-8,19,34,53
+charts/lunar-mcpx-webapp/templates/postgresql-statefulset.yaml
+  s_0d48f869691d5d::t_f75bd4ab2914c3 6,8-9,19,35,63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "c5b04abcdedd5879ce92e4c83ae8e60034bb1e49",
+  "prompts": {},
+  "sessions": {
+    "s_0d48f869691d5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d18ce43b-185a-42f5-a2a4-e4f1e65f88fb",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "EliavLunar <eliavl@lunar.dev>"
+    }
+  }
+}
