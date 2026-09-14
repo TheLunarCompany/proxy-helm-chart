@@ -1,0 +1,29 @@
+charts/lunar-mcpx-webapp/templates/_helpers.tpl
+  s_0d48f869691d5d::t_4c69ac24c53b32 202-205,211-213
+  s_0d48f869691d5d::t_d19fdca3e468af 200-201,206-210,214-216
+charts/lunar-mcpx-webapp/templates/_admin-job-helpers.tpl
+  s_0d48f869691d5d::t_d19fdca3e468af 14,16,34
+charts/lunar-mcpx-webapp/templates/lunar-jobs-cronjob.yaml
+  s_0d48f869691d5d::t_d19fdca3e468af 7,9,28,113,115,134,222,224,243
+charts/lunar-mcpx-webapp/Chart.yaml
+  s_0d48f869691d5d::t_4c69ac24c53b32 18
+charts/lunar-mcpx-webapp/tests/cronjob_name_length_test.yaml
+  s_0d48f869691d5d::t_e747891c817e47 14-16,54-55,57-59,63,66,69,104-106,110
+  s_0d48f869691d5d::t_04e63ed7142c1d 1-13,17-53,56,60-62,64-65,67-68,70-103,107-109,111-113
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "911ceea41e42c53546e9e88a5c226f19d88d5d11",
+  "prompts": {},
+  "sessions": {
+    "s_0d48f869691d5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d18ce43b-185a-42f5-a2a4-e4f1e65f88fb",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "EliavLunar <eliavl@lunar.dev>"
+    }
+  }
+}
