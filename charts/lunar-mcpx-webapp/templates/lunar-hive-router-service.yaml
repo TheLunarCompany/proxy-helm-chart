@@ -66,6 +66,11 @@ spec:
     type: HTTP
     requestPath: /healthcheck
     port: 8080
+  {{- if .Values.ingress.responseHeaders }}
+  customResponseHeaders:
+    headers:
+      {{- toYaml .Values.ingress.responseHeaders | nindent 6 }}
+  {{- end }}
 {{- end }}
 {{- end }}
 
