@@ -551,6 +551,12 @@
         "gce": {
           "type": "object"
         },
+        "responseHeaders": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "type": {
           "type": "string"
         }

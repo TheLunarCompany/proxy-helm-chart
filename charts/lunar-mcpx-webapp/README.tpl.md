@@ -158,6 +158,23 @@ global:
 Ingress configuration is heavily depends on the Kubernetes cluster configuration, cloud platform, network configuration, etc.
 Please reffer to [examples/values-override](examples/values-override) directory to find example applicable for your environment
 
+#### Custom response headers
+`ingress.responseHeaders` accepts a list of `"Name: Value"` strings that are added as HTTP response headers for traffic
+served through the ingress, e.g.:
+```yaml
+ingress:
+  responseHeaders:
+    - "X-Frame-Options: DENY"
+    - "Strict-Transport-Security: max-age=63072000"
+```
+Support depends on `ingress.type`:
+- `gce` - rendered into each service's `BackendConfig.spec.customResponseHeaders.headers`
+- `nginx` - rendered into a `nginx.ingress.kubernetes.io/configuration-snippet` annotation using `more_set_headers`.
+  This requires the ingress-nginx controller to have snippet annotations enabled
+  (`allow-snippet-annotations`/`annotations-risk-level` on the controller ConfigMap) - otherwise the annotation is
+  silently ignored by the controller.
+- `agic`, `undef` - not currently supported; set the equivalent annotation manually via `ingress.annotations`
+
 
 ### Private Certificate Authorities
 For the cases when there is a requirement of using certificates issued by private CA, it is required to make this CA
