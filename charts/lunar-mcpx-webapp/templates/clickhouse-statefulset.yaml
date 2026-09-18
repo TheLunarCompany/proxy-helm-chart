@@ -45,10 +45,21 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      securityContext:
+        runAsNonRoot: true
+        {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
+        # clickhouse/clickhouse-server runs as uid/gid 101
+        runAsUser: 101
+        runAsGroup: 101
+        fsGroup: 101
+        {{- end }}
       containers:
         - name: clickhouse
           image: "{{ .Values.clickhouse.image.repository }}:{{ .Values.clickhouse.image.tag }}"
           imagePullPolicy: {{ .Values.clickhouse.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            {{- include "lunar-mcpx-webapp.restrictedSeccompAndCaps" . | nindent 12 }}
           envFrom:
             - secretRef:
                 name: {{ .Values.clickhouse.credentialsSecret }}

@@ -44,9 +44,20 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      securityContext:
+        runAsNonRoot: true
+        {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
+        # postgres runs as uid/gid 999
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+        {{- end }}
       containers:
         - name: db
           image: postgres:17.6
+          securityContext:
+            allowPrivilegeEscalation: false
+            {{- include "lunar-mcpx-webapp.restrictedSeccompAndCaps" . | nindent 12 }}
           envFrom:
             - secretRef:
                 name: {{ include "lunar-mcpx-webapp.fullname" . }}-postgres-env

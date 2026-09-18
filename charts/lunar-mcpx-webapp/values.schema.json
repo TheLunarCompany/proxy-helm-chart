@@ -1,6 +1,85 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
+  "$defs": {
+    "pdb": {
+      "type": "object",
+      "description": "PodDisruptionBudget for this deployment. Requires replicaCount >= 2 when enabled",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "maxUnavailable": {
+          "type": [
+            "integer",
+            "string"
+          ],
+          "description": "Max pods down during a voluntary disruption. Ignored if minAvailable is set",
+          "default": 1
+        },
+        "minAvailable": {
+          "type": [
+            "integer",
+            "string"
+          ],
+          "description": "Min pods that must stay up (number or percentage). Overrides maxUnavailable when set",
+          "default": ""
+        }
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "description": "The permissionless ServiceAccount the chart always creates and assigns to all app deployments and cronjobs (the hive-controller keeps its own RBAC-bound one)",
+      "properties": {
+        "annotations": {
+          "type": "object",
+          "description": "Annotations for the shared ServiceAccount, e.g. an EKS IRSA role ARN",
+          "default": {}
+        }
+      }
+    },
+    "hpa": {
+      "type": "object",
+      "description": "HorizontalPodAutoscaler for this deployment. Requires replicaCount >= 2 when enabled",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "minReplicas": {
+          "type": "integer",
+          "default": 2
+        },
+        "maxReplicas": {
+          "type": "integer",
+          "default": 8
+        },
+        "targetCPUUtilizationPercentage": {
+          "type": [
+            "integer",
+            "string"
+          ],
+          "default": 70
+        },
+        "targetMemoryUtilizationPercentage": {
+          "type": [
+            "integer",
+            "string"
+          ],
+          "description": "\"\" (default) disables the memory metric. Set explicitly to \"\" to opt a service out per-service",
+          "default": ""
+        },
+        "scaleDownStabilizationSeconds": {
+          "type": [
+            "integer",
+            "string"
+          ],
+          "default": 300
+        }
+      }
+    }
+  },
   "properties": {
     "global": {
       "type": "object",
@@ -13,11 +92,19 @@
         },
         "webappRepository": {
           "type": "string",
-          "enum": ["prod", "dev", "boomipoc"]
+          "enum": [
+            "prod",
+            "dev",
+            "boomipoc"
+          ]
         },
         "mcpxRepository": {
           "type": "string",
-          "enum": ["prod", "dev", "boomipoc"]
+          "enum": [
+            "prod",
+            "dev",
+            "boomipoc"
+          ]
         },
         "webappRepositoryDev": {
           "type": "string"
@@ -42,6 +129,15 @@
         },
         "priorityClassName": {
           "type": "string"
+        },
+        "serviceAccount": {
+          "$ref": "#/$defs/serviceAccount"
+        },
+        "pdb": {
+          "$ref": "#/$defs/pdb"
+        },
+        "hpa": {
+          "$ref": "#/$defs/hpa"
         }
       }
     },
@@ -52,10 +148,16 @@
           "type": "object",
           "properties": {
             "connectionLimit": {
-              "type": ["integer", "null"]
+              "type": [
+                "integer",
+                "null"
+              ]
             },
             "poolTimeoutSeconds": {
-              "type": ["integer", "null"]
+              "type": [
+                "integer",
+                "null"
+              ]
             }
           }
         },
@@ -89,6 +191,12 @@
         },
         "replicaCount": {
           "type": "integer"
+        },
+        "pdb": {
+          "$ref": "#/$defs/pdb"
+        },
+        "hpa": {
+          "$ref": "#/$defs/hpa"
         },
         "resources": {
           "type": "object",
@@ -361,14 +469,26 @@
     "auth": {
       "type": "object",
       "properties": {
+        "pdb": {
+          "$ref": "#/$defs/pdb"
+        },
+        "hpa": {
+          "$ref": "#/$defs/hpa"
+        },
         "db": {
           "type": "object",
           "properties": {
             "connectionLimit": {
-              "type": ["integer", "null"]
+              "type": [
+                "integer",
+                "null"
+              ]
             },
             "poolTimeoutSeconds": {
-              "type": ["integer", "null"]
+              "type": [
+                "integer",
+                "null"
+              ]
             }
           }
         },
@@ -441,15 +561,23 @@
       "description": "Embedded ClickHouse for event store analytics",
       "if": {
         "properties": {
-          "enabled": { "const": true }
+          "enabled": {
+            "const": true
+          }
         },
-        "required": ["enabled"]
+        "required": [
+          "enabled"
+        ]
       },
       "then": {
         "properties": {
-          "credentialsSecret": { "minLength": 1 }
+          "credentialsSecret": {
+            "minLength": 1
+          }
         },
-        "required": ["credentialsSecret"]
+        "required": [
+          "credentialsSecret"
+        ]
       },
       "properties": {
         "enabled": {
@@ -596,7 +724,11 @@
               "type": "object",
               "description": "Flat map of editable system-config env keys to seed as DB overrides via the seed-system-config jobs. Sparse: list only keys you actually set. Existing DB overrides are never overwritten.",
               "additionalProperties": {
-                "type": ["string", "number", "boolean"]
+                "type": [
+                  "string",
+                  "number",
+                  "boolean"
+                ]
               },
               "default": {}
             }
@@ -639,6 +771,12 @@
     "controller": {
       "type": "object",
       "properties": {
+        "pdb": {
+          "$ref": "#/$defs/pdb"
+        },
+        "hpa": {
+          "$ref": "#/$defs/hpa"
+        },
         "mcpxRuntimeAuth": {
           "type": "object",
           "description": "Runtime auth/config files injected into each MCPX instance pod",
@@ -728,10 +866,16 @@
           "type": "object",
           "properties": {
             "connectionLimit": {
-              "type": ["integer", "null"]
+              "type": [
+                "integer",
+                "null"
+              ]
             },
             "poolTimeoutSeconds": {
-              "type": ["integer", "null"]
+              "type": [
+                "integer",
+                "null"
+              ]
             }
           }
         },
@@ -745,7 +889,10 @@
             "llmProvider": {
               "type": "string",
               "description": "LLM provider for Sandbox Analysis",
-              "enum": ["openai", "google-gen-ai"]
+              "enum": [
+                "openai",
+                "google-gen-ai"
+              ]
             },
             "llmModel": {
               "type": "string",
@@ -769,6 +916,12 @@
         },
         "replicaCount": {
           "type": "integer"
+        },
+        "pdb": {
+          "$ref": "#/$defs/pdb"
+        },
+        "hpa": {
+          "$ref": "#/$defs/hpa"
         },
         "resources": {
           "type": "object",
@@ -805,6 +958,39 @@
         },
         "priorityClassName": {
           "type": "string"
+        }
+      }
+    },
+    "admin": {
+      "type": "object",
+      "properties": {
+        "pdb": {
+          "$ref": "#/$defs/pdb"
+        },
+        "hpa": {
+          "$ref": "#/$defs/hpa"
+        }
+      }
+    },
+    "router": {
+      "type": "object",
+      "properties": {
+        "pdb": {
+          "$ref": "#/$defs/pdb"
+        },
+        "hpa": {
+          "$ref": "#/$defs/hpa"
+        }
+      }
+    },
+    "ui": {
+      "type": "object",
+      "properties": {
+        "pdb": {
+          "$ref": "#/$defs/pdb"
+        },
+        "hpa": {
+          "$ref": "#/$defs/hpa"
         }
       }
     }

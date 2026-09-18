@@ -1,0 +1,45 @@
+suite: webserver MCPX_PUBLIC_URL value
+templates:
+  - templates/lunar-webserver-deployment.yaml
+
+tests:
+  - it: sets MCPX_PUBLIC_URL to the router ingress domain
+    release:
+      name: my-release
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MCPX_PUBLIC_URL
+            value: "mcpx.example.com"
+
+  - it: omits MCPX_PUBLIC_URL when ingress is disabled
+    release:
+      name: my-release
+    set:
+      ingress.enabled: false
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MCPX_PUBLIC_URL
+          any: true
+
+  - it: defers to webserver.extraEnvVars when it already sets MCPX_PUBLIC_URL
+    release:
+      name: my-release
+    set:
+      webserver.extraEnvVars:
+        - name: MCPX_PUBLIC_URL
+          value: "router.custom.example.com"
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MCPX_PUBLIC_URL
+            value: "mcpx.example.com"
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MCPX_PUBLIC_URL
+            value: "router.custom.example.com"

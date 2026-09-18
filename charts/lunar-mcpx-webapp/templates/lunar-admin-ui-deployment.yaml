@@ -15,7 +15,9 @@ metadata:
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
+  {{- if not (include "lunar-mcpx-webapp.hpaEnabled" (dict "key" "admin" "context" .)) }}
   replicas: {{ .Values.admin.replicaCount | default 1 }}
+  {{- end }}
   selector:
     matchLabels:
       app: {{ include "lunar-mcpx-webapp.fullname" . }}-admin
@@ -44,6 +46,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      serviceAccountName: {{ include "lunar-mcpx-webapp.fullname" . }}
       {{- with concat (.Values.global.extraInitContainers | default (list)) (.Values.admin.extraInitContainers | default (list)) }}
       initContainers:
         {{- toYaml . | nindent 8 }}
@@ -72,6 +75,7 @@ spec:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
             allowPrivilegeEscalation: false
+            {{- include "lunar-mcpx-webapp.restrictedSeccompAndCaps" . | nindent 12 }}
             {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
             runAsUser: 1000
             runAsGroup: 1000

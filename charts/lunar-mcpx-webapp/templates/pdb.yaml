@@ -1,0 +1,45 @@
+{{- $root := . }}
+{{- $gpdb := .Values.global.pdb | default dict }}
+{{- /* the concerned services */}}
+{{- range $key := list "webserver" "hub" "admin" "auth" "router" "ui" "controller" }}
+{{- $svc := get $root.Values $key }}
+{{- $spdb := $svc.pdb | default dict }}
+{{- /* service-level keys override global; hasKey (not coalesce/default) so an explicit false or 0 wins */}}
+{{- $enabled := ternary $spdb.enabled ($gpdb.enabled | default false) (hasKey $spdb "enabled") }}
+{{- $maxUnavailable := ternary $spdb.maxUnavailable ($gpdb.maxUnavailable | default 1) (hasKey $spdb "maxUnavailable") }}
+{{- $minAvailable := ternary $spdb.minAvailable ($gpdb.minAvailable | default "") (hasKey $spdb "minAvailable") }}
+{{- /* not `enabled | default true`: sprig default treats false as unset, which would ignore enabled: false */}}
+{{- if and (ne ($svc.enabled | toString) "false") $enabled }}
+{{- /* if HPA owns this service's replicas, its minReplicas is the real floor */}}
+{{- $hpaOn := eq (include "lunar-mcpx-webapp.hpaEnabled" (dict "key" $key "context" $root)) "true" }}
+{{- $floor := ternary (include "lunar-mcpx-webapp.hpaMinReplicas" (dict "key" $key "context" $root)) ($svc.replicaCount | default 1) $hpaOn }}
+{{- if lt (int $floor) 2 }}
+{{- if $hpaOn }}
+{{- fail (printf "pdb is enabled for %s but %s.hpa.minReplicas < 2 (a PDB on a single replica blocks node drains); raise %s.hpa.minReplicas or set %s.pdb.enabled=false" $key $key $key $key) }}
+{{- else }}
+{{- fail (printf "pdb is enabled for %s but %s.replicaCount < 2 (a PDB on a single replica blocks node drains); raise the replicas or set %s.pdb.enabled=false" $key $key $key) }}
+{{- end }}
+{{- end }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" $root }}-{{ $key }}
+  labels:
+    service: {{ include "lunar-mcpx-webapp.fullname" $root }}-{{ $key }}
+    {{- include "lunar-mcpx-webapp.labels" $root | nindent 4 }}
+    {{- with $root.Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if $minAvailable }}
+  minAvailable: {{ $minAvailable }}
+  {{- else }}
+  maxUnavailable: {{ $maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ include "lunar-mcpx-webapp.fullname" $root }}-{{ $key }}
+      {{- include "lunar-mcpx-webapp.selectorLabels" $root | nindent 6 }}
+{{- end }}
+{{- end }}

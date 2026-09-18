@@ -175,6 +175,83 @@ kubernetes secret
 - [Minimal non-production configuration with GCE ingress controller](examples/values-override/gcp-nonprod-demo.yaml)
 - [Production-like configuration with external secrets and external databases](examples/values-override/gcp-prod.yaml)
 
+### Service Account
+
+The chart always creates a single ServiceAccount without any permissions, named after the chart
+fullname, and all app deployments and cronjobs run on it. This is deliberate: pods never fall back
+to the namespace `default` ServiceAccount. There is nothing to enable or configure.
+
+The hive-controller is the one exception; it keeps its own RBAC-bound ServiceAccount
+(`<fullname>-controller`) since it manages Kubernetes resources.
+
+If you ever need to attach cloud IAM to the shared ServiceAccount (e.g. an EKS IRSA role),
+its annotations are settable from values:
+
+```yaml
+global:
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/my-role
+```
+
+### Pod Disruption Budgets
+
+Each app deployment (`webserver`, `hub`, `admin`, `auth`, `router`, `ui`, `controller`) can get a PodDisruptionBudget
+to keep it available during node drains and cluster upgrades. Set the default under `global.pdb`, and
+override per service with the same fields (`enabled`, `maxUnavailable`, `minAvailable`); service-level
+settings win:
+
+```yaml
+global:
+  pdb:
+    enabled: true
+    maxUnavailable: 1   # or set minAvailable (number or percentage) instead
+
+webserver:
+  replicaCount: 3
+hub:
+  replicaCount: 3
+# ...
+
+admin:
+  pdb:
+    enabled: false      # opt a single-replica service out
+```
+
+Off by default. Rendering fails if a PDB is enabled for a service with `replicaCount < 2`:
+a PDB over a single replica blocks node drains entirely. If you already manage your own PDBs for these
+pods outside the chart, remove them before enabling this, since pods covered by two PDBs cannot be
+evicted at all.
+
+### Horizontal Pod Autoscalers
+
+Each app deployment (`webserver`, `hub`, `admin`, `auth`, `router`, `ui`, `controller`) can get a
+HorizontalPodAutoscaler scaling on CPU/memory utilization. Set the default under `global.hpa`,
+override per service with the same fields; service-level wins:
+
+```yaml
+global:
+  hpa:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: "" # set a number to also scale on memory
+    scaleDownStabilizationSeconds: 300
+
+router:
+  hpa:
+    enabled: true
+    minReplicas: 3
+```
+
+Off by default. Once enabled for a service, its Deployment's `replicas` field is omitted so the HPA
+owns the live count (`replicaCount` still sets the initial count on first install). No memory metric
+by default; if you set a global memory target and want one service to opt back out, override it with
+`""` on that service — deleting the per-service key instead falls back to the global value.
+Rendering fails if `maxReplicas < minReplicas` or if no metric is set. With a PDB also enabled, the
+HPA's `minReplicas` covers the "2+ replicas" floor check instead of `replicaCount`.
+
 ### Admin DB Migration Jobs
 
 This chart includes four **suspended CronJobs** for DB migration management. They never run automatically — admins create one-off jobs from them using `kubectl create job`.

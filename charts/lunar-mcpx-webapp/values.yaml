@@ -134,6 +134,43 @@ global:
   # priorityClassName: "custom"
   priorityClassName: ""
 
+  # -- serviceAccount configures the permissionless ServiceAccount (named after the chart
+  # fullname) that the chart always creates and assigns to all app deployments and cronjobs,
+  # so pods never run on the namespace default ServiceAccount. The hive-controller keeps its
+  # own RBAC-bound ServiceAccount.
+  serviceAccount:
+    # -- annotations for the shared ServiceAccount, e.g. a cloud IAM role (EKS IRSA):
+    # annotations:
+    #   eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/my-role
+    annotations: {}
+
+  # -- pdb creates a PodDisruptionBudget for every app deployment during voluntary
+  # disruptions (node drains, cluster upgrades). Enabling this requires replicaCount >= 2
+  # on every app deployment (or a per-service pdb override with enabled: false),
+  # otherwise the chart fails to render: a PDB on a single replica blocks node drains.
+  pdb:
+    enabled: false
+    # -- maxUnavailable pods during a voluntary disruption. Ignored if minAvailable is set.
+    maxUnavailable: 1
+    # -- minAvailable pods (absolute number or percentage). Overrides maxUnavailable when set.
+    minAvailable: ""
+
+  # -- hpa creates a HorizontalPodAutoscaler for every app deployment. Opt-in, like pdb.
+  # While enabled, that Deployment's `replicas` field is omitted so the HPA owns it.
+  hpa:
+    enabled: false
+    # -- minReplicas the HPA will never scale below.
+    minReplicas: 2
+    # -- maxReplicas the HPA will never scale above.
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 70
+    # -- No memory metric by default. Set a number to enable it. To opt a
+    # service back out when a global value is set, override it with "" —
+    # deleting the per-service key instead falls back to the global value.
+    targetMemoryUtilizationPercentage: ""
+    # -- Lookback window before scaling down. 0 = immediate.
+    scaleDownStabilizationSeconds: 300
+
 webserver:
   image:
     # -- Lunar mcpx-webserver image repository
@@ -190,6 +227,13 @@ webserver:
 
   # -- number of replicas to run
   replicaCount: 1
+
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
+
+  # -- hpa overrides global.hpa for this deployment. Same fields as global.
+  hpa: {}
 
   # -- Set pod resource requests & limits
   resources:
@@ -308,6 +352,13 @@ hub:
 
   # -- number of replicas to run
   replicaCount: 1
+
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
+
+  # -- hpa overrides global.hpa for this deployment. Same fields as global.
+  hpa: {}
 
   # -- Set pod resource requests & limits
   resources:
@@ -695,6 +746,13 @@ admin:
   # -- number of replicas to run
   replicaCount: 1
 
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
+
+  # -- hpa overrides global.hpa for this deployment. Same fields as global.
+  hpa: {}
+
   # -- Set pod resource requests & limits
   resources:
     limits:
@@ -804,6 +862,13 @@ auth:
   # -- number of replicas to run
   replicaCount: 1
 
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
+
+  # -- hpa overrides global.hpa for this deployment. Same fields as global.
+  hpa: {}
+
   # -- Set pod resource requests & limits
   resources:
     limits:
@@ -864,6 +929,12 @@ auth:
   priorityClassName: ""
 
 controller:
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
+
+  # -- hpa overrides global.hpa for this deployment. Same fields as global.
+  hpa: {}
   image:
     # -- Lunar mcpx-hive-controller image repository
     repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-controller
@@ -1087,6 +1158,13 @@ router:
   # -- number of replicas to run
   replicaCount: 1
 
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
+
+  # -- hpa overrides global.hpa for this deployment. Same fields as global.
+  hpa: {}
+
   # -- Set pod resource requests & limits
   resources:
     limits:
@@ -1192,6 +1270,13 @@ ui:
 
   # -- number of replicas to run
   replicaCount: 1
+
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
+
+  # -- hpa overrides global.hpa for this deployment. Same fields as global.
+  hpa: {}
 
   # -- Set pod resource requests & limits
   resources:

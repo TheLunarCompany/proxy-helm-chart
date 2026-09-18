@@ -123,17 +123,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Create the name of the service account to use
-*/}}
-{{- define "lunar-mcpx-webapp.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "lunar-mcpx-webapp.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
-{{- end }}
-
-{{/*
 Renders a value that contains template.
 Usage:
 {{ include "lunar-mcpx-webapp.tplvalues.render" ( dict "value" .Values.path.to.the.Value "context" $) }}
@@ -205,4 +194,40 @@ Usage:
   value: {{ . | quote }}
 {{- end }}
 {{- end }}
+{{- end }}
+
+{{/*
+Whether HPA is enabled for a service key (global.hpa + per-service override,
+service-level wins). Renders "true" or nothing, so `if`/`not` work directly.
+Usage: {{ if include "lunar-mcpx-webapp.hpaEnabled" (dict "key" "router" "context" $) }}
+*/}}
+{{- define "lunar-mcpx-webapp.hpaEnabled" -}}
+{{- $ghpa := .context.Values.global.hpa | default dict -}}
+{{- $shpa := (get .context.Values .key).hpa | default dict -}}
+{{- if ternary $shpa.enabled ($ghpa.enabled | default false) (hasKey $shpa "enabled") -}}true{{- end -}}
+{{- end -}}
+
+{{/*
+Effective hpa.minReplicas for a service key. Also used by pdb.yaml's
+replica-floor check once a service's HPA owns its replica count.
+Usage: {{ include "lunar-mcpx-webapp.hpaMinReplicas" (dict "key" "router" "context" $) }}
+*/}}
+{{- define "lunar-mcpx-webapp.hpaMinReplicas" -}}
+{{- $ghpa := .context.Values.global.hpa | default dict -}}
+{{- $shpa := (get .context.Values .key).hpa | default dict -}}
+{{- ternary $shpa.minReplicas ($ghpa.minReplicas | default 2) (hasKey $shpa "minReplicas") -}}
+{{- end -}}
+
+{{/*
+Container securityContext fields required by Pod Security Standards
+"restricted" beyond what each template already sets: a seccomp profile
+and dropping all capabilities.
+Usage:
+{{- include "lunar-mcpx-webapp.restrictedSeccompAndCaps" . | nindent 12 }}
+*/}}
+{{- define "lunar-mcpx-webapp.restrictedSeccompAndCaps" -}}
+seccompProfile:
+  type: RuntimeDefault
+capabilities:
+  drop: ["ALL"]
 {{- end }}
