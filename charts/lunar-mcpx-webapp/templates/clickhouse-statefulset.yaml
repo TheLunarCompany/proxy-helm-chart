@@ -3,10 +3,10 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse
+  name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "clickhouse") }}
   labels:
-    name: {{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse
-    app: {{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse
+    name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "clickhouse") }}
+    app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "clickhouse") }}
     {{- with .Values.global.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -16,7 +16,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: {{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse
+      app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "clickhouse") }}
       {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 6 }}
       {{- with .Values.global.labels }}
       {{- toYaml . | nindent 6 }}
@@ -27,13 +27,13 @@ spec:
       {{- with .Values.clickhouse.podLabels }}
       {{- toYaml . | nindent 6 }}
       {{- end }}
-  serviceName: {{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse
+  serviceName: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "clickhouse") }}
   # Single-node ClickHouse — deliberately not scaled; one replica handles event store analytics.
   replicas: 1
   template:
     metadata:
       labels:
-        app: {{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse
+        app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "clickhouse") }}
         {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 8 }}
         {{- with .Values.global.labels }}
         {{- toYaml . | nindent 8 }}
@@ -104,7 +104,7 @@ spec:
       volumes:
         - name: system-log-config
           configMap:
-            name: {{ include "lunar-mcpx-webapp.fullname" . }}-clickhouse-config
+            name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "clickhouse-config") }}
       {{- end }}
       {{- with .Values.clickhouse.nodeSelector }}
       nodeSelector:

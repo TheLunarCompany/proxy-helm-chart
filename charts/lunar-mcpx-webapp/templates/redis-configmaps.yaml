@@ -2,10 +2,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" . }}-redis-config
+  name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "redis-config") }}
   labels:
-    name: {{ include "lunar-mcpx-webapp.fullname" . }}-redis-config
-    app: {{ include "lunar-mcpx-webapp.fullname" . }}-redis
+    name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "redis-config") }}
+    app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "redis") }}
     {{- with .Values.global.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}

@@ -5,7 +5,7 @@
 {{- end }}
 {{- include "lunar-mcpx-webapp.adminCronJob" (dict
   "root" .
-  "jobName" "seed-system-config-dry"
+  "jobName" "seed-sysconf-dry"
   "command" (list "node" "dist/index.js" "seed-system-config")
   "extraEnv" $env
 ) }}

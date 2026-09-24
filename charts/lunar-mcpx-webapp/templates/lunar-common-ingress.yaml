@@ -1,5 +1,4 @@
 {{- if .Values.ingress.enabled | default true }}
-{{- $xfullname := include "lunar-mcpx-webapp.fullname" . }}
 {{- if eq .Values.ingress.type "gce" }}
 {{- if .Values.ingress.https.enabled }}
 {{- range $key, $value := .Values.ingress.domains }}
@@ -7,10 +6,10 @@
 apiVersion: networking.gke.io/v1
 kind: ManagedCertificate
 metadata:
-  name: {{ printf "%s-%s" $xfullname $key }}
+  name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" $ "suffix" $key) }}
   labels:
-    name: {{ printf "%s-%s" $xfullname $key }}
-    app: {{ printf "%s-%s" $xfullname $key }}
+    name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" $ "suffix" $key) }}
+    app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" $ "suffix" $key) }}
 spec:
   domains:
     {{- range $value }}
@@ -62,7 +61,7 @@ metadata:
     networking.gke.io/managed-certificates:
       {{- $newList := list -}}
       {{- range $key, $value := .Values.ingress.domains -}}
-      {{- $newList = append $newList (printf "%s-%s" $xfullname $key) -}}
+      {{- $newList = append $newList (include "lunar-mcpx-webapp.resourceName" (dict "root" $ "suffix" $key)) -}}
       {{- end }}
       {{ join "," $newList }}
     {{- end }}
@@ -97,7 +96,7 @@ spec:
         paths:
           - backend:
               service:
-                name: {{ $xfullname }}-{{ $key }}
+                name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" $ "suffix" $key) }}
                 port:
                   number: 80
             path: /
@@ -105,7 +104,7 @@ spec:
           {{- if eq $key "webserver" }}
           - backend:
               service:
-                name: {{ $xfullname }}-{{ $key }}
+                name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" $ "suffix" $key) }}
                 port:
                   number: 80
             path: /ui/v1
