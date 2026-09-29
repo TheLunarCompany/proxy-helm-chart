@@ -4,10 +4,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" . }}-controller
+  name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "controller") }}
   labels:
-    name: {{ include "lunar-mcpx-webapp.fullname" . }}-controller
-    app: {{ include "lunar-mcpx-webapp.fullname" . }}-controller
+    name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "controller") }}
+    app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "controller") }}
     {{- with .Values.global.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -20,7 +20,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      app: {{ include "lunar-mcpx-webapp.fullname" . }}-controller
+      app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "controller") }}
       {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 6 }}
       {{- with .Values.global.labels }}
       {{- toYaml . | nindent 6 }}
@@ -34,7 +34,7 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ include "lunar-mcpx-webapp.fullname" . }}-controller
+        app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "controller") }}
         {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 8 }}
         {{- with .Values.global.labels }}
         {{- toYaml . | nindent 8 }}
@@ -46,7 +46,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      serviceAccountName: {{ include "lunar-mcpx-webapp.fullname" . }}-controller
+      serviceAccountName: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "controller") }}
       automountServiceAccountToken: true
       securityContext:
         runAsNonRoot: true
@@ -89,7 +89,7 @@ spec:
             {{- end }}
           envFrom:
             - secretRef:
-                name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
+                name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "embedded") }}
           {{- with .Values.global.extraEnvFromSecrets }}
           {{- range $.Values.global.extraEnvFromSecrets }}
             - secretRef:
@@ -125,9 +125,9 @@ spec:
             - name: MCPX_KIND
               value: "MCPx"
             - name: HUB_WS_URL
-              value: ws://{{ include "lunar-mcpx-webapp.fullname" . }}-hub
+              value: ws://{{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "hub") }}
             - name: UI_SERVICE_NAME
-              value: "{{ include "lunar-mcpx-webapp.fullname" . }}-ui"
+              value: "{{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "ui") }}"
             - name: MCPX_CRD_SCHEMA_VERSION_CHECK_STRICT
               value: "{{ .Values.controller.mcpxCRD.schemaVersionStrictCheck | default true }}"
             - name: MCPX_CRD_SCHEMA_EXPECTED_VERSION

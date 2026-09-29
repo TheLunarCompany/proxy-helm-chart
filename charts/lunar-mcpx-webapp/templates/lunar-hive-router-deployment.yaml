@@ -4,10 +4,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" . }}-router
+  name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "router") }}
   labels:
-    name: {{ include "lunar-mcpx-webapp.fullname" . }}-router
-    app: {{ include "lunar-mcpx-webapp.fullname" . }}-router
+    name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "router") }}
+    app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "router") }}
     {{- with .Values.global.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -20,7 +20,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      app: {{ include "lunar-mcpx-webapp.fullname" . }}-router
+      app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "router") }}
       {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 6 }}
       {{- with .Values.global.labels }}
       {{- toYaml . | nindent 6 }}
@@ -34,7 +34,7 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ include "lunar-mcpx-webapp.fullname" . }}-router
+        app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "router") }}
         {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 8 }}
         {{- with .Values.global.labels }}
         {{- toYaml . | nindent 8 }}
@@ -85,7 +85,7 @@ spec:
             {{- end }}
           envFrom:
             - secretRef:
-                name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
+                name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "embedded") }}
           {{- with .Values.global.extraEnvFromSecrets }}
           {{- range $.Values.global.extraEnvFromSecrets }}
             - secretRef:
@@ -118,8 +118,8 @@ spec:
             - name: CORS_ORIGINS
               value: "https://{{ first .Values.ingress.domains.ui }}"
             - name: WEBSERVER_URL
-              value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-webserver:4000"
-            {{- $defaultOidcJwksUri := printf "http://%s-auth/.well-known/jwks.json" (include "lunar-mcpx-webapp.fullname" .) }}
+              value: "http://{{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "webserver") }}:4000"
+            {{- $defaultOidcJwksUri := printf "http://%s/.well-known/jwks.json" (include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "auth")) }}
             - name: OIDC_JWKS_URI
               value: {{ .Values.router.oidcJwksUri | default $defaultOidcJwksUri | quote }}
           {{- if .Values.ingress.enabled }}

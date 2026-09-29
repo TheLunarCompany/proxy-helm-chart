@@ -3,10 +3,10 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" . }}-postgres
+  name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "postgres") }}
   labels:
-    name: {{ include "lunar-mcpx-webapp.fullname" . }}-postgres
-    app: {{ include "lunar-mcpx-webapp.fullname" . }}-postgres
+    name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "postgres") }}
+    app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "postgres") }}
     {{- with .Values.global.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -16,7 +16,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: {{ include "lunar-mcpx-webapp.fullname" . }}-postgres
+      app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "postgres") }}
       {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 6 }}
       {{- with .Values.global.labels }}
       {{- toYaml . | nindent 6 }}
@@ -32,7 +32,7 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ include "lunar-mcpx-webapp.fullname" . }}-postgres
+        app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "postgres") }}
         {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 8 }}
         {{- with .Values.global.labels }}
         {{- toYaml . | nindent 8 }}
@@ -60,7 +60,7 @@ spec:
             {{- include "lunar-mcpx-webapp.restrictedSeccompAndCaps" . | nindent 12 }}
           envFrom:
             - secretRef:
-                name: {{ include "lunar-mcpx-webapp.fullname" . }}-postgres-env
+                name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "postgres-env") }}
           env:
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata/17

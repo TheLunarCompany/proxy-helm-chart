@@ -3,10 +3,10 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" . }}-redis
+  name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "redis") }}
   labels:
-    name: {{ include "lunar-mcpx-webapp.fullname" . }}-redis
-    app: {{ include "lunar-mcpx-webapp.fullname" . }}-redis
+    name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "redis") }}
+    app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "redis") }}
     {{- with .Values.global.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -16,7 +16,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: {{ include "lunar-mcpx-webapp.fullname" . }}-redis
+      app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "redis") }}
       {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 6 }}
       {{- with .Values.global.labels }}
       {{- toYaml . | nindent 6 }}
@@ -32,7 +32,7 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ include "lunar-mcpx-webapp.fullname" . }}-redis
+        app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "redis") }}
         {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 8 }}
         {{- with .Values.global.labels }}
         {{- toYaml . | nindent 8 }}
@@ -98,7 +98,7 @@ spec:
       volumes:
         - name: conf
           configMap:
-            name: {{ include "lunar-mcpx-webapp.fullname" . }}-redis-config
+            name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "redis-config") }}
             defaultMode: 0644
       {{- with .Values.redis.nodeSelector }}
       nodeSelector:
