@@ -1,0 +1,19 @@
+charts/lunar-mcpx-webapp/templates/_helpers.tpl
+  s_02a56a3a92f72d::t_81f7557d29399b 188-190
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "d7cadedeee25da51ebb53d304e83216599fb2b11",
+  "prompts": {},
+  "sessions": {
+    "s_02a56a3a92f72d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edde1b72-7fa5-457b-83da-80b5cff405b8",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Sid Kumar <siddhant.kumar@boomi.com>"
+    }
+  }
+}
