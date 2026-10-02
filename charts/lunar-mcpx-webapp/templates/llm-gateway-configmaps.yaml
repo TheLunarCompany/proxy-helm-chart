@@ -1,0 +1,230 @@
+{{- if .Values.llmGateway.enabled }}
+{{- if not .Values.llmGateway.flowsConfigMap }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-llm-gateway-flows
+data:
+  phase1-passthrough.yaml: |
+    name: Phase1Passthrough
+    filter:
+      url: "*"
+    processors:
+      router:
+        processor: Router
+      helloProbe:
+        processor: Filter
+        parameters:
+          - key: endpoint
+            value: /api/hello
+          - key: methods
+            value: [GET, HEAD]
+      hello:
+        processor: GenerateResponse
+        parameters:
+          - key: status
+            value: 200
+          - key: Content-Type
+            value: application/json
+          - key: body
+            value: '{"message":"hello"}'
+      noRoute:
+        processor: GenerateResponse
+        parameters:
+          - key: status
+            value: 400
+          - key: Content-Type
+            value: application/json
+          - key: body
+            value: '{"error":{"code":"no_route","correlation_id":"{{ "{{correlation_id}}" }}"}}'
+      frame:
+        processor: Frame
+      usage:
+        processor: Usage
+    flow:
+      request:
+        - from:
+            stream:
+              name: globalStream
+              at: start
+          to:
+            processor:
+              name: router
+        - from:
+            processor:
+              name: router
+              condition: resolved
+          to:
+            stream:
+              name: globalStream
+              at: end
+        - from:
+            processor:
+              name: router
+              condition: unresolved
+          to:
+            processor:
+              name: helloProbe
+        - from:
+            processor:
+              name: helloProbe
+              condition: hit
+          to:
+            processor:
+              name: hello
+        - from:
+            processor:
+              name: helloProbe
+              condition: miss
+          to:
+            processor:
+              name: noRoute
+      response:
+        - from:
+            processor:
+              name: noRoute
+          to:
+            stream:
+              name: globalStream
+              at: end
+        - from:
+            processor:
+              name: hello
+          to:
+            stream:
+              name: globalStream
+              at: end
+        - from:
+            stream:
+              name: globalStream
+              at: start
+          to:
+            processor:
+              name: frame
+        - from:
+            processor:
+              name: frame
+          to:
+            processor:
+              name: usage
+        - from:
+            processor:
+              name: usage
+          to:
+            stream:
+              name: globalStream
+              at: end
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-llm-gateway-processors
+data:
+  router_processor.yaml: |
+    name: Router
+    description: Resolves the provider host from x-boomi-host.
+    exec: router_processor.go
+    metrics:
+      enabled: false
+      labels: []
+    parameters:
+      host_header:
+        type: string
+        description: the request header that names the destination host
+        default: x-boomi-host
+        required: false
+    output_streams:
+      - name: resolved
+        type: StreamTypeRequest
+      - name: unresolved
+        type: StreamTypeRequest
+    input_stream:
+      type: StreamTypeRequest
+  filter_processor.yaml: |
+    name: Filter
+    description: Processor for if-else conditions in the flow.
+    exec: filter_processor.go
+    metrics:
+      enabled: false
+      labels: []
+    parameters:
+      endpoint:
+        type: string
+        description: filtering by endpoint
+        required: false
+      methods:
+        type: list_of_strings
+        description: filtering by methods
+        required: false
+    output_streams:
+      - name: hit
+        type: StreamTypeAny
+      - name: miss
+        type: StreamTypeAny
+    input_stream:
+      type: StreamTypeAny
+  generate_response_processor.yaml: |
+    name: GenerateResponse
+    description: Generates a response.
+    exec: generate_response_processor.go
+    metrics:
+      enabled: false
+      labels: []
+    parameters:
+      status:
+        type: string
+        description: status code
+        default: 200
+        required: false
+      body:
+        type: string
+        description: response body
+        default: OK
+        required: false
+      Content-Type:
+        type: string
+        description: content type
+        default: text/plain
+        required: false
+    output_streams:
+      - type: StreamTypeResponse
+    input_stream:
+      type: StreamTypeRequest
+  frame_processor.yaml: |
+    name: Frame
+    description: Turns provider reads into whole events.
+    exec: frame_processor.go
+    output_streams:
+      - type: StreamTypeResponse
+      - type: StreamTypeChunk
+    input_stream:
+      type: StreamTypeChunk
+  usage_processor.yaml: |
+    name: Usage
+    description: Records token usage.
+    exec: usage_processor.go
+    output_streams:
+      - type: StreamTypeResponse
+    input_stream:
+      type: StreamTypeResponse
+{{- end }}
+
+{{- if .Values.llmGatewayHub.enabled }}
+{{- if not .Values.llmGatewayHub.fixturesConfigMap }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-llm-gateway-hub-fixtures
+data:
+  config.json: |
+    {
+      "marker": 1,
+      "config": {
+        "flows": [],
+        "runtimeSettings": {}
+      }
+    }
+{{- end }}
+{{- end }}

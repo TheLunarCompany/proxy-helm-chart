@@ -1,0 +1,117 @@
+suite: LLM gateway services
+templates:
+  - templates/llm-gateway-deployment.yaml
+  - templates/llm-gateway-service.yaml
+  - templates/llm-gateway-hub-deployment.yaml
+  - templates/llm-gateway-hub-service.yaml
+  - templates/hpa.yaml
+  - templates/pdb.yaml
+
+release:
+  name: my-release
+
+values:
+  - llm_gateway_test_values.yaml
+
+tests:
+  - it: renders the gateway and hub with distinct service names
+    template: templates/llm-gateway-deployment.yaml
+    asserts:
+      - equal:
+          path: metadata.name
+          value: my-release-lunar-mcpx-webapp-llm-gateway
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: HUB_URL
+            value: ws://my-release-lunar-mcpx-webapp-llm-gateway-hub:3011
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: flows
+            mountPath: /etc/llm-gateway/flows
+            readOnly: true
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: processors
+            mountPath: /etc/llm-gateway/processors
+            readOnly: true
+
+  - it: probes the hub readiness endpoint
+    template: templates/llm-gateway-hub-deployment.yaml
+    asserts:
+      - equal:
+          path: metadata.name
+          value: my-release-lunar-mcpx-webapp-llm-gateway-hub
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+          value: /readyz
+      - equal:
+          path: spec.template.spec.containers[0].livenessProbe.httpGet.path
+          value: /livez
+
+  - it: exposes the gateway service port
+    template: templates/llm-gateway-service.yaml
+    asserts:
+      - equal:
+          path: spec.ports[0].port
+          value: 8000
+      - equal:
+          path: spec.ports[0].targetPort
+          value: http
+
+  - it: exposes the hub service port
+    template: templates/llm-gateway-hub-service.yaml
+    asserts:
+      - equal:
+          path: spec.ports[0].port
+          value: 3011
+      - equal:
+          path: spec.ports[0].targetPort
+          value: http
+
+  - it: HPA uses the kebab-case service slug, not the raw camelCase values key
+    template: templates/hpa.yaml
+    set:
+      llmGateway:
+        hpa:
+          enabled: true
+          targetCPUUtilizationPercentage: 70
+    asserts:
+      - equal:
+          path: metadata.name
+          value: my-release-lunar-mcpx-webapp-llm-gateway
+      - equal:
+          path: spec.scaleTargetRef.name
+          value: my-release-lunar-mcpx-webapp-llm-gateway
+
+  - it: hub HPA uses the kebab-case service slug too
+    template: templates/hpa.yaml
+    set:
+      llmGatewayHub:
+        hpa:
+          enabled: true
+          targetCPUUtilizationPercentage: 70
+    asserts:
+      - equal:
+          path: metadata.name
+          value: my-release-lunar-mcpx-webapp-llm-gateway-hub
+      - equal:
+          path: spec.scaleTargetRef.name
+          value: my-release-lunar-mcpx-webapp-llm-gateway-hub
+
+  - it: PDB uses the kebab-case service slug and a selector matching the real pod label
+    template: templates/pdb.yaml
+    set:
+      llmGateway:
+        replicaCount: 2
+        pdb:
+          enabled: true
+    asserts:
+      - equal:
+          path: metadata.name
+          value: my-release-lunar-mcpx-webapp-llm-gateway
+      - equal:
+          path: spec.selector.matchLabels.app
+          value: my-release-lunar-mcpx-webapp-llm-gateway
