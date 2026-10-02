@@ -1,0 +1,128 @@
+global:
+  imagePullSecrets: []
+  encryptionKey: "H4C8gvOfbIELzNz4+BYU47Vh/JmL7sZgUdYWyf44oo0="
+  caCerts:
+    # mkcert's local root CA, so in-cluster services (auth-bff, webserver, router, controller)
+    # trust the public *.example.com ingress hostnames when calling them over HTTPS.
+    secretName: mcpx-keycloak-ca
+  extraEnvFromSecrets:
+    - mcpx-local-secrets
+  extraEnvVars:
+    - name: SESSION_SECRET
+      value: "aigw-38-local-session-secret"
+    - name: SESSION_COOKIE_DOMAIN
+      value: example.com
+    - name: LOG_LEVEL
+      value: debug
+
+postgres:
+  enabled: true
+redis:
+  enabled: true
+clickhouse:
+  enabled: true
+  credentialsSecret: mcpx-clickhouse
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1024Mi
+    limits:
+      cpu: 2000m
+      memory: 2048Mi
+
+webserver:
+  image:
+    repository: mcpx-webserver
+    tag: local
+  extraEnvVars:
+    - name: HIVE_DEFAULT_MCPX_IMAGE_REPO
+      value: mcpx-server
+    - name: HIVE_DEFAULT_MCPX_IMAGE_TAG
+      value: local
+    - name: PUBLIC_URL
+      value: https://mcpx-app.example.com
+    - name: MCPX_PUBLIC_URL
+      value: https://mcpx.example.com
+
+auth:
+  image:
+    repository: mcpx-auth-bff
+    tag: local
+  extraEnvVars:
+    - name: OIDC_CLIENT_ID
+      value: mcpx-local
+    - name: OIDC_CLIENT_SECRET
+      value: mcpx-local-secret
+    - name: OIDC_ISSUER
+      value: https://keycloak.example.com/realms/mcpx
+    - name: OIDC_REDIRECT_URI
+      value: https://mcpx-auth.example.com/callback
+    - name: JWT_ISSUER
+      value: https://mcpx-auth.example.com
+    - name: OIDC_ROLES_CLAIM
+      value: groups
+    - name: OIDC_MAPPED_ADMIN_ROLES
+      value: mcpx-admin
+    - name: OIDC_MAPPED_MEMBER_ROLES
+      value: mcpx-member
+
+hub:
+  image:
+    repository: mcpx-hub
+    tag: local
+
+router:
+  image:
+    repository: mcpx-router
+    tag: local
+
+controller:
+  image:
+    repository: mcpx-hive-controller
+    tag: local
+
+admin:
+  image:
+    repository: mcpx-admin-ui
+    tag: local
+
+ui:
+  image:
+    repository: mcpx-ui
+    tag: local
+
+jobs:
+  image:
+    repository: mcpx-jobs
+    tag: local
+
+llmGateway:
+  enabled: true
+  image:
+    repository: llm-gateway
+    tag: local
+  extraEnvFromSecrets:
+    - llm-gateway-token
+llmGatewayHub:
+  enabled: true
+  image:
+    repository: llm-gateway-hub
+    tag: local
+  extraEnvFromSecrets:
+    - llm-gateway-token
+
+# Keep the chart's default hostnames so the auth/CORS chain is exercised via local ingress.
+ingress:
+  enabled: true
+  type: nginx
+  ingressClassName: nginx
+  https:
+    enabled: true
+    tls:
+      - hosts:
+          - mcpx-app.example.com
+          - mcpx-admin.example.com
+          - mcpx-auth.example.com
+          - mcpx-ui.example.com
+          - mcpx.example.com
+        secretName: mcpx-local-tls
