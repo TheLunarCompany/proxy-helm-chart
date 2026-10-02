@@ -1,0 +1,52 @@
+charts/lunar-mcpx-webapp/templates/llm-gateway-deployment.yaml
+  s_02a56a3a92f72d::t_6ff2fd1d87ccbf 1-161
+charts/lunar-mcpx-webapp/templates/llm-gateway-service.yaml
+  s_02a56a3a92f72d::t_22447f9898fdf6 1-25
+charts/lunar-mcpx-webapp/templates/pdb.yaml
+  s_02a56a3a92f72d::t_790b67077f020a 4
+  s_02a56a3a92f72d::t_6b142522eed350 5
+  s_02a56a3a92f72d::t_a61f85e44daed0 28,30,43
+charts/lunar-mcpx-webapp/tests/llm_gateway_test.yaml
+  s_02a56a3a92f72d::t_49c01f6f9ef414 3-6,18,42,55,65
+  s_02a56a3a92f72d::t_a030899eec734b 39
+  s_02a56a3a92f72d::t_5952c01709f850 33
+  s_02a56a3a92f72d::t_2f161f5daae6cd 1-2,9-17,19-32,34-38,40-41,43-53,56-62,66-72
+  s_02a56a3a92f72d::t_c907a52d4d0ec3 54,63-64
+  s_02a56a3a92f72d::t_3c9dd2d24c2d73 7-8
+  s_02a56a3a92f72d::t_fe82a2a8cc5ec8 73-75
+  s_02a56a3a92f72d::t_37e5eb18d050bc 76-117
+charts/lunar-mcpx-webapp/values.schema.json
+  s_02a56a3a92f72d::t_954f431781a9f4 755-817
+charts/lunar-mcpx-webapp/tests/llm_gateway_test_values.yaml
+  s_02a56a3a92f72d::t_b32509a4996e62 1-15
+charts/lunar-mcpx-webapp/values.yaml
+  s_02a56a3a92f72d::t_17157d4070d3b4 1084-1158
+charts/lunar-mcpx-webapp/templates/llm-gateway-hub-service.yaml
+  s_02a56a3a92f72d::t_c0d086342faef4 1-25
+charts/lunar-mcpx-webapp/templates/llm-gateway-configmaps.yaml
+  s_02a56a3a92f72d::t_984d9691c8958e 1-230
+charts/lunar-mcpx-webapp/templates/llm-gateway-hub-deployment.yaml
+  s_02a56a3a92f72d::t_9f05b3e21f7009 1-151
+charts/lunar-mcpx-webapp/templates/hpa.yaml
+  s_02a56a3a92f72d::t_381d7f0fb0d6e5 4
+  s_02a56a3a92f72d::t_040691e59240f4 5
+  s_02a56a3a92f72d::t_3edea307b4f3f5 30,32,41
+charts/lunar-mcpx-webapp/templates/_helpers.tpl
+  s_02a56a3a92f72d::t_2ced9c330569d0 187-199
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "47238709f7700d81aae1559fca6a04a1edfb9767",
+  "prompts": {},
+  "sessions": {
+    "s_02a56a3a92f72d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edde1b72-7fa5-457b-83da-80b5cff405b8",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Sid Kumar <siddhant.kumar@boomi.com>"
+    }
+  }
+}
