@@ -6,7 +6,7 @@
 #   2. Build all 11 images from lunar-private on the host docker daemon, load them into minikube.
 #   3. Deploy a disposable in-cluster Keycloak and import a realm/client/user/groups-scope
 #      via a single `kcadm.sh create realms -f realm.json` call (scriptable, not UI clicking).
-#   4. helm install/upgrade the chart with minikube-values.yaml.
+#   4. helm install/upgrade both charts (lunar-mcpx-webapp + llm-gateway) with their values files.
 #   5. Wait for every pod to be Ready.
 #   6. Wire up host->ingress access (minikube tunnel + ingress Service patch + /etc/hosts).
 #   7. Print the URLs to open and the test user's credentials.
@@ -34,7 +34,10 @@ NAMESPACE="mcpx-hive"
 RELEASE="mcpx"
 MINIKUBE_PROFILE="${MINIKUBE_PROFILE:-minikube}"
 VALUES_FILE="$SCRIPT_DIR/minikube-values.yaml"
-CHART_DIR="$SCRIPT_DIR/charts/lunar-mcpx-webapp"
+LLM_GATEWAY_VALUES_FILE="$SCRIPT_DIR/minikube-values-llm-gateway.yaml"
+WEBAPP_CHART_DIR="$SCRIPT_DIR/charts/lunar-mcpx-webapp"
+LLM_GATEWAY_CHART_DIR="$SCRIPT_DIR/charts/llm-gateway"
+LLM_GATEWAY_RELEASE="llm-gateway"
 
 HOSTS=(mcpx-app.example.com mcpx-admin.example.com mcpx-auth.example.com mcpx-ui.example.com mcpx.example.com keycloak.example.com)
 
@@ -441,9 +444,16 @@ rm -f "${REALM_JSON:-}" "${GROUPS_SCOPE_JSON:-}"
 # ------------------------------------------------------------------------------------------------
 log "Step 5/8: helm install/upgrade"
 # ------------------------------------------------------------------------------------------------
-helm upgrade --install "$RELEASE" "$CHART_DIR" \
+helm upgrade --install "$RELEASE" "$WEBAPP_CHART_DIR" \
   -n "$NAMESPACE" --create-namespace \
   -f "$VALUES_FILE" \
+  --timeout 10m
+
+# llm-gateway/llm-gateway-hub live in their own chart (not vendored into lunar-mcpx-webapp), so
+# this is a second, separate release in the same namespace.
+helm upgrade --install "$LLM_GATEWAY_RELEASE" "$LLM_GATEWAY_CHART_DIR" \
+  -n "$NAMESPACE" --create-namespace \
+  -f "$LLM_GATEWAY_VALUES_FILE" \
   --timeout 10m
 
 log "waiting for all pods in $NAMESPACE to become Ready"

@@ -96,21 +96,6 @@ jobs:
     repository: mcpx-jobs
     tag: local
 
-llmGateway:
-  enabled: true
-  image:
-    repository: llm-gateway
-    tag: local
-  extraEnvFromSecrets:
-    - llm-gateway-token
-llmGatewayHub:
-  enabled: true
-  image:
-    repository: llm-gateway-hub
-    tag: local
-  extraEnvFromSecrets:
-    - llm-gateway-token
-
 # Keep the chart's default hostnames so the auth/CORS chain is exercised via local ingress.
 ingress:
   enabled: true

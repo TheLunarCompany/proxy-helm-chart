@@ -1,0 +1,14 @@
+gateway:
+  enabled: true
+  image:
+    repository: llm-gateway
+    tag: local
+  extraEnvFromSecrets:
+    - llm-gateway-token
+hub:
+  enabled: true
+  image:
+    repository: llm-gateway-hub
+    tag: local
+  extraEnvFromSecrets:
+    - llm-gateway-token

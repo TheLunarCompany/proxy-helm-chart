@@ -22,6 +22,7 @@ set -euo pipefail
 
 NAMESPACE="mcpx-hive"
 RELEASE="mcpx"
+LLM_GATEWAY_RELEASE="llm-gateway"
 MINIKUBE_PROFILE="${MINIKUBE_PROFILE:-minikube}"
 FULL=false
 
@@ -36,6 +37,9 @@ log() { printf '\n[teardown] %s\n' "$*"; }
 
 log "uninstalling helm release '$RELEASE' (namespace $NAMESPACE)"
 helm uninstall "$RELEASE" -n "$NAMESPACE" 2>/dev/null || log "release not found, skipping"
+
+log "uninstalling helm release '$LLM_GATEWAY_RELEASE' (namespace $NAMESPACE)"
+helm uninstall "$LLM_GATEWAY_RELEASE" -n "$NAMESPACE" 2>/dev/null || log "release not found, skipping"
 
 log "deleting disposable Keycloak resources"
 kubectl delete ingress keycloak -n "$NAMESPACE" --ignore-not-found
