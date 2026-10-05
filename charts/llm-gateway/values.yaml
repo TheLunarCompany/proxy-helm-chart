@@ -1,0 +1,72 @@
+imagePullSecrets: []
+
+gateway:
+  # -- Enable the LLM gateway transport service.
+  enabled: true
+  image:
+    # -- LLM gateway image repository.
+    repository: llm-gateway
+    # -- LLM gateway image pull policy.
+    pullPolicy: IfNotPresent
+    # -- LLM gateway image tag.
+    tag: ""
+  # -- Hub origin. When empty and hub is enabled, the chart uses the
+  # in-cluster hub Service automatically.
+  hubUrl: ""
+  # -- ConfigMap containing flow YAML files, mounted at /etc/llm-gateway/flows.
+  flowsConfigMap: ""
+  # -- ConfigMap containing processor YAML files, mounted at /etc/llm-gateway/processors.
+  processorsConfigMap: ""
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  topologySpreadConstraints: []
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: "200m"
+      memory: 256Mi
+    requests:
+      cpu: "100m"
+      memory: 128Mi
+  extraEnvVars: []
+  extraEnvFromSecrets: []
+  labels: {}
+  podLabels: {}
+  extraInitContainers: []
+  extraContainers: []
+  priorityClassName: ""
+
+hub:
+  # -- Enable the TypeScript LLM gateway hub service.
+  enabled: true
+  image:
+    # -- LLM gateway hub image repository.
+    repository: llm-gateway-hub
+    # -- LLM gateway hub image pull policy.
+    pullPolicy: IfNotPresent
+    # -- LLM gateway hub image tag.
+    tag: ""
+  # -- ConfigMap containing the hub's config.json, mounted at
+  # /etc/llm-gateway-hub/fixtures.
+  fixturesConfigMap: ""
+  logLevel: info
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  topologySpreadConstraints: []
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: "200m"
+      memory: 256Mi
+    requests:
+      cpu: "100m"
+      memory: 128Mi
+  extraEnvVars: []
+  extraEnvFromSecrets: []
+  labels: {}
+  podLabels: {}
+  extraInitContainers: []
+  extraContainers: []
+  priorityClassName: ""

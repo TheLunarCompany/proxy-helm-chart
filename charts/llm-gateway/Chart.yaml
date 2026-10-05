@@ -1,0 +1,8 @@
+apiVersion: v2
+name: llm-gateway
+description: Helm chart for the Lunar LLM Gateway and its hub
+
+type: application
+version: "0.1.0"
+appVersion: "0.1.0"
+icon: https://storage.googleapis.com/lunar-webapp-assets/favicon/apple-touch-icon.png

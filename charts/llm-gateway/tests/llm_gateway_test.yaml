@@ -1,0 +1,70 @@
+suite: LLM gateway services
+templates:
+  - templates/gateway-deployment.yaml
+  - templates/gateway-service.yaml
+  - templates/hub-deployment.yaml
+  - templates/hub-service.yaml
+
+release:
+  name: my-release
+
+values:
+  - llm_gateway_test_values.yaml
+
+tests:
+  - it: renders the gateway and hub with distinct service names
+    template: templates/gateway-deployment.yaml
+    asserts:
+      - equal:
+          path: metadata.name
+          value: my-release-llm-gateway
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: HUB_URL
+            value: ws://my-release-llm-gateway-hub:3011
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: flows
+            mountPath: /etc/llm-gateway/flows
+            readOnly: true
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: processors
+            mountPath: /etc/llm-gateway/processors
+            readOnly: true
+
+  - it: probes the hub readiness endpoint
+    template: templates/hub-deployment.yaml
+    asserts:
+      - equal:
+          path: metadata.name
+          value: my-release-llm-gateway-hub
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+          value: /readyz
+      - equal:
+          path: spec.template.spec.containers[0].livenessProbe.httpGet.path
+          value: /livez
+
+  - it: exposes the gateway service port
+    template: templates/gateway-service.yaml
+    asserts:
+      - equal:
+          path: spec.ports[0].port
+          value: 8000
+      - equal:
+          path: spec.ports[0].targetPort
+          value: http
+
+  - it: exposes the hub service port
+    template: templates/hub-service.yaml
+    asserts:
+      - equal:
+          path: spec.ports[0].port
+          value: 3011
+      - equal:
+          path: spec.ports[0].targetPort
+          value: http

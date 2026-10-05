@@ -1,9 +1,9 @@
-{{- if .Values.llmGateway.enabled }}
-{{- if not .Values.llmGateway.flowsConfigMap }}
+{{- if .Values.gateway.enabled }}
+{{- if not .Values.gateway.flowsConfigMap }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" . }}-llm-gateway-flows
+  name: {{ include "llm-gateway.fullname" . }}-flows
 data:
   phase1-passthrough.yaml: |
     name: Phase1Passthrough
@@ -119,7 +119,7 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" . }}-llm-gateway-processors
+  name: {{ include "llm-gateway.fullname" . }}-processors
 data:
   router_processor.yaml: |
     name: Router
@@ -210,13 +210,13 @@ data:
       type: StreamTypeResponse
 {{- end }}
 
-{{- if .Values.llmGatewayHub.enabled }}
-{{- if not .Values.llmGatewayHub.fixturesConfigMap }}
+{{- if .Values.hub.enabled }}
+{{- if not .Values.hub.fixturesConfigMap }}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" . }}-llm-gateway-hub-fixtures
+  name: {{ include "llm-gateway.fullname" . }}-hub-fixtures
 data:
   config.json: |
     {

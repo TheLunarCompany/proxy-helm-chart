@@ -1,0 +1,141 @@
+{{- if .Values.gateway.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "llm-gateway.fullname" . }}
+  labels:
+    name: {{ include "llm-gateway.fullname" . }}
+    app: {{ include "llm-gateway.fullname" . }}
+    {{- with .Values.gateway.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  replicas: {{ .Values.gateway.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ include "llm-gateway.fullname" . }}
+      {{- include "llm-gateway.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "llm-gateway.fullname" . }}
+        {{- include "llm-gateway.selectorLabels" . | nindent 8 }}
+        {{- with .Values.gateway.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.gateway.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.gateway.extraInitContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: llm-gateway
+          image: "{{ .Values.gateway.image.repository }}:{{ .Values.gateway.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.gateway.image.pullPolicy }}
+          ports:
+            - containerPort: 8000
+              name: http
+          resources:
+            limits:
+              {{- toYaml .Values.gateway.resources.limits | nindent 14 }}
+            requests:
+              {{- toYaml .Values.gateway.resources.requests | nindent 14 }}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
+            capabilities:
+              drop: ["ALL"]
+            runAsUser: 65532
+            runAsGroup: 65532
+          {{- with .Values.gateway.extraEnvFromSecrets }}
+          envFrom:
+            {{- range . }}
+            - secretRef:
+                name: {{ . }}
+            {{- end }}
+          {{- end }}
+          env:
+            - name: BIND_PORT
+              value: "8000"
+            {{- if or .Values.gateway.hubUrl .Values.hub.enabled }}
+            - name: HUB_URL
+              value: {{ .Values.gateway.hubUrl | default (printf "ws://%s-hub:3011" (include "llm-gateway.fullname" .)) | quote }}
+            {{- end }}
+            - name: FLOWS_DIRECTORY
+              value: /etc/llm-gateway/flows
+            - name: PROCESSORS_DIRECTORY
+              value: /etc/llm-gateway/processors
+            {{- with .Values.gateway.extraEnvVars }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          startupProbe:
+            httpGet:
+              path: /
+              port: http
+            failureThreshold: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            failureThreshold: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            failureThreshold: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: flows
+              mountPath: /etc/llm-gateway/flows
+              readOnly: true
+            - name: processors
+              mountPath: /etc/llm-gateway/processors
+              readOnly: true
+        {{- with .Values.gateway.extraContainers }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: flows
+          configMap:
+            name: {{ .Values.gateway.flowsConfigMap | default (printf "%s-flows" (include "llm-gateway.fullname" .)) }}
+        - name: processors
+          configMap:
+            name: {{ .Values.gateway.processorsConfigMap | default (printf "%s-processors" (include "llm-gateway.fullname" .)) }}
+      {{- with .Values.gateway.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.gateway.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range . }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+      {{- with .Values.gateway.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.gateway.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.gateway.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+{{- end }}

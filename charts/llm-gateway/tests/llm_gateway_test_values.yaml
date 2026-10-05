@@ -1,13 +1,12 @@
-global:
-  imagePullSecrets: []
-llmGateway:
+imagePullSecrets: []
+gateway:
   enabled: true
   image:
     repository: llm-gateway
     tag: local
   flowsConfigMap: gateway-flows
   processorsConfigMap: gateway-processors
-llmGatewayHub:
+hub:
   enabled: true
   image:
     repository: llm-gateway-hub

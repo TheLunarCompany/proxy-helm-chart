@@ -1,0 +1,22 @@
+{{- if .Values.hub.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "llm-gateway.fullname" . }}-hub
+  labels:
+    name: {{ include "llm-gateway.fullname" . }}-hub
+    app: {{ include "llm-gateway.fullname" . }}-hub
+    {{- with .Values.hub.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 3011
+      targetPort: http
+      protocol: TCP
+  selector:
+    app: {{ include "llm-gateway.fullname" . }}-hub
+    {{- include "llm-gateway.selectorLabels" . | nindent 4 }}
+{{- end }}

@@ -1,0 +1,131 @@
+{{- if .Values.hub.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "llm-gateway.fullname" . }}-hub
+  labels:
+    name: {{ include "llm-gateway.fullname" . }}-hub
+    app: {{ include "llm-gateway.fullname" . }}-hub
+    {{- with .Values.hub.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  replicas: {{ .Values.hub.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ include "llm-gateway.fullname" . }}-hub
+      {{- include "llm-gateway.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "llm-gateway.fullname" . }}-hub
+        {{- include "llm-gateway.selectorLabels" . | nindent 8 }}
+        {{- with .Values.hub.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.hub.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.hub.extraInitContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: llm-gateway-hub
+          image: "{{ .Values.hub.image.repository }}:{{ .Values.hub.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.hub.image.pullPolicy }}
+          ports:
+            - containerPort: 3011
+              name: http
+          resources:
+            limits:
+              {{- toYaml .Values.hub.resources.limits | nindent 14 }}
+            requests:
+              {{- toYaml .Values.hub.resources.requests | nindent 14 }}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
+            capabilities:
+              drop: ["ALL"]
+            runAsUser: 1000
+            runAsGroup: 1000
+          {{- with .Values.hub.extraEnvFromSecrets }}
+          envFrom:
+            {{- range . }}
+            - secretRef:
+                name: {{ . }}
+            {{- end }}
+          {{- end }}
+          env:
+            - name: PORT
+              value: "3011"
+            - name: LOG_LEVEL
+              value: {{ .Values.hub.logLevel | quote }}
+            - name: HUB_FIXTURES_DIR
+              value: /etc/llm-gateway-hub/fixtures
+            {{- with .Values.hub.extraEnvVars }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          startupProbe:
+            httpGet:
+              path: /livez
+              port: http
+            failureThreshold: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            failureThreshold: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: http
+            failureThreshold: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: fixtures
+              mountPath: /etc/llm-gateway-hub/fixtures
+              readOnly: true
+        {{- with .Values.hub.extraContainers }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: fixtures
+          configMap:
+            name: {{ .Values.hub.fixturesConfigMap | default (printf "%s-hub-fixtures" (include "llm-gateway.fullname" .)) }}
+      {{- with .Values.hub.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.hub.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range . }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+      {{- with .Values.hub.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.hub.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.hub.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+{{- end }}

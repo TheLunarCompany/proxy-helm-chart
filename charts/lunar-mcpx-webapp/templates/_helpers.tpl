@@ -185,17 +185,6 @@ Usage: {{ include "lunar-mcpx-webapp.hpaMinReplicas" (dict "key" "router" "conte
 {{- end -}}
 
 {{/*
-Kebab-case slug for a service values-key, for resource names/labels/selectors in hpa.yaml/
-pdb.yaml. Single-word keys (router/hub/...) equal their own slug; camelCase keys (llmGateway)
-don't, so they need an explicit mapping instead of rendering the raw key into a resource name.
-Usage: {{ include "lunar-mcpx-webapp.serviceSlug" "llmGateway" }}
-*/}}
-{{- define "lunar-mcpx-webapp.serviceSlug" -}}
-{{- $slugs := dict "llmGateway" "llm-gateway" "llmGatewayHub" "llm-gateway-hub" -}}
-{{- get $slugs . | default . -}}
-{{- end -}}
-
-{{/*
 Container securityContext fields required by Pod Security Standards
 "restricted" beyond what each template already sets: a seccomp profile
 and dropping all capabilities.
