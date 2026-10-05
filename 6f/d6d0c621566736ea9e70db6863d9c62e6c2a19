@@ -1,0 +1,28 @@
+bring-up.sh
+  s_b83b110b929d96::t_0ad5de112eb08e 37-40
+  s_b83b110b929d96::t_81a6c910263d34 447,452-456
+  s_b83b110b929d96::t_9dcfba84944d17 9
+  s_b83b110b929d96::t_a81c401c4d01a2 457-458
+teardown.sh
+  s_b83b110b929d96::t_d6beefbe808f64 41-42
+  s_b83b110b929d96::t_cd837b01cfba8c 25
+  s_b83b110b929d96::t_384e561577e112 43
+minikube-values-llm-gateway.yaml
+  s_b83b110b929d96::t_ff7aabd8140a8b 1-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "6fd6d0c621566736ea9e70db6863d9c62e6c2a19",
+  "prompts": {},
+  "sessions": {
+    "s_b83b110b929d96": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "655b7c3c-e196-4934-a90f-ed99cc7c1f82",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Sid Kumar <siddhant.kumar@boomi.com>"
+    }
+  }
+}
