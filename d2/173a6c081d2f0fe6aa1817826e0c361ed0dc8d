@@ -1,0 +1,27 @@
+charts/lunar-mcpx-webapp/templates/lunar-webserver-deployment.yaml
+  s_7741ad9c7e0761::t_be660083a764d3 231
+charts/lunar-mcpx-webapp/templates/lunar-hub-deployment.yaml
+  s_7741ad9c7e0761::t_e61d453fd3b2bd 202-209
+charts/lunar-mcpx-webapp/templates/lunar-jobs-cronjob.yaml
+  s_7741ad9c7e0761::t_6912a935e6c295 17-18
+  s_7741ad9c7e0761::t_b8bc626f74825e 23
+charts/lunar-mcpx-webapp/templates/_helpers.tpl
+  s_7741ad9c7e0761::t_67e1c0d541bfc5 42-48
+  s_7741ad9c7e0761::t_b99d9d6c3038e6 41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "d2173a6c081d2f0fe6aa1817826e0c361ed0dc8d",
+  "prompts": {},
+  "sessions": {
+    "s_7741ad9c7e0761": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e3ab3577-b3ca-4afb-94c9-628ce65bb1b1",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "EliavLunar <eliavl@lunar.dev>"
+    }
+  }
+}
