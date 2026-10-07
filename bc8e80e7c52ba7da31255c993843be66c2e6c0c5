@@ -1,0 +1,30 @@
+bring-up.sh
+  s_02a56a3a92f72d::t_88fc0f314797c3 66
+  s_02a56a3a92f72d::t_5d4a92101c31bc 142-144
+  s_02a56a3a92f72d::t_0e1e4f53f84e0a 56-57
+  s_02a56a3a92f72d::t_94e0bb933f097b 366-367
+  s_02a56a3a92f72d::t_fa63049e4e048d 370-372
+  s_02a56a3a92f72d::t_e122e62ac3bb37 219
+  s_02a56a3a92f72d::t_fc247a8018ee8a 73-75
+  s_02a56a3a92f72d::t_d337958efc1428 89
+  s_02a56a3a92f72d::t_5a8698faa0c666 430-431
+  s_02a56a3a92f72d::t_639ae038c50135 95-102
+  s_02a56a3a92f72d::t_79723bda416c21 450-451
+  s_02a56a3a92f72d::t_56798e6fede08e 111-112
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "bc8e80e7c52ba7da31255c993843be66c2e6c0c5",
+  "prompts": {},
+  "sessions": {
+    "s_02a56a3a92f72d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "edde1b72-7fa5-457b-83da-80b5cff405b8",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Sid Kumar <siddhant.kumar@boomi.com>"
+    }
+  }
+}
