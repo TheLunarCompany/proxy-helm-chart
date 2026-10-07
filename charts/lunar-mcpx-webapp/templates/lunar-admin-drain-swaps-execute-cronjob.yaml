@@ -1,7 +1,7 @@
 ---
 {{- include "lunar-mcpx-webapp.adminCronJob" (dict
   "root" .
-  "jobName" "drain-swaps-execute"
+  "jobName" "drain-swaps-exec"
   "command" (list "node" "dist/index.js" "drain-space-editing-swaps")
   "extraEnv" (list
     (dict "name" "DRY_RUN" "value" "false")

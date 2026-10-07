@@ -2,10 +2,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" . }}-hub
+  name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "hub") }}
   labels:
-    name: {{ include "lunar-mcpx-webapp.fullname" . }}-hub
-    app: {{ include "lunar-mcpx-webapp.fullname" . }}-hub
+    name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "hub") }}
+    app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "hub") }}
     {{- with .Values.global.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -15,7 +15,7 @@ metadata:
   annotations:
     {{- if .Values.ingress.enabled | default true }}
     {{- if eq .Values.ingress.type "gce" }}
-    cloud.google.com/backend-config: '{"ports": {"hub80":"{{ include "lunar-mcpx-webapp.fullname" . }}-hub"}}'
+    cloud.google.com/backend-config: '{"ports": {"hub80":"{{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "hub") }}"}}'
     {{- end }}
     {{- end }}
 spec:
@@ -27,7 +27,7 @@ spec:
   sessionAffinity: ClientIP
   type: ClusterIP
   selector:
-    app: {{ include "lunar-mcpx-webapp.fullname" . }}-hub
+    app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "hub") }}
     {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 4 }}
     {{- with .Values.global.labels }}
     {{- toYaml . | nindent 4 }}

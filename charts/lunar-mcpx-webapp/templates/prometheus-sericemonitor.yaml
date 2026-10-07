@@ -3,10 +3,10 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" . }}-smon
+  name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "smon") }}
   labels:
-    name: {{ include "lunar-mcpx-webapp.fullname" . }}-smon
-    app: {{ include "lunar-mcpx-webapp.fullname" . }}-smon
+    name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "smon") }}
+    app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "smon") }}
     {{- with .Values.global.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}

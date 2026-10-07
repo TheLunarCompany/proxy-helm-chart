@@ -2,10 +2,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" . }}-admin
+  name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "admin") }}
   labels:
-    name: {{ include "lunar-mcpx-webapp.fullname" . }}-admin
-    app: {{ include "lunar-mcpx-webapp.fullname" . }}-admin
+    name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "admin") }}
+    app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "admin") }}
     {{- with .Values.global.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
@@ -15,7 +15,7 @@ metadata:
   annotations:
     {{- if .Values.ingress.enabled | default true }}
     {{- if eq .Values.ingress.type "gce" }}
-    cloud.google.com/backend-config: '{"ports": {"admin80":"{{ include "lunar-mcpx-webapp.fullname" . }}-admin"}}'
+    cloud.google.com/backend-config: '{"ports": {"admin80":"{{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "admin") }}"}}'
     {{- end }}
     {{- end }}
 spec:
@@ -27,7 +27,7 @@ spec:
   sessionAffinity: ClientIP
   type: ClusterIP
   selector:
-    app: {{ include "lunar-mcpx-webapp.fullname" . }}-admin
+    app: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "admin") }}
     {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 4 }}
     {{- with .Values.global.labels }}
     {{- toYaml . | nindent 4 }}
@@ -46,7 +46,7 @@ spec:
 apiVersion: cloud.google.com/v1
 kind: BackendConfig
 metadata:
-  name: {{ include "lunar-mcpx-webapp.fullname" . }}-admin
+  name: {{ include "lunar-mcpx-webapp.resourceName" (dict "root" . "suffix" "admin") }}
 spec:
   timeoutSec: 86400
   sessionAffinity:
