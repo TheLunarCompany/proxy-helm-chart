@@ -199,14 +199,6 @@ spec:
               value: "8080"
             - name: HIVE_CONTROLLER_URL
               value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-controller"
-            {{- $hubExtraEnvNames := list }}
-            {{- range .Values.hub.extraEnvVars }}
-            {{- $hubExtraEnvNames = append $hubExtraEnvNames .name }}
-            {{- end }}
-            {{- if not (has "HIVE_DEFAULT_MCPX_IMAGE_TAG" $hubExtraEnvNames) }}
-            - name: HIVE_DEFAULT_MCPX_IMAGE_TAG
-              value: {{ include "lunar-mcpx-webapp.defaultMcpxImageTag" . | quote }}
-            {{- end }}
             {{- include "lunar-mcpx-webapp.dbPoolEnv" .Values.hub | nindent 12 }}
             {{- if .Values.clickhouse.enabled }}
             - name: CLICKHOUSE_URL
