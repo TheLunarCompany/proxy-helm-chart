@@ -14,12 +14,13 @@ metadata:
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
-  schedule: "0 */4 * * *"
+  schedule: "0 * * * *"
+  concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 0
   failedJobsHistoryLimit: 3
   jobTemplate:
     spec:
-      ttlSecondsAfterFinished: 60
+      ttlSecondsAfterFinished: 259200 # A failed run stays 3 days, so it is not gone before anyone looks
       backoffLimit: 3 # Retries 3 times before marking the job as failed
       activeDeadlineSeconds: 3600 # The job will be terminated after 1 hour
       template:

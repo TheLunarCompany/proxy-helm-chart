@@ -39,6 +39,14 @@ Resolve MCPX version for UI and SERVER tag/env: global.mcpxVersion override fall
 {{- end }}
 
 {{/*
+The mcpx version this release pairs with, as HIVE_DEFAULT_MCPX_IMAGE_TAG. The webserver uses it as its baseline
+for new instances, the hub rejects mcpx instances that report another version.
+*/}}
+{{- define "lunar-mcpx-webapp.defaultMcpxImageTag" -}}
+{{- .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) -}}
+{{- end }}
+
+{{/*
 Default registry base paths per group and environment. When a group's selector
 (global.webappRepository / global.mcpxRepository) is "dev" or "boomipoc", the
 prod base path below is replaced (plain string replacement) with the selected
