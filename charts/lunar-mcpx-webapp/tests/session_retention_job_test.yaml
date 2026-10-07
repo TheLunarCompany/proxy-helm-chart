@@ -1,0 +1,54 @@
+suite: Session retention job (db-ses-rtn)
+templates:
+  - templates/lunar-jobs-cronjob.yaml
+
+release:
+  name: my-release
+
+tests:
+  - it: runs hourly
+    documentSelector:
+      path: metadata.name
+      value: my-release-lunar-mcpx-webapp-db-ses-rtn
+    asserts:
+      - isKind:
+          of: CronJob
+      - equal:
+          path: spec.schedule
+          value: "0 * * * *"
+
+  - it: never lets two runs overlap
+    documentSelector:
+      path: metadata.name
+      value: my-release-lunar-mcpx-webapp-db-ses-rtn
+    asserts:
+      - equal:
+          path: spec.concurrencyPolicy
+          value: Forbid
+
+  - it: keeps a finished run for 3 days, so a failure is still there to look at
+    documentSelector:
+      path: metadata.name
+      value: my-release-lunar-mcpx-webapp-db-ses-rtn
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.ttlSecondsAfterFinished
+          value: 259200
+
+  - it: still stops a run after an hour
+    documentSelector:
+      path: metadata.name
+      value: my-release-lunar-mcpx-webapp-db-ses-rtn
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.activeDeadlineSeconds
+          value: 3600
+
+  - it: leaves the other jobs in the file on their short TTL
+    documentSelector:
+      path: metadata.name
+      value: my-release-lunar-mcpx-webapp-prune-audit-logs
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.ttlSecondsAfterFinished
+          value: 60
