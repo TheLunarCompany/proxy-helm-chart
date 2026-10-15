@@ -197,3 +197,67 @@ seccompProfile:
 capabilities:
   drop: ["ALL"]
 {{- end }}
+
+{{/*
+auth-bff's public origin: from an OIDC_REDIRECT_URI set in global or auth
+extraEnvVars, else the first auth ingress domain. Empty when neither is known.
+*/}}
+{{- define "lunar-mcpx-webapp.authOrigin" -}}
+{{- $override := "" -}}
+{{- range concat (.Values.global.extraEnvVars | default (list)) (.Values.auth.extraEnvVars | default (list)) -}}
+{{- if and (eq .name "OIDC_REDIRECT_URI") .value -}}
+{{- $override = tpl .value $ -}}
+{{- end -}}
+{{- end -}}
+{{- if $override -}}
+{{- $url := urlParse $override -}}
+{{- printf "%s://%s" $url.scheme $url.host -}}
+{{- else if .Values.ingress.enabled -}}
+{{- printf "https://%s" (first .Values.ingress.domains.auth) -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+The auth-defaults ConfigMap's data, also hashed into auth-bff's pod annotations.
+*/}}
+{{- define "lunar-mcpx-webapp.authDefaults" -}}
+OIDC_REDIRECT_URI: {{ printf "https://%s/callback" (first .Values.ingress.domains.auth) | quote }}
+{{- end }}
+
+{{/*
+The identity broker's products as JSON. Unset = mcpx alone, on auth-bff's
+callbacks under its public origin.
+*/}}
+{{- define "lunar-mcpx-webapp.identityBrokerProducts" -}}
+{{- if .Values.identityBroker.products -}}
+{{- .Values.identityBroker.products | toJson -}}
+{{- else -}}
+{{- $origin := include "lunar-mcpx-webapp.authOrigin" . | required "identityBroker.products is required when ingress is off and no OIDC_REDIRECT_URI is set for auth" -}}
+{{- list (dict
+  "productId" "mcpx"
+  "redirectUris" (list (print $origin "/callback") (print $origin "/runtime/callback") (print $origin "/oauth/callback"))
+  "postLogoutRedirectUris" (list (print $origin "/logout/callback") (print $origin "/runtime/logout/callback"))
+) | toJson -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+The identity broker's resources, gated by global.manageResources like the other services.
+*/}}
+{{- define "lunar-mcpx-webapp.identityBrokerResources" -}}
+{{- if or .Values.global.manageResources.limits .Values.global.manageResources.requests -}}
+resources:
+  {{- if .Values.global.manageResources.limits }}
+  {{- with .Values.identityBroker.resources.limits }}
+  limits:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if .Values.global.manageResources.requests }}
+  {{- with .Values.identityBroker.resources.requests }}
+  requests:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}

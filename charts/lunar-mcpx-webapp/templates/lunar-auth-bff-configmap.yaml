@@ -1,0 +1,15 @@
+{{- if and (.Values.auth.enabled | default true) .Values.ingress.enabled }}
+# Defaults the chart derives for auth-bff. First in its envFrom, so a secret in
+# extraEnvFromSecrets or an entry in extraEnvVars overrides any of them.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lunar-mcpx-webapp.fullname" . }}-auth-defaults
+  labels:
+    name: {{ include "lunar-mcpx-webapp.fullname" . }}-auth-defaults
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+data:
+  {{- include "lunar-mcpx-webapp.authDefaults" . | nindent 2 }}
+{{- end }}

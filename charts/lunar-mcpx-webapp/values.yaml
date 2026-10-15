@@ -679,6 +679,105 @@ auth:
   # priorityClassName: "custom"
   priorityClassName: ""
 
+identityBroker:
+  # -- Runs the identity broker: the internal service that is the only OIDC
+  # client of the IdP for the AI Gateway products. Off until auth-bff calls it.
+  enabled: false
+
+  image:
+    # -- Identity broker image repository
+    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/aigw-identity-broker
+    # -- Identity broker image pull policy
+    pullPolicy: IfNotPresent
+    # -- Identity broker image tag
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+  # -- pg connection pool sizing (unset = the broker's defaults). The broker
+  # reads its URL from AI_GATEWAY_SHARED_DATABASE_URL, never DATABASE_URL.
+  db:
+    # -- Max DB connections per pod (pg pool max)
+    poolMax: null
+    # -- Milliseconds to wait for a new DB connection
+    connectionTimeoutMs: null
+
+  # -- products the broker logs users in for, rendered as the PRODUCTS env JSON.
+  # Redirect URIs are matched exactly. Empty = mcpx alone, on auth-bff's
+  # callbacks under its OIDC_REDIRECT_URI origin (from extraEnvVars) or the
+  # first ingress.domains.auth. Set it when OIDC_REDIRECT_URI lives in a secret.
+  # products:
+  #   - productId: mcpx
+  #     redirectUris:
+  #       - https://auth.example.com/oauth/callback
+  #     postLogoutRedirectUris:
+  #       - https://auth.example.com/logout/callback
+  products: []
+
+  # -- networkPolicy lets only auth-bff pods (and extraFrom) reach the broker.
+  # The internal network is the broker's only guard.
+  networkPolicy:
+    enabled: true
+    # -- extraFrom Additional NetworkPolicy `from` peers allowed to call the broker
+    extraFrom: []
+
+  # -- NodeSelector to pin pods in deployment to certain set of nodes.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+  nodeSelector: {}
+
+  # -- tolerations allow the scheduler to schedule pods with matching taints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  tolerations: []
+
+  # -- affinity is a scheduling feature that lets influence which nodes or which pods a pod should be placed near (or away from).
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  affinity: {}
+
+  # -- topologySpreadConstraints if specified, the pod's topology spread constraints.
+  # https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+  topologySpreadConstraints: []
+
+  # -- number of replicas to run
+  replicaCount: 1
+
+  # -- pdb overrides global.pdb for this deployment.
+  # Same fields as global (enabled, maxUnavailable, minAvailable).
+  pdb: {}
+
+  # -- hpa overrides global.hpa for this deployment. Same fields as global.
+  hpa: {}
+
+  # -- Set pod resource requests & limits
+  resources:
+    limits:
+      cpu: "250m"
+      memory: 256Mi
+    requests:
+      cpu: "250m"
+      memory: 256Mi
+
+  # -- extraEnvVars An array to add extra env vars (OIDC_ISSUER, OIDC_CLIENT_ID,
+  # AUTHORIZED_TENANT_ID, OIDC_*_CLAIM_NAME, ...)
+  extraEnvVars: []
+
+  # -- extraEnvFromSecrets An array of secret names to add as extra env vars
+  # (e.g. the one holding OIDC_CLIENT_SECRET)
+  extraEnvFromSecrets: []
+
+  # Labels for all application related resources
+  labels: {}
+
+  # Pod Labels
+  podLabels: {}
+
+  # -- extraInitContainers Additional init containers configuration
+  extraInitContainers: []
+
+  # -- extraContainers Additional sidecars configuration
+  extraContainers: []
+
+  # -- priorityClassName determines a pod's scheduling priority relative to other pods.
+  priorityClassName: ""
+
 controller:
   # -- pdb overrides global.pdb for this deployment.
   # Same fields as global (enabled, maxUnavailable, minAvailable).

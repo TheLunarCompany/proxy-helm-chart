@@ -38,6 +38,10 @@ spec:
       {{- end }}
   template:
     metadata:
+      {{- if .Values.ingress.enabled }}
+      annotations:
+        checksum/auth-defaults: {{ include "lunar-mcpx-webapp.authDefaults" . | sha256sum }}
+      {{- end }}
       labels:
         app: {{ include "lunar-mcpx-webapp.fullname" . }}-auth
         {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 8 }}
@@ -137,6 +141,10 @@ spec:
             runAsGroup: 1000
             {{- end }}
           envFrom:
+            {{- if .Values.ingress.enabled }}
+            - configMapRef:
+                name: {{ include "lunar-mcpx-webapp.fullname" . }}-auth-defaults
+            {{- end }}
             - secretRef:
                 name: {{ include "lunar-mcpx-webapp.fullname" . }}-embedded
           {{- with .Values.global.extraEnvFromSecrets }}

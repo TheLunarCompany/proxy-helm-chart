@@ -1,0 +1,60 @@
+{{- if .Values.identityBroker.enabled }}
+{{- $fullname := include "lunar-mcpx-webapp.fullname" . -}}
+# Internal only: no ingress, no BackendConfig.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullname }}-identity-broker
+  labels:
+    name: {{ $fullname }}-identity-broker
+    app: {{ $fullname }}-identity-broker
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.identityBroker.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: http
+  selector:
+    app: {{ $fullname }}-identity-broker
+    {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 4 }}
+{{- if .Values.identityBroker.networkPolicy.enabled }}
+---
+# The internal network is the broker's only guard: only auth-bff (and
+# extraFrom) may call it.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $fullname }}-identity-broker
+  labels:
+    name: {{ $fullname }}-identity-broker
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ $fullname }}-identity-broker
+      {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: {{ $fullname }}-auth  # auth-bff is always allowed; callers outside this chart go in extraFrom
+              {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 14 }}
+        {{- with .Values.identityBroker.networkPolicy.extraFrom }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      ports:
+        - protocol: TCP
+          port: http
+{{- end }}
+{{- end }}

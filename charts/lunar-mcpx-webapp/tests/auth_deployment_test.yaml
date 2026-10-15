@@ -53,3 +53,21 @@ tests:
             name: ca-example-com-1
             mountPath: /usr/local/share/ca-certificates/
             readOnly: true
+
+  - it: takes chart-derived defaults first, so secrets and extraEnvVars override them
+    set:
+      auth.extraEnvFromSecrets: [auth-oidc]
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].envFrom
+          value:
+            - configMapRef:
+                name: RELEASE-NAME-lunar-mcpx-webapp-auth-defaults
+            - secretRef:
+                name: RELEASE-NAME-lunar-mcpx-webapp-embedded
+            - secretRef:
+                name: auth-oidc
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: OIDC_REDIRECT_URI

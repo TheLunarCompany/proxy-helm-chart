@@ -1,0 +1,162 @@
+suite: identity broker
+templates:
+  - templates/lunar-identity-broker-deployment.yaml
+  - templates/lunar-identity-broker-service.yaml
+  - templates/lunar-common-secrets.yaml
+release:
+  name: my-release
+set:
+  postgres.enabled: true
+  identityBroker.enabled: true
+  identityBroker.products:
+    - productId: mcpx
+      redirectUris: ["https://auth.example.com/oauth/callback"]
+      postLogoutRedirectUris: ["https://auth.example.com/logout/callback"]
+
+tests:
+  - it: renders nothing when disabled (the default)
+    set:
+      identityBroker.enabled: false
+    template: templates/lunar-identity-broker-deployment.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders no service or network policy when disabled
+    set:
+      identityBroker.enabled: false
+    template: templates/lunar-identity-broker-service.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: runs the migrations in an initContainer from the same image, without npx
+    template: templates/lunar-identity-broker-deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].command
+          value: ["../../node_modules/.bin/prisma", "migrate", "deploy"]
+      - equal:
+          path: spec.template.spec.initContainers[0].image
+          value: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/aigw-identity-broker:0.10.3
+
+  - it: renders the products as the PRODUCTS JSON
+    template: templates/lunar-identity-broker-deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: PRODUCTS
+            value: '[{"postLogoutRedirectUris":["https://auth.example.com/logout/callback"],"productId":"mcpx","redirectUris":["https://auth.example.com/oauth/callback"]}]'
+
+  - it: takes the embedded and extra secrets like webserver, in both containers
+    set:
+      global.extraEnvFromSecrets: [mcpx-webapp-global]
+      identityBroker.extraEnvFromSecrets: [identity-broker-oidc]
+    template: templates/lunar-identity-broker-deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].envFrom
+          value: &envFrom
+            - secretRef:
+                name: my-release-lunar-mcpx-webapp-embedded
+            - secretRef:
+                name: mcpx-webapp-global
+            - secretRef:
+                name: identity-broker-oidc
+      - equal:
+          path: spec.template.spec.initContainers[0].envFrom
+          value: *envFrom
+
+  - it: puts the embedded Postgres URL with the public_auth schema in the embedded secret
+    template: templates/lunar-common-secrets.yaml
+    asserts:
+      - equal:
+          path: data.AI_GATEWAY_SHARED_DATABASE_URL
+          decodeBase64: true
+          value: postgres://postgres:postgres@my-release-lunar-mcpx-webapp-postgres:5432/mcpx?schema=public_auth
+
+  - it: defaults to mcpx alone, on auth-bff's callbacks under the auth domain
+    set:
+      identityBroker.products: []
+    template: templates/lunar-identity-broker-deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: PRODUCTS
+            value: '[{"postLogoutRedirectUris":["https://mcpx-auth.example.com/logout/callback","https://mcpx-auth.example.com/runtime/logout/callback"],"productId":"mcpx","redirectUris":["https://mcpx-auth.example.com/callback","https://mcpx-auth.example.com/runtime/callback","https://mcpx-auth.example.com/oauth/callback"]}]'
+
+  - it: follows auth-bff's OIDC_REDIRECT_URI origin when one is set
+    set:
+      identityBroker.products: []
+      auth.extraEnvVars:
+        - name: OIDC_REDIRECT_URI
+          value: https://auth-acme.example.org/callback
+    template: templates/lunar-identity-broker-deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: PRODUCTS
+            value: '[{"postLogoutRedirectUris":["https://auth-acme.example.org/logout/callback","https://auth-acme.example.org/runtime/logout/callback"],"productId":"mcpx","redirectUris":["https://auth-acme.example.org/callback","https://auth-acme.example.org/runtime/callback","https://auth-acme.example.org/oauth/callback"]}]'
+
+  - it: requires products when auth-bff's origin is unknown
+    set:
+      identityBroker.products: []
+      ingress.enabled: false
+    template: templates/lunar-identity-broker-deployment.yaml
+    asserts:
+      - failedTemplate:
+          errorMessage: identityBroker.products is required when ingress is off and no OIDC_REDIRECT_URI is set for auth
+
+  - it: exposes the broker inside the cluster only
+    template: templates/lunar-identity-broker-service.yaml
+    documentSelector:
+      path: kind
+      value: Service
+    asserts:
+      - equal:
+          path: spec.type
+          value: ClusterIP
+
+  - it: lets only auth-bff pods reach the broker
+    template: templates/lunar-identity-broker-service.yaml
+    documentSelector:
+      path: kind
+      value: NetworkPolicy
+    asserts:
+      - equal:
+          path: spec.ingress[0].from
+          value:
+            - podSelector:
+                matchLabels:
+                  app: my-release-lunar-mcpx-webapp-auth
+                  app.kubernetes.io/name: lunar-mcpx-webapp
+                  app.kubernetes.io/instance: my-release
+
+  - it: adds extraFrom peers to the network policy
+    set:
+      identityBroker.networkPolicy.extraFrom:
+        - podSelector:
+            matchLabels:
+              app: llm-gateway-auth
+    template: templates/lunar-identity-broker-service.yaml
+    documentSelector:
+      path: kind
+      value: NetworkPolicy
+    asserts:
+      - contains:
+          path: spec.ingress[0].from
+          content:
+            podSelector:
+              matchLabels:
+                app: llm-gateway-auth
+
+  - it: drops the network policy when disabled
+    set:
+      identityBroker.networkPolicy.enabled: false
+    template: templates/lunar-identity-broker-service.yaml
+    asserts:
+      - hasDocuments:
+          count: 1

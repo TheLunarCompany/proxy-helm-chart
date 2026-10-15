@@ -1,0 +1,17 @@
+suite: Auth defaults ConfigMap
+templates:
+  - templates/lunar-auth-bff-configmap.yaml
+
+tests:
+  - it: derives OIDC_REDIRECT_URI from the auth ingress domain
+    asserts:
+      - equal:
+          path: data.OIDC_REDIRECT_URI
+          value: https://mcpx-auth.example.com/callback
+
+  - it: renders nothing when ingress is off
+    set:
+      ingress.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
