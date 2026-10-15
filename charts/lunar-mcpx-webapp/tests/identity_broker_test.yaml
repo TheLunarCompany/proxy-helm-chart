@@ -87,6 +87,29 @@ tests:
             name: PRODUCTS
             value: '[{"postLogoutRedirectUris":["https://mcpx-auth.example.com/logout/callback","https://mcpx-auth.example.com/runtime/logout/callback"],"productId":"mcpx","redirectUris":["https://mcpx-auth.example.com/callback","https://mcpx-auth.example.com/runtime/callback","https://mcpx-auth.example.com/oauth/callback"]}]'
 
+  - it: follows auth-bff's OIDC_REDIRECT_URI origin when one is set
+    set:
+      identityBroker.products: []
+      auth.extraEnvVars:
+        - name: OIDC_REDIRECT_URI
+          value: https://auth-acme.example.org/callback
+    template: templates/lunar-identity-broker-deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: PRODUCTS
+            value: '[{"postLogoutRedirectUris":["https://auth-acme.example.org/logout/callback","https://auth-acme.example.org/runtime/logout/callback"],"productId":"mcpx","redirectUris":["https://auth-acme.example.org/callback","https://auth-acme.example.org/runtime/callback","https://auth-acme.example.org/oauth/callback"]}]'
+
+  - it: requires products when auth-bff's origin is unknown
+    set:
+      identityBroker.products: []
+      ingress.enabled: false
+    template: templates/lunar-identity-broker-deployment.yaml
+    asserts:
+      - failedTemplate:
+          errorMessage: identityBroker.products is required when ingress is off and no OIDC_REDIRECT_URI is set for auth
+
   - it: exposes the broker inside the cluster only
     template: templates/lunar-identity-broker-service.yaml
     documentSelector:

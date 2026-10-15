@@ -703,7 +703,8 @@ identityBroker:
 
   # -- products the broker logs users in for, rendered as the PRODUCTS env JSON.
   # Redirect URIs are matched exactly. Empty = mcpx alone, on auth-bff's
-  # callbacks under the first ingress.domains.auth.
+  # callbacks under its OIDC_REDIRECT_URI origin (from extraEnvVars) or the
+  # first ingress.domains.auth. Set it when OIDC_REDIRECT_URI lives in a secret.
   # products:
   #   - productId: mcpx
   #     redirectUris:

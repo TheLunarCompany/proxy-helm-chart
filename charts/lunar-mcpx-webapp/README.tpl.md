@@ -471,7 +471,7 @@ identityBroker:
 
 - Migrations run in an initContainer from the same image, before the broker starts.
 - Database: its own Postgres schema (`<product schema>_auth`), read from `AI_GATEWAY_SHARED_DATABASE_URL`, never `DATABASE_URL`. The chart provides it for the embedded Postgres; with an external one, put it in a secret listed in `extraEnvFromSecrets`.
-- `products` lists who may log in through it, with exact redirect and post-logout URIs. Left empty, it is mcpx alone, on auth-bff's callbacks under the first `ingress.domains.auth`.
+- `products` lists who may log in through it, with exact redirect and post-logout URIs. Left empty, it is mcpx alone, on auth-bff's callbacks under the origin of `OIDC_REDIRECT_URI` from `extraEnvVars`, else the first `ingress.domains.auth`. If you keep `OIDC_REDIRECT_URI` in a secret, set `products` too: the chart can't read it.
 - A NetworkPolicy lets only auth-bff pods reach it, plus `networkPolicy.extraFrom`. It has no other guard, so keep it on in clusters that enforce NetworkPolicies.
 
 ### Hibernation
