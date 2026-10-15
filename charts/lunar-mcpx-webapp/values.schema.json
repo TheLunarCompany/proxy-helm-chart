@@ -291,6 +291,93 @@
         }
       }
     },
+    "identityBroker": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "pdb": {
+          "$ref": "#/$defs/pdb"
+        },
+        "hpa": {
+          "$ref": "#/$defs/hpa"
+        },
+        "db": {
+          "type": "object",
+          "properties": {
+            "poolMax": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "connectionTimeoutMs": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            }
+          }
+        },
+        "products": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "productId",
+              "redirectUris",
+              "postLogoutRedirectUris"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "productId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "redirectUris": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "minItems": 1
+              },
+              "postLogoutRedirectUris": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "minItems": 1
+              }
+            }
+          }
+        },
+        "networkPolicy": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "extraFrom": {
+              "type": "array"
+            }
+          }
+        },
+        "affinity": {
+          "type": "object"
+        },
+        "topologySpreadConstraints": {
+          "type": "array"
+        },
+        "priorityClassName": {
+          "type": "string"
+        }
+      }
+    },
     "ingress": {
       "type": "object",
       "properties": {

@@ -438,6 +438,42 @@ kubectl create job migrate-tgs-$(date +%s) \
 
 > **Note:** Run this job first and check its log, then enable the skills feature flag on the MCPX instances. Order matters: migrate, then turn on.
 
+### Identity broker
+
+> **Not ready yet.** auth-bff does not call the broker yet, so turning it on only runs an idle service. Keep `identityBroker.enabled: false` until a release says otherwise.
+
+The identity broker is the one internal service that talks to the identity provider for the AI Gateway products. auth-bff calls it to log users in; it has no ingress and no public URL.
+
+```yaml
+identityBroker:
+  enabled: true
+  extraEnvVars:
+    - name: OIDC_ISSUER
+      value: https://login.microsoftonline.com/<tenant>/v2.0
+    - name: OIDC_CLIENT_ID
+      value: <client id>
+    - name: AUTHORIZED_TENANT_ID
+      value: <tenant>
+    - name: OIDC_TENANT_CLAIM_NAME
+      value: tid
+  extraEnvFromSecrets:
+    - identity-broker-oidc   # holds OIDC_CLIENT_SECRET
+    - identity-broker-db     # holds AI_GATEWAY_SHARED_DATABASE_URL (external Postgres only)
+  networkPolicy:
+    extraFrom:               # callers besides auth-bff, standard NetworkPolicy `from` peers
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: llm-gateway
+        podSelector:
+          matchLabels:
+            app: llm-gateway-auth
+```
+
+- Migrations run in an initContainer from the same image, before the broker starts.
+- Database: its own Postgres schema (`<product schema>_auth`), read from `AI_GATEWAY_SHARED_DATABASE_URL`, never `DATABASE_URL`. The chart provides it for the embedded Postgres; with an external one, put it in a secret listed in `extraEnvFromSecrets`.
+- `products` lists who may log in through it, with exact redirect and post-logout URIs. Left empty, it is mcpx alone, on auth-bff's callbacks under the first `ingress.domains.auth`.
+- A NetworkPolicy lets only auth-bff pods reach it, plus `networkPolicy.extraFrom`. It has no other guard, so keep it on in clusters that enforce NetworkPolicies.
+
 ### Hibernation
 
 Two independent ways to hibernate idle MCPX instances. Either one (or both) turns

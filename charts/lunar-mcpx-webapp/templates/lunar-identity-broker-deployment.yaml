@@ -1,0 +1,194 @@
+{{- if .Values.identityBroker.enabled }}
+{{- $fullname := include "lunar-mcpx-webapp.fullname" . -}}
+{{- $tolerations := concat .Values.global.tolerations .Values.identityBroker.tolerations -}}
+{{- $repository := include "lunar-mcpx-webapp.webappImage" (dict "repo" .Values.identityBroker.image.repository "context" .) -}}
+{{- $image := printf "%s:%s" $repository (.Values.identityBroker.image.tag | default .Values.global.appVersion | default .Chart.AppVersion) -}}
+{{- $envFromSecrets := concat (list (printf "%s-embedded" $fullname)) (.Values.global.extraEnvFromSecrets | default (list)) (.Values.identityBroker.extraEnvFromSecrets | default (list)) -}}
+{{- $globalCaSecretName := .Values.global.caCerts.secretName | default "" -}}
+{{- $hasGlobalCaSecret := ne $globalCaSecretName "" -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $fullname }}-identity-broker
+  labels:
+    name: {{ $fullname }}-identity-broker
+    app: {{ $fullname }}-identity-broker
+    {{- with .Values.global.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.identityBroker.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if not (include "lunar-mcpx-webapp.hpaEnabled" (dict "key" "identityBroker" "context" .)) }}
+  replicas: {{ .Values.identityBroker.replicaCount | default 1 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ $fullname }}-identity-broker
+      {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 6 }}
+      {{- with .Values.global.labels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.identityBroker.labels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.identityBroker.podLabels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+  template:
+    metadata:
+      labels:
+        app: {{ $fullname }}-identity-broker
+        {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 8 }}
+        {{- with .Values.global.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.identityBroker.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.identityBroker.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ $fullname }}
+      initContainers:
+        - name: identity-broker-prisma-migration
+          image: {{ $image | quote }}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            {{- include "lunar-mcpx-webapp.restrictedSeccompAndCaps" . | nindent 12 }}
+            {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
+            runAsUser: 1000
+            runAsGroup: 1000
+            {{- end }}
+          {{- include "lunar-mcpx-webapp.identityBrokerResources" . | nindent 10 }}
+          # Not npx: it writes its cache, which a read-only root filesystem refuses.
+          command: ["../../node_modules/.bin/prisma", "migrate", "deploy"]
+          envFrom:
+            {{- range $envFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+            {{- end }}
+          env:
+            - name: NODE_ENV
+              value: "production"
+        {{- with concat (.Values.global.extraInitContainers | default (list)) (.Values.identityBroker.extraInitContainers | default (list)) }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      containers:
+        - name: identity-broker-container
+          image: {{ $image | quote }}
+          ports:
+            - name: http
+              containerPort: 8080
+          {{- include "lunar-mcpx-webapp.identityBrokerResources" . | nindent 10 }}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            {{- include "lunar-mcpx-webapp.restrictedSeccompAndCaps" . | nindent 12 }}
+            {{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1") }}
+            runAsUser: 1000
+            runAsGroup: 1000
+            {{- end }}
+          envFrom:
+            {{- range $envFromSecrets }}
+            - secretRef:
+                name: {{ . }}
+            {{- end }}
+          env:
+            - name: NODE_ENV
+              value: "production"
+            {{- if $hasGlobalCaSecret }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: /usr/local/share/ca-certificates/{{ $globalCaSecretName }}.crt
+            {{- end }}
+            - name: PORT
+              value: "8080"
+            {{- with .Values.identityBroker.db.poolMax }}
+            - name: DB_POOL_MAX
+              value: {{ . | quote }}
+            {{- end }}
+            {{- with .Values.identityBroker.db.connectionTimeoutMs }}
+            - name: DB_CONNECTION_TIMEOUT_MS
+              value: {{ . | quote }}
+            {{- end }}
+            - name: PRODUCTS
+              value: {{ include "lunar-mcpx-webapp.identityBrokerProducts" . | quote }}
+          {{- if .Values.global.extraEnvVars }}
+          {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.identityBroker.extraEnvVars }}
+          {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.identityBroker.extraEnvVars "context" $) | nindent 12 }}
+          {{- end }}
+
+          startupProbe:
+            successThreshold: 1
+            failureThreshold: 30
+            httpGet:
+              path: /healthcheck
+              port: http
+            periodSeconds: 10
+          readinessProbe:
+            successThreshold: 1
+            failureThreshold: 3
+            httpGet:
+              path: /healthcheck
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 10
+          livenessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /healthcheck
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 30
+
+          {{- if $hasGlobalCaSecret }}
+          volumeMounts:
+            - name: {{ $globalCaSecretName }}
+              mountPath: "/usr/local/share/ca-certificates/"
+              readOnly: true
+          {{- end }}
+        {{- with concat (.Values.global.extraContainers | default (list)) (.Values.identityBroker.extraContainers | default (list)) }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- if $hasGlobalCaSecret }}
+      volumes:
+        - name: {{ $globalCaSecretName }}
+          secret:
+            secretName: {{ $globalCaSecretName }}
+            items:
+              - key: ca.crt
+                path: {{ $globalCaSecretName }}.crt
+      {{- end }}
+      {{- with mergeOverwrite (deepCopy (.Values.global.affinity | default dict)) (.Values.identityBroker.affinity | default dict) }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with concat (.Values.global.topologySpreadConstraints | default list) (.Values.identityBroker.topologySpreadConstraints | default list) }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range . }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+      {{- with .Values.identityBroker.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with coalesce .Values.identityBroker.priorityClassName .Values.global.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+{{- end }}

@@ -197,3 +197,41 @@ seccompProfile:
 capabilities:
   drop: ["ALL"]
 {{- end }}
+
+{{/*
+The identity broker's products as JSON. Unset = mcpx alone, on auth-bff's
+callbacks under the first auth ingress domain.
+*/}}
+{{- define "lunar-mcpx-webapp.identityBrokerProducts" -}}
+{{- if .Values.identityBroker.products -}}
+{{- .Values.identityBroker.products | toJson -}}
+{{- else -}}
+{{- $origin := printf "%s://%s" (ternary "https" "http" .Values.ingress.https.enabled) (first .Values.ingress.domains.auth) -}}
+{{- list (dict
+  "productId" "mcpx"
+  "redirectUris" (list (print $origin "/callback") (print $origin "/runtime/callback") (print $origin "/oauth/callback"))
+  "postLogoutRedirectUris" (list (print $origin "/logout/callback") (print $origin "/runtime/logout/callback"))
+) | toJson -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+The identity broker's resources, gated by global.manageResources like the other services.
+*/}}
+{{- define "lunar-mcpx-webapp.identityBrokerResources" -}}
+{{- if or .Values.global.manageResources.limits .Values.global.manageResources.requests -}}
+resources:
+  {{- if .Values.global.manageResources.limits }}
+  {{- with .Values.identityBroker.resources.limits }}
+  limits:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if .Values.global.manageResources.requests }}
+  {{- with .Values.identityBroker.resources.requests }}
+  requests:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}
