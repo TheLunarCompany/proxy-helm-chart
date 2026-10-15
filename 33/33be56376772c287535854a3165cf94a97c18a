@@ -1,0 +1,59 @@
+charts/lunar-mcpx-webapp/tests/identity_broker_test.yaml
+  s_a779fd7c66a02d::t_c0a526d4407816 52-55,58,60-69,75,79,81,85,87-88
+  s_a779fd7c66a02d::t_3a2ec88702bba8 1-51,56-57,59,70-74,76-78,80,82-84,86,89-139
+charts/lunar-mcpx-webapp/templates/lunar-identity-broker-service.yaml
+  s_a779fd7c66a02d::t_da3cbcf77bef16 51
+  s_a779fd7c66a02d::t_213bc419723240 1-50,52-60
+charts/lunar-mcpx-webapp/templates/lunar-identity-broker-deployment.yaml
+  s_a779fd7c66a02d::t_55553f085bec3d 70-74
+  s_a779fd7c66a02d::t_b1664793aa85cd 6
+  s_a779fd7c66a02d::t_12d835830d999e 98
+  s_a779fd7c66a02d::t_ee044d8e554f0a 1-5,7-69,75-97,99-110,112-114,116-119,121-194
+  s_a779fd7c66a02d::t_43f7e3f75d68ef 111,115,120
+charts/lunar-mcpx-webapp/values.schema.json
+  s_a779fd7c66a02d::t_984a71e7e32c08 307
+  s_a779fd7c66a02d::t_3551c271a7649a 304-306
+  s_a779fd7c66a02d::t_b536b4d67043a8 308-310
+  s_a779fd7c66a02d::t_657aaff2f3bebd 294-303,311-380
+charts/lunar-mcpx-webapp/values.yaml
+  s_a779fd7c66a02d::t_1610ee58ebc1f6 696-706
+  s_a779fd7c66a02d::t_5abae1614710c6 693-695
+  s_a779fd7c66a02d::t_252ca09cbd850b 707-709
+  s_a779fd7c66a02d::t_f2f6c310665927 682-692,710-779
+charts/lunar-mcpx-webapp/templates/lunar-common-secrets.yaml
+  s_a779fd7c66a02d::t_5193f0465e0578 19
+  s_a779fd7c66a02d::t_7f59bd0fd5a331 18
+  s_a779fd7c66a02d::t_656d0bacd3ffed 20
+charts/lunar-mcpx-webapp/README.tpl.md
+  s_a779fd7c66a02d::t_b649037b0a6a9f 446-460,470-471
+  s_a779fd7c66a02d::t_57e366ef8ac025 443-445,461-469,473,475
+  s_a779fd7c66a02d::t_4e0d449c68db48 474
+  s_a779fd7c66a02d::t_a6abde73c57c9c 441-442
+  s_a779fd7c66a02d::t_f1977e2057dc81 472
+  s_a779fd7c66a02d::t_b7385113399c7b 476
+charts/lunar-mcpx-webapp/templates/_helpers.tpl
+  s_a779fd7c66a02d::t_266fda17864b4b 202-215
+  s_a779fd7c66a02d::t_6a5a01c35aedca 200-201
+  s_a779fd7c66a02d::t_ea57d71e6c3580 216-218
+  s_a779fd7c66a02d::t_6d53b8f367e221 219-237
+charts/lunar-mcpx-webapp/templates/hpa.yaml
+  s_a779fd7c66a02d::t_0515d6acda18d3 4
+charts/lunar-mcpx-webapp/templates/pdb.yaml
+  s_a779fd7c66a02d::t_af3cb1dc6a153c 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "3333be56376772c287535854a3165cf94a97c18a",
+  "prompts": {},
+  "sessions": {
+    "s_a779fd7c66a02d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "65aff2b4-d7da-4a81-ac45-d1a9f88e14a7",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "EliavLunar <eliavl@lunar.dev>"
+    }
+  }
+}
