@@ -179,6 +179,10 @@ spec:
             - name: CORS_ALLOWED_ORIGINS
               value: "https://{{ first .Values.ingress.domains.admin }},https://{{ first .Values.ingress.domains.ui }},https://{{ first .Values.ingress.domains.router }}"
           {{- end }}
+          {{- if .Values.identityBroker.enabled }}
+            - name: IDENTITY_BROKER_URL
+              value: "http://{{ include "lunar-mcpx-webapp.fullname" . }}-identity-broker"
+          {{- end }}
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}

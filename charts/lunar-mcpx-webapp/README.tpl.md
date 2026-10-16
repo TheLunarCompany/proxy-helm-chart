@@ -440,24 +440,26 @@ kubectl create job migrate-tgs-$(date +%s) \
 
 ### Identity broker
 
-> **Not ready yet.** auth-bff does not call the broker yet, so turning it on only runs an idle service. Keep `identityBroker.enabled: false` until a release says otherwise.
+> **Admin door only.** Turned on, auth-bff's admin login, logout and Boomi session refresh go through the broker; the runtime and MCP OAuth logins stay on auth-bff. It needs an `appVersion` built with lunar-private#3586. Keep `identityBroker.enabled: false` until a release says otherwise.
 
-The identity broker is the one internal service that talks to the identity provider for the AI Gateway products. auth-bff calls it to log users in; it has no ingress and no public URL.
+The identity broker is the one internal service that talks to the identity provider for the AI Gateway products. auth-bff calls it to log users in; it has no ingress and no public URL. The chart points auth-bff at it (`IDENTITY_BROKER_URL`) when it is on.
+
+The broker reads the same IdP and tenant settings as auth-bff, under the same names. Put them in `global.extraEnvVars` and a secret in `global.extraEnvFromSecrets` so both get them once, instead of in `auth.*`:
 
 ```yaml
-identityBroker:
-  enabled: true
+global:
   extraEnvVars:
     - name: OIDC_ISSUER
       value: https://login.microsoftonline.com/<tenant>/v2.0
-    - name: OIDC_CLIENT_ID
-      value: <client id>
     - name: AUTHORIZED_TENANT_ID
       value: <tenant>
-    - name: OIDC_TENANT_CLAIM_NAME
+    - name: OIDC_TENANT_CLAIM
       value: tid
   extraEnvFromSecrets:
-    - identity-broker-oidc   # holds OIDC_CLIENT_SECRET
+    - mcpx-webapp-oidc       # holds OIDC_CLIENT_ID, OIDC_CLIENT_SECRET
+identityBroker:
+  enabled: true
+  extraEnvFromSecrets:
     - identity-broker-db     # holds AI_GATEWAY_SHARED_DATABASE_URL (external Postgres only)
   networkPolicy:
     extraFrom:               # callers besides auth-bff, standard NetworkPolicy `from` peers
