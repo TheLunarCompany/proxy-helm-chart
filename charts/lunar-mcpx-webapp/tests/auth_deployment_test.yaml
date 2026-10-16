@@ -71,3 +71,23 @@ tests:
           path: spec.template.spec.containers[0].env
           content:
             name: OIDC_REDIRECT_URI
+
+  - it: does not set IDENTITY_BROKER_URL by default
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: IDENTITY_BROKER_URL
+          any: true
+
+  - it: sets IDENTITY_BROKER_URL to the broker service when identityBroker is enabled
+    set:
+      identityBroker.enabled: true
+    release:
+      name: my-release
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: IDENTITY_BROKER_URL
+            value: http://my-release-lunar-mcpx-webapp-identity-broker
