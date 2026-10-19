@@ -120,7 +120,7 @@ tests:
           path: spec.type
           value: ClusterIP
 
-  - it: lets only auth-bff pods reach the broker
+  - it: lets only auth-bff and webserver pods reach the broker
     template: templates/lunar-identity-broker-service.yaml
     documentSelector:
       path: kind
@@ -132,6 +132,11 @@ tests:
             - podSelector:
                 matchLabels:
                   app: my-release-lunar-mcpx-webapp-auth
+                  app.kubernetes.io/name: lunar-mcpx-webapp
+                  app.kubernetes.io/instance: my-release
+            - podSelector:
+                matchLabels:
+                  app: my-release-lunar-mcpx-webapp-webserver
                   app.kubernetes.io/name: lunar-mcpx-webapp
                   app.kubernetes.io/instance: my-release
 

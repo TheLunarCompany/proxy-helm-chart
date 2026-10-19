@@ -26,7 +26,7 @@ spec:
     {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 4 }}
 {{- if .Values.identityBroker.networkPolicy.enabled }}
 ---
-# The internal network is the broker's only guard: only auth-bff (and
+# The internal network is the broker's only guard: only auth-bff, webserver (and
 # extraFrom) may call it.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -48,7 +48,11 @@ spec:
     - from:
         - podSelector:
             matchLabels:
-              app: {{ $fullname }}-auth  # auth-bff is always allowed; callers outside this chart go in extraFrom
+              app: {{ $fullname }}-auth  # auth-bff and webserver are always allowed; callers outside this chart go in extraFrom
+              {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 14 }}
+        - podSelector:
+            matchLabels:
+              app: {{ $fullname }}-webserver  # saves the runtime IdP settings
               {{- include "lunar-mcpx-webapp.selectorLabels" . | nindent 14 }}
         {{- with .Values.identityBroker.networkPolicy.extraFrom }}
         {{- toYaml . | nindent 8 }}

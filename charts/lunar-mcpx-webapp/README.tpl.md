@@ -440,9 +440,11 @@ kubectl create job migrate-tgs-$(date +%s) \
 
 ### Identity broker
 
-> **Admin door only.** Turned on, auth-bff's admin login, logout and Boomi session refresh go through the broker; the runtime and MCP OAuth logins stay on auth-bff. It needs an `appVersion` built with lunar-private#3586. Keep `identityBroker.enabled: false` until a release says otherwise.
+> **Logins only, for now.** Turned on, every auth-bff login goes through the broker: admins, knowledge workers (runtime) and MCP clients (OAuth), plus the Boomi session refresh. The webserver also saves the runtime IdP settings at the broker. Role lookups and group sync stay on auth-bff. The runtime door needs an `appVersion` built with the runtime door PR in lunar-private. Keep `identityBroker.enabled: false` until a release says otherwise.
 
-The identity broker is the one internal service that talks to the identity provider for the AI Gateway products. auth-bff calls it to log users in; it has no ingress and no public URL. The chart points auth-bff at it (`IDENTITY_BROKER_URL`) when it is on.
+The identity broker is the one internal service that talks to the identity provider for the AI Gateway products. auth-bff calls it to log users in, and the webserver calls it to save the runtime IdP settings; it has no ingress and no public URL. The chart points both at it (`IDENTITY_BROKER_URL`) when it is on, and its NetworkPolicy lets only them in.
+
+The broker encrypts the stored runtime IdP secret with the install's `ENCRYPTION_KEY`, the same one the webserver uses. It reads it from `global`, like the webserver: `global.encryptionKey`, or a secret in `global.extraEnvFromSecrets`.
 
 The broker reads the same IdP and tenant settings as auth-bff, under the same names. Put them in `global.extraEnvVars` and a secret in `global.extraEnvFromSecrets` so both get them once, instead of in `auth.*`:
 
