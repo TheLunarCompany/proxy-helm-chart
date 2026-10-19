@@ -6,6 +6,10 @@
 {{- $envFromSecrets := concat (list (printf "%s-embedded" $fullname)) (.Values.global.extraEnvFromSecrets | default (list)) (.Values.identityBroker.extraEnvFromSecrets | default (list)) -}}
 {{- $globalCaSecretName := .Values.global.caCerts.secretName | default "" -}}
 {{- $hasGlobalCaSecret := ne $globalCaSecretName "" -}}
+{{- /* auth-bff's Google credentials: the broker reads Google's directory and groups too. */ -}}
+{{- $googleCredentialsSecretName := .Values.auth.googleApplicationCredentials.secretName | default "" -}}
+{{- $googleCredentialsSecretKey := .Values.auth.googleApplicationCredentials.secretKey | default "credentials.json" -}}
+{{- $hasGoogleCredentialsSecret := ne $googleCredentialsSecretName "" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -118,6 +122,10 @@ spec:
             {{- end }}
             - name: PRODUCTS
               value: {{ include "lunar-mcpx-webapp.identityBrokerProducts" . | quote }}
+            {{- if $hasGoogleCredentialsSecret }}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/var/secrets/google/credentials.json"
+            {{- end }}
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}
@@ -148,23 +156,40 @@ spec:
             periodSeconds: 30
             timeoutSeconds: 30
 
-          {{- if $hasGlobalCaSecret }}
+          {{- if or $hasGlobalCaSecret $hasGoogleCredentialsSecret }}
           volumeMounts:
+            {{- if $hasGlobalCaSecret }}
             - name: {{ $globalCaSecretName }}
               mountPath: "/usr/local/share/ca-certificates/"
               readOnly: true
+            {{- end }}
+            {{- if $hasGoogleCredentialsSecret }}
+            - name: google-application-credentials
+              mountPath: "/var/secrets/google"
+              readOnly: true
+            {{- end }}
           {{- end }}
         {{- with concat (.Values.global.extraContainers | default (list)) (.Values.identityBroker.extraContainers | default (list)) }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-      {{- if $hasGlobalCaSecret }}
+      {{- if or $hasGlobalCaSecret $hasGoogleCredentialsSecret }}
       volumes:
+        {{- if $hasGlobalCaSecret }}
         - name: {{ $globalCaSecretName }}
           secret:
             secretName: {{ $globalCaSecretName }}
             items:
               - key: ca.crt
                 path: {{ $globalCaSecretName }}.crt
+        {{- end }}
+        {{- if $hasGoogleCredentialsSecret }}
+        - name: google-application-credentials
+          secret:
+            secretName: {{ $googleCredentialsSecretName }}
+            items:
+              - key: {{ $googleCredentialsSecretKey | quote }}
+                path: "credentials.json"
+        {{- end }}
       {{- end }}
       {{- with mergeOverwrite (deepCopy (.Values.global.affinity | default dict)) (.Values.identityBroker.affinity | default dict) }}
       affinity:
