@@ -1,0 +1,25 @@
+charts/lunar-mcpx-webapp/tests/identity_broker_google_credentials_test.yaml
+  s_a779fd7c66a02d::t_21eeb0aa9e9569 1-72
+charts/lunar-mcpx-webapp/README.tpl.md
+  s_a779fd7c66a02d::t_fe88f8bb561a7f 443,456-457,463,482-484
+charts/lunar-mcpx-webapp/templates/lunar-identity-broker-deployment.yaml
+  s_a779fd7c66a02d::t_31f50cbea48a0c 9-12,125-128,159,161,165-170,175,177,184-192
+charts/lunar-mcpx-webapp/values.yaml
+  s_a779fd7c66a02d::t_bbb4de3e0dfca4 650-652
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "c288387c79806c47669ee0872d57f6b4a038a896",
+  "prompts": {},
+  "sessions": {
+    "s_a779fd7c66a02d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "65aff2b4-d7da-4a81-ac45-d1a9f88e14a7",
+        "model": "unknown"
+      },
+      "human_author": "EliavLunar <eliavl@lunar.dev>"
+    }
+  }
+}
