@@ -402,26 +402,6 @@ kubectl create job prune-ch-logs-execute-$(date +%s) \
   --from=cronjob/<release>-prune-ch-logs-execute -n <namespace>
 ```
 
-### Drain Space-Editing Swaps
-
-Restores each user's real ACTIVE setup before moving to the new space-editing mechanism. If a user was left mid-edit under the old mechanism, their ACTIVE slot holds a temporary editing copy while their real setup sits in a stash. Two **suspended CronJobs**, they never run automatically.
-
-| CronJob | Purpose |
-|:--------|:--------|
-| `<release>-drain-swaps-dry` | Lists every affected user (email + space name), makes no changes |
-| `<release>-drain-swaps-execute` | **Restores** each affected user's real ACTIVE setup |
-
-**Run a dry run, then execute:**
-```bash
-kubectl create job drain-swaps-dry-$(date +%s) \
-  --from=cronjob/<release>-drain-swaps-dry -n <namespace>
-
-kubectl create job drain-swaps-execute-$(date +%s) \
-  --from=cronjob/<release>-drain-swaps-execute -n <namespace>
-```
-
-> **Note:** Once you upgrade the MCPX pods in the system, any affected setup will be the correct one.
-
 ### Migrate Tool Groups to Skills
 
 Turns each active setup's tool groups into skills before enabling the skills feature. Every tool group becomes one skill carrying the same capability group; tools on custom (non-catalog) servers are dropped, and a group left with nothing is skipped. The original tool groups are **not** deleted. The migrated skills are **not** enabled for any consumer/client, so after the migration users will need to re-enable them per subject. A single **suspended CronJob**, it never runs automatically. It is **idempotent**: rerunning skips groups already migrated, so no duplicates.
