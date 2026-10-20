@@ -1,0 +1,45 @@
+charts/lunar-mcpx-webapp/tests/service_links_test.yaml
+  s_f921567018ecdc::t_8bec8f757af059 1-39
+charts/lunar-mcpx-webapp/templates/_admin-job-helpers.tpl
+  s_f921567018ecdc::t_b996818317da3c 46
+charts/lunar-mcpx-webapp/templates/clickhouse-statefulset.yaml
+  s_f921567018ecdc::t_2c3966109da5ea 48
+charts/lunar-mcpx-webapp/templates/lunar-admin-ui-deployment.yaml
+  s_f921567018ecdc::t_a033d61356d29a 49
+charts/lunar-mcpx-webapp/templates/lunar-auth-bff-deployment.yaml
+  s_f921567018ecdc::t_9a38e756e4cf5a 58
+charts/lunar-mcpx-webapp/templates/lunar-hive-controller-deployment.yaml
+  s_f921567018ecdc::t_4568d64bab88a5 49
+charts/lunar-mcpx-webapp/templates/lunar-hive-router-deployment.yaml
+  s_f921567018ecdc::t_81fc5738ef31ae 49
+charts/lunar-mcpx-webapp/templates/lunar-hive-ui-deployment.yaml
+  s_f921567018ecdc::t_3bd69957fd412f 49
+charts/lunar-mcpx-webapp/templates/lunar-hub-deployment.yaml
+  s_f921567018ecdc::t_49852f91775fbe 49
+charts/lunar-mcpx-webapp/templates/lunar-identity-broker-deployment.yaml
+  s_f921567018ecdc::t_2f863d546fdcc4 54
+charts/lunar-mcpx-webapp/templates/lunar-jobs-cronjob.yaml
+  s_f921567018ecdc::t_82c0559ae246a7 41,148,258
+charts/lunar-mcpx-webapp/templates/lunar-webserver-deployment.yaml
+  s_f921567018ecdc::t_e973a5e2b33046 49
+charts/lunar-mcpx-webapp/templates/postgresql-statefulset.yaml
+  s_f921567018ecdc::t_de1c4972f7a472 47
+charts/lunar-mcpx-webapp/templates/redis-statefulset.yaml
+  s_f921567018ecdc::t_5632e40a7151a7 47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "5c1b4227f2bd3c2dbb0342ab67ba524d1de0b687",
+  "prompts": {},
+  "sessions": {
+    "s_f921567018ecdc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "89e893fb-fee6-4207-af1e-49a9227a619a",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "EliavLunar <eliavl@lunar.dev>"
+    }
+  }
+}
