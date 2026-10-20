@@ -402,26 +402,6 @@ kubectl create job prune-ch-logs-execute-$(date +%s) \
   --from=cronjob/<release>-prune-ch-logs-execute -n <namespace>
 ```
 
-### Drain Space-Editing Swaps
-
-Restores each user's real ACTIVE setup before moving to the new space-editing mechanism. If a user was left mid-edit under the old mechanism, their ACTIVE slot holds a temporary editing copy while their real setup sits in a stash. Two **suspended CronJobs**, they never run automatically.
-
-| CronJob | Purpose |
-|:--------|:--------|
-| `<release>-drain-swaps-dry` | Lists every affected user (email + space name), makes no changes |
-| `<release>-drain-swaps-execute` | **Restores** each affected user's real ACTIVE setup |
-
-**Run a dry run, then execute:**
-```bash
-kubectl create job drain-swaps-dry-$(date +%s) \
-  --from=cronjob/<release>-drain-swaps-dry -n <namespace>
-
-kubectl create job drain-swaps-execute-$(date +%s) \
-  --from=cronjob/<release>-drain-swaps-execute -n <namespace>
-```
-
-> **Note:** Once you upgrade the MCPX pods in the system, any affected setup will be the correct one.
-
 ### Migrate Tool Groups to Skills
 
 Turns each active setup's tool groups into skills before enabling the skills feature. Every tool group becomes one skill carrying the same capability group; tools on custom (non-catalog) servers are dropped, and a group left with nothing is skipped. The original tool groups are **not** deleted. The migrated skills are **not** enabled for any consumer/client, so after the migration users will need to re-enable them per subject. A single **suspended CronJob**, it never runs automatically. It is **idempotent**: rerunning skips groups already migrated, so no duplicates.
@@ -437,6 +417,46 @@ kubectl create job migrate-tgs-$(date +%s) \
 ```
 
 > **Note:** Run this job first and check its log, then enable the skills feature flag on the MCPX instances. Order matters: migrate, then turn on.
+
+### Identity broker
+
+> **Logins only, for now.** Turned on, every auth-bff login goes through the broker: admins, knowledge workers (runtime) and MCP clients (OAuth), plus the Boomi session refresh. The webserver also saves the runtime IdP settings at the broker. Role lookups and group sync stay on auth-bff. The runtime door needs an `appVersion` built with the runtime door PR in lunar-private. Keep `identityBroker.enabled: false` until a release says otherwise.
+
+The identity broker is the one internal service that talks to the identity provider for the AI Gateway products. auth-bff calls it to log users in, and the webserver calls it to save the runtime IdP settings; it has no ingress and no public URL. The chart points both at it (`IDENTITY_BROKER_URL`) when it is on, and its NetworkPolicy lets only them in.
+
+The broker encrypts the stored runtime IdP secret with the install's `ENCRYPTION_KEY`, the same one the webserver uses. It reads it from `global`, like the webserver: `global.encryptionKey`, or a secret in `global.extraEnvFromSecrets`.
+
+The broker reads the same IdP and tenant settings as auth-bff, under the same names. Put them in `global.extraEnvVars` and a secret in `global.extraEnvFromSecrets` so both get them once, instead of in `auth.*`:
+
+```yaml
+global:
+  extraEnvVars:
+    - name: OIDC_ISSUER
+      value: https://login.microsoftonline.com/<tenant>/v2.0
+    - name: AUTHORIZED_TENANT_ID
+      value: <tenant>
+    - name: OIDC_TENANT_CLAIM
+      value: tid
+  extraEnvFromSecrets:
+    - mcpx-webapp-oidc       # holds OIDC_CLIENT_ID, OIDC_CLIENT_SECRET
+identityBroker:
+  enabled: true
+  extraEnvFromSecrets:
+    - identity-broker-db     # holds AI_GATEWAY_SHARED_DATABASE_URL (external Postgres only)
+  networkPolicy:
+    extraFrom:               # callers besides auth-bff, standard NetworkPolicy `from` peers
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: llm-gateway
+        podSelector:
+          matchLabels:
+            app: llm-gateway-auth
+```
+
+- Migrations run in an initContainer from the same image, before the broker starts.
+- Database: its own Postgres schema (`<product schema>_auth`), read from `AI_GATEWAY_SHARED_DATABASE_URL`, never `DATABASE_URL`. The chart provides it for the embedded Postgres; with an external one, put it in a secret listed in `extraEnvFromSecrets`.
+- `products` lists who may log in through it, with exact redirect and post-logout URIs. Left empty, it is mcpx alone, on auth-bff's callbacks under the origin of `OIDC_REDIRECT_URI` from `extraEnvVars`, else the first `ingress.domains.auth`. If you keep `OIDC_REDIRECT_URI` in a secret, set `products` too: the chart can't read it.
+- A NetworkPolicy lets only auth-bff pods reach it, plus `networkPolicy.extraFrom`. It has no other guard, so keep it on in clusters that enforce NetworkPolicies.
 
 ### Hibernation
 
@@ -540,13 +560,13 @@ kubectl exec -it <release>-clickhouse-0 -n <namespace> -- clickhouse-client \
 
 Minimal deployment with embedded Postgresql and Redis
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.10.3 --set postgres.enabled=true --set redis.enabled=true
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.10.4 --set postgres.enabled=true --set redis.enabled=true
 ```
 
 Alternatively, you may work with a separate values file to handle values override just like any other Helm chart:
 
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.10.3  -f ./values-override.yaml
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.10.4  -f ./values-override.yaml
 ```
 
 ### MCPX runtime auth
