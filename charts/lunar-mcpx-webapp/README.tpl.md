@@ -440,7 +440,7 @@ kubectl create job migrate-tgs-$(date +%s) \
 
 ### Identity broker
 
-> **Logins only, for now.** Turned on, every auth-bff login goes through the broker: admins, knowledge workers (runtime) and MCP clients (OAuth), plus the Boomi session refresh. The webserver also saves the runtime IdP settings at the broker. Role lookups and group sync stay on auth-bff. The runtime door needs an `appVersion` built with the runtime door PR in lunar-private. Keep `identityBroker.enabled: false` until a release says otherwise.
+> **Off by default.** Turned on, auth-bff talks to the identity provider only through the broker: every login (admins, knowledge workers and MCP clients), the user's groups at login (Google and Boomi included), the Boomi session refresh, and group sync's read of the IdP's directory. The webserver also saves the runtime IdP settings at the broker. It needs an `appVersion` built with the broker PRs in lunar-private. Keep `identityBroker.enabled: false` until a release says otherwise.
 
 The identity broker is the one internal service that talks to the identity provider for the AI Gateway products. auth-bff calls it to log users in, and the webserver calls it to save the runtime IdP settings; it has no ingress and no public URL. The chart points both at it (`IDENTITY_BROKER_URL`) when it is on, and its NetworkPolicy lets only them in.
 
@@ -453,12 +453,14 @@ global:
   extraEnvVars:
     - name: OIDC_ISSUER
       value: https://login.microsoftonline.com/<tenant>/v2.0
+    - name: OIDC_PROVIDER
+      value: entra
     - name: AUTHORIZED_TENANT_ID
       value: <tenant>
     - name: OIDC_TENANT_CLAIM
       value: tid
   extraEnvFromSecrets:
-    - mcpx-webapp-oidc       # holds OIDC_CLIENT_ID, OIDC_CLIENT_SECRET
+    - mcpx-webapp-oidc       # holds OIDC_CLIENT_ID, OIDC_CLIENT_SECRET, and OKTA_* on Okta
 identityBroker:
   enabled: true
   extraEnvFromSecrets:
@@ -477,6 +479,9 @@ identityBroker:
 - Database: its own Postgres schema (`<product schema>_auth`), read from `AI_GATEWAY_SHARED_DATABASE_URL`, never `DATABASE_URL`. The chart provides it for the embedded Postgres; with an external one, put it in a secret listed in `extraEnvFromSecrets`.
 - `products` lists who may log in through it, with exact redirect and post-logout URIs. Left empty, it is mcpx alone, on auth-bff's callbacks under the origin of `OIDC_REDIRECT_URI` from `extraEnvVars`, else the first `ingress.domains.auth`. If you keep `OIDC_REDIRECT_URI` in a secret, set `products` too: the chart can't read it.
 - A NetworkPolicy lets only auth-bff pods reach it, plus `networkPolicy.extraFrom`. It has no other guard, so keep it on in clusters that enforce NetworkPolicies.
+- Group sync on Okta needs the `OKTA_*` keys in both auth-bff (which decides to sync) and the broker (which reads Okta), so keep them in a `global.extraEnvFromSecrets` secret, not `auth.extraEnvFromSecrets`.
+- Google: `auth.googleApplicationCredentials` is mounted into the broker too, for the user's groups at login and group sync.
+- The role mapping (`OIDC_MAPPED_*_ROLES`) stays on auth-bff only: it sends the mapped groups to the broker with each login.
 
 ### Hibernation
 
