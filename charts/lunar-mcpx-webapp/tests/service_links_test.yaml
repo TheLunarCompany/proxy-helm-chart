@@ -11,7 +11,7 @@ set:
       postLogoutRedirectUris: ["https://auth.example.com/logout/callback"]
 
 tests:
-  - it: disables service-link env injection on every deployment and statefulset (AIGW-290)
+  - it: disables service-link env injection on every deployment and statefulset
     templates:
       - templates/lunar-admin-ui-deployment.yaml
       - templates/lunar-auth-bff-deployment.yaml
@@ -29,7 +29,7 @@ tests:
           path: spec.template.spec.enableServiceLinks
           value: false
 
-  - it: disables service-link env injection on every cronjob (AIGW-290)
+  - it: disables service-link env injection on every cronjob
     templates:
       - templates/lunar-jobs-cronjob.yaml
       - templates/lunar-admin-migrate-status-cronjob.yaml
