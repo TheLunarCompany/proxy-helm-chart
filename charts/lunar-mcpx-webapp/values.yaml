@@ -681,8 +681,9 @@ auth:
 
 identityBroker:
   # -- Runs the identity broker: the internal service that is the only OIDC
-  # client of the IdP for the AI Gateway products. On, auth-bff's admin door
-  # logs in through it (IDENTITY_BROKER_URL); needs an appVersion that has it.
+  # client of the IdP for the AI Gateway products. On, auth-bff logs in through
+  # it and webserver mirrors the runtime IdP settings to it
+  # (IDENTITY_BROKER_URL); needs an appVersion that has it.
   enabled: false
 
   image:
