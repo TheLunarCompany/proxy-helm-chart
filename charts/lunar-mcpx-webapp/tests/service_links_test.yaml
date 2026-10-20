@@ -1,0 +1,39 @@
+suite: service links
+set:
+  postgres.enabled: true
+  redis.enabled: true
+  clickhouse.enabled: true
+  clickhouse.credentialsSecret: ch-creds
+  identityBroker.enabled: true
+  identityBroker.products:
+    - productId: mcpx
+      redirectUris: ["https://auth.example.com/oauth/callback"]
+      postLogoutRedirectUris: ["https://auth.example.com/logout/callback"]
+
+tests:
+  - it: disables service-link env injection on every deployment and statefulset
+    templates:
+      - templates/lunar-admin-ui-deployment.yaml
+      - templates/lunar-auth-bff-deployment.yaml
+      - templates/lunar-hive-controller-deployment.yaml
+      - templates/lunar-hive-router-deployment.yaml
+      - templates/lunar-hive-ui-deployment.yaml
+      - templates/lunar-hub-deployment.yaml
+      - templates/lunar-identity-broker-deployment.yaml
+      - templates/lunar-webserver-deployment.yaml
+      - templates/clickhouse-statefulset.yaml
+      - templates/postgresql-statefulset.yaml
+      - templates/redis-statefulset.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.enableServiceLinks
+          value: false
+
+  - it: disables service-link env injection on every cronjob
+    templates:
+      - templates/lunar-jobs-cronjob.yaml
+      - templates/lunar-admin-migrate-status-cronjob.yaml
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.enableServiceLinks
+          value: false
