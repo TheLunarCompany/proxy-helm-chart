@@ -43,6 +43,7 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
         spec:
+          enableServiceLinks: false
           serviceAccountName: {{ include "lunar-mcpx-webapp.fullname" .root }}
           restartPolicy: Never
           containers:
