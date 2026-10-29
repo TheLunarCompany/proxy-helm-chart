@@ -1,6 +1,6 @@
 {{- if .Values.clickhouse.enabled | default false }}
 ---
-{{- include "lunar-mcpx-webapp.adminCronJob" (dict
+{{ include "lunar-mcpx-webapp.adminCronJob" (dict
   "root" .
   "jobName" "prune-ch-logs-execute"
   "command" (list "node" "dist/index.js" "prune-clickhouse-system-logs")

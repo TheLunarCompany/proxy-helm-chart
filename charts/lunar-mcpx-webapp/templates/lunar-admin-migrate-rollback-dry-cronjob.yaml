@@ -1,5 +1,5 @@
 ---
-{{- include "lunar-mcpx-webapp.adminCronJob" (dict
+{{ include "lunar-mcpx-webapp.adminCronJob" (dict
   "root" .
   "jobName" "migrate-rollback-dry"
   "command" (list "node" "dist/index.js" "migrate-rollback")
