@@ -269,6 +269,34 @@ by default; if you set a global memory target and want one service to opt back o
 Rendering fails if `maxReplicas < minReplicas` or if no metric is set. With a PDB also enabled, the
 HPA's `minReplicas` covers the "2+ replicas" floor check instead of `replicaCount`.
 
+### Rollout Strategy
+
+Each app deployment (`webserver`, `hub`, `admin`, `auth`, `router`, `ui`, `controller`, `identityBroker`)
+takes a Kubernetes Deployment `strategy`, rendered as is. Set the default under `global.strategy`, and
+override per service; a service-level `strategy` replaces the global one as a whole:
+
+```yaml
+global:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0         # no extra pod during a rollout
+      maxUnavailable: 1   # replace pods one at a time
+
+router:                   # no DB pool, so it can keep full capacity during a rollout
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+```
+
+Unset by default, which keeps the Kubernetes default (`maxSurge: 25%`, `maxUnavailable: 25%`). At 2
+replicas that starts a third pod during every rollout, and the HPA's `maxReplicas` does not cap it.
+`hub`, `webserver` and `auth` each hold their own DB pool (`db.connectionLimit`), so the extra pod
+adds a full pool's worth of Postgres connections; `maxSurge: 0` keeps a rollout within the steady-state
+count. With a single replica, `maxSurge: 0` means downtime while the pod is replaced.
+
 ### Admin DB Migration Jobs
 
 This chart includes four **suspended CronJobs** for DB migration management. They never run automatically — admins create one-off jobs from them using `kubectl create job`.

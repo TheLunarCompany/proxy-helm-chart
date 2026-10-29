@@ -18,6 +18,10 @@ spec:
   {{- if not (include "lunar-mcpx-webapp.hpaEnabled" (dict "key" "ui" "context" .)) }}
   replicas: {{ .Values.ui.replicaCount | default 1 }}
   {{- end }}
+  {{- with (.Values.ui.strategy | default .Values.global.strategy) }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   selector:
     matchLabels:
       app: {{ include "lunar-mcpx-webapp.fullname" . }}-ui

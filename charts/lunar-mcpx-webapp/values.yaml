@@ -171,6 +171,19 @@ global:
     # -- Lookback window before scaling down. 0 = immediate.
     scaleDownStabilizationSeconds: 300
 
+  # -- strategy sets the rollout strategy of every app deployment: a Kubernetes
+  # Deployment `spec.strategy` object, rendered as is. Empty keeps the Kubernetes
+  # default (RollingUpdate, maxSurge 25%, maxUnavailable 25%), which at 2 replicas
+  # starts a third pod during a rollout, on top of the HPA's maxReplicas. To replace
+  # pods one at a time with no extra pod (e.g. to stay under the database's
+  # max_connections, since hub, webserver and auth each hold a DB pool):
+  # strategy:
+  #   type: RollingUpdate
+  #   rollingUpdate:
+  #     maxSurge: 0
+  #     maxUnavailable: 1
+  strategy: {}
+
 webserver:
   image:
     # -- Lunar mcpx-webserver image repository
@@ -234,6 +247,9 @@ webserver:
 
   # -- hpa overrides global.hpa for this deployment. Same fields as global.
   hpa: {}
+
+  # -- strategy overrides global.strategy for this deployment (the whole object, not field by field).
+  strategy: {}
 
   # -- Set pod resource requests & limits
   resources:
@@ -359,6 +375,9 @@ hub:
 
   # -- hpa overrides global.hpa for this deployment. Same fields as global.
   hpa: {}
+
+  # -- strategy overrides global.strategy for this deployment (the whole object, not field by field).
+  strategy: {}
 
   # -- Set pod resource requests & limits
   resources:
@@ -504,6 +523,9 @@ admin:
   # -- hpa overrides global.hpa for this deployment. Same fields as global.
   hpa: {}
 
+  # -- strategy overrides global.strategy for this deployment (the whole object, not field by field).
+  strategy: {}
+
   # -- Set pod resource requests & limits
   resources:
     limits:
@@ -619,6 +641,9 @@ auth:
 
   # -- hpa overrides global.hpa for this deployment. Same fields as global.
   hpa: {}
+
+  # -- strategy overrides global.strategy for this deployment (the whole object, not field by field).
+  strategy: {}
 
   # -- Set pod resource requests & limits
   resources:
@@ -748,6 +773,9 @@ identityBroker:
   # -- hpa overrides global.hpa for this deployment. Same fields as global.
   hpa: {}
 
+  # -- strategy overrides global.strategy for this deployment (the whole object, not field by field).
+  strategy: {}
+
   # -- Set pod resource requests & limits
   resources:
     limits:
@@ -787,6 +815,9 @@ controller:
 
   # -- hpa overrides global.hpa for this deployment. Same fields as global.
   hpa: {}
+
+  # -- strategy overrides global.strategy for this deployment (the whole object, not field by field).
+  strategy: {}
   image:
     # -- Lunar mcpx-hive-controller image repository
     repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-hive-controller
@@ -1017,6 +1048,9 @@ router:
   # -- hpa overrides global.hpa for this deployment. Same fields as global.
   hpa: {}
 
+  # -- strategy overrides global.strategy for this deployment (the whole object, not field by field).
+  strategy: {}
+
   # -- Set pod resource requests & limits
   resources:
     limits:
@@ -1129,6 +1163,9 @@ ui:
 
   # -- hpa overrides global.hpa for this deployment. Same fields as global.
   hpa: {}
+
+  # -- strategy overrides global.strategy for this deployment (the whole object, not field by field).
+  strategy: {}
 
   # -- Set pod resource requests & limits
   resources:
