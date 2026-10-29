@@ -18,6 +18,10 @@ spec:
   {{- if not (include "lunar-mcpx-webapp.hpaEnabled" (dict "key" "admin" "context" .)) }}
   replicas: {{ .Values.admin.replicaCount | default 1 }}
   {{- end }}
+  {{- with (.Values.admin.strategy | default .Values.global.strategy) }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   selector:
     matchLabels:
       app: {{ include "lunar-mcpx-webapp.fullname" . }}-admin

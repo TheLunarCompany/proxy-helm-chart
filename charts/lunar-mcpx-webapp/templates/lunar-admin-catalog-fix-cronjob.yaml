@@ -1,5 +1,5 @@
 ---
-{{- include "lunar-mcpx-webapp.adminCronJob" (dict
+{{ include "lunar-mcpx-webapp.adminCronJob" (dict
   "root" .
   "jobName" "catalog-fix"
   "command" (list "node" "dist/index.js" "fix-catalog-item-from-store")

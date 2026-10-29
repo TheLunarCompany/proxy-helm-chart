@@ -1,0 +1,74 @@
+suite: deployment rollout strategy
+templates:
+  - templates/lunar-admin-ui-deployment.yaml
+  - templates/lunar-auth-bff-deployment.yaml
+  - templates/lunar-hive-controller-deployment.yaml
+  - templates/lunar-hive-router-deployment.yaml
+  - templates/lunar-hive-ui-deployment.yaml
+  - templates/lunar-hub-deployment.yaml
+  - templates/lunar-identity-broker-deployment.yaml
+  - templates/lunar-webserver-deployment.yaml
+set:
+  postgres.enabled: true
+  identityBroker.enabled: true
+  identityBroker.products:
+    - productId: mcpx
+      redirectUris: ["https://auth.example.com/oauth/callback"]
+      postLogoutRedirectUris: ["https://auth.example.com/logout/callback"]
+
+tests:
+  - it: renders no strategy by default, keeping the Kubernetes rollout default
+    asserts:
+      - notExists:
+          path: spec.strategy
+
+  - it: applies global.strategy to every app deployment
+    set:
+      global.strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxSurge: 0
+          maxUnavailable: 1
+    asserts:
+      - equal:
+          path: spec.strategy
+          value:
+            type: RollingUpdate
+            rollingUpdate:
+              maxSurge: 0
+              maxUnavailable: 1
+
+  - it: a service strategy replaces the global one as a whole object
+    set:
+      global.strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxSurge: 0
+          maxUnavailable: 1
+      hub.strategy:
+        type: Recreate
+    template: templates/lunar-hub-deployment.yaml
+    asserts:
+      - equal:
+          path: spec.strategy
+          value:
+            type: Recreate
+
+  - it: other services keep the global strategy when one service overrides it
+    set:
+      global.strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxSurge: 0
+          maxUnavailable: 1
+      hub.strategy:
+        type: Recreate
+    template: templates/lunar-webserver-deployment.yaml
+    asserts:
+      - equal:
+          path: spec.strategy
+          value:
+            type: RollingUpdate
+            rollingUpdate:
+              maxSurge: 0
+              maxUnavailable: 1
