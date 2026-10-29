@@ -32,13 +32,18 @@ tests:
 
   - it: runs the migrations in an initContainer from the same image, without npx
     template: templates/lunar-identity-broker-deployment.yaml
+    chart:
+      appVersion: 1.2.3
     asserts:
       - equal:
           path: spec.template.spec.initContainers[0].command
           value: ["../../node_modules/.bin/prisma", "migrate", "deploy"]
       - equal:
           path: spec.template.spec.initContainers[0].image
-          value: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/aigw-identity-broker:0.10.3
+          value: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/aigw-identity-broker:1.2.3
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/aigw-identity-broker:1.2.3
 
   - it: renders the products as the PRODUCTS JSON
     template: templates/lunar-identity-broker-deployment.yaml
