@@ -1,0 +1,55 @@
+charts/lunar-mcpx-webapp/README.tpl.md
+  s_a2e6fe224d3386::t_284429f0bc4c72 272-285,292-299
+  s_a2e6fe224d3386::t_b93da753585561 286-291
+charts/lunar-mcpx-webapp/values.yaml
+  s_a2e6fe224d3386::t_beda3aa0ee3956 174-186,252,380,527,646,777,820,1052,1168
+  s_a2e6fe224d3386::t_4b45ab15e0166a 251
+  s_a2e6fe224d3386::t_a9c0bebfdee0ad 253
+  s_a2e6fe224d3386::t_0d487e0a9b2cf8 379
+  s_a2e6fe224d3386::t_ffcdebd23649da 381
+  s_a2e6fe224d3386::t_d3f00faf32c4d8 526
+  s_a2e6fe224d3386::t_74d2dc39b95a72 528
+  s_a2e6fe224d3386::t_ab4c0c08aaa42a 645
+  s_a2e6fe224d3386::t_db9c2b7de1075a 647
+  s_a2e6fe224d3386::t_a930c338755c3e 776
+  s_a2e6fe224d3386::t_2b512159ec18eb 778
+  s_a2e6fe224d3386::t_bdee60561e699c 818-819
+  s_a2e6fe224d3386::t_57fc33cf48a06e 1051
+  s_a2e6fe224d3386::t_808c7b028d99e6 1053
+  s_a2e6fe224d3386::t_dfede3b6e07325 1167
+  s_a2e6fe224d3386::t_1942eaf2afc195 1169
+charts/lunar-mcpx-webapp/tests/strategy_test.yaml
+  s_a2e6fe224d3386::t_d63c790ff18fc1 1-74
+charts/lunar-mcpx-webapp/templates/lunar-admin-ui-deployment.yaml
+  s_a2e6fe224d3386::t_1f3dd16e2edd6e 21-24
+charts/lunar-mcpx-webapp/templates/lunar-auth-bff-deployment.yaml
+  s_a2e6fe224d3386::t_e8ab50310f676d 26-29
+charts/lunar-mcpx-webapp/templates/lunar-hive-controller-deployment.yaml
+  s_a2e6fe224d3386::t_16c428c27a5593 21-24
+charts/lunar-mcpx-webapp/templates/lunar-hive-router-deployment.yaml
+  s_a2e6fe224d3386::t_0655fea43a0b0e 21-24
+charts/lunar-mcpx-webapp/templates/lunar-hive-ui-deployment.yaml
+  s_a2e6fe224d3386::t_1fc8a6cc99cb93 21-24
+charts/lunar-mcpx-webapp/templates/lunar-hub-deployment.yaml
+  s_a2e6fe224d3386::t_199b4ecee91a64 21-24
+charts/lunar-mcpx-webapp/templates/lunar-identity-broker-deployment.yaml
+  s_a2e6fe224d3386::t_139fb47c2705e9 26-29
+charts/lunar-mcpx-webapp/templates/lunar-webserver-deployment.yaml
+  s_a2e6fe224d3386::t_704664c828a5a4 21-24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "8071b2cff4bf4010aa9d92e96b84a0b87f6a51a8",
+  "prompts": {},
+  "sessions": {
+    "s_a2e6fe224d3386": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0c063e7b-3b87-43cb-971c-f20524fd1abe",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "EliavLunar <eliavl@lunar.dev>"
+    }
+  }
+}
