@@ -1,0 +1,36 @@
+charts/lunar-mcpx-webapp/values.yaml
+  s_a5f3534fe8ae34::t_2372ffcd3c2d64 796-802
+charts/lunar-mcpx-webapp/templates/lunar-identity-broker-deployment.yaml
+  s_a5f3534fe8ae34::t_f34c1fafd728ba 127-130,163,165,170-175,179,181,188-196
+  s_a5f3534fe8ae34::t_b07b08851d0391 9-11
+charts/lunar-mcpx-webapp/examples/values-override/gcp-prod.yaml
+  s_a5f3534fe8ae34::t_3aab18555a6dd4 28-33
+charts/lunar-mcpx-webapp/README.tpl.md
+  s_a5f3534fe8ae34::t_048e4895dd7fd8 113-117,121
+  s_a5f3534fe8ae34::t_7f9c1ab5e2ee61 478-480
+  s_a5f3534fe8ae34::t_6729b025b3de99 120,122
+charts/lunar-mcpx-webapp/README.md
+  s_a5f3534fe8ae34::t_52072eced97278 450-452
+  s_a5f3534fe8ae34::t_be73d1e740e5f5 113-117,121
+  s_a5f3534fe8ae34::t_b654b5bcf85044 120,122
+charts/lunar-mcpx-webapp/values.schema.json
+  s_a5f3534fe8ae34::t_f2dba7041ce8ca 324-337
+charts/lunar-mcpx-webapp/tests/identity_broker_test.yaml
+  s_a5f3534fe8ae34::t_a1d6e7eff5a8bd 76-112
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "e153c06bc8ba80e0a291be59695646bb048c14dd",
+  "prompts": {},
+  "sessions": {
+    "s_a5f3534fe8ae34": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "c90d5985-c572-4174-a642-f87f0cc9da0c",
+        "model": "default"
+      },
+      "human_author": "tamarp-lunar <tamarp@lunar.dev>"
+    }
+  }
+}
