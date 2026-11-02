@@ -110,12 +110,16 @@ It is possible to supply this variables using several different techniques:
       extraEnvFromSecrets:
         - mcpx-webapp-oidc
       googleApplicationCredentials:
-        secretName: mcpx-webapp-oidc
+        secretName: my-google-adc   # any secret name that holds the SA key JSON
+
+    identityBroker:
+      googleApplicationCredentials:
+        secretName: my-google-adc   # same or a different secret — name is yours
     ```
 
-  - `auth.googleApplicationCredentials` is optional.
-    - Set `secretName` to mount a service account key as a file for `auth-bff`.
-    - The chart then sets `GOOGLE_APPLICATION_CREDENTIALS=/var/secrets/google/credentials.json`.
+  - `auth.googleApplicationCredentials` and `identityBroker.googleApplicationCredentials` are optional.
+    - Set `secretName` to any existing Kubernetes secret that holds a service account key JSON (the name is yours — examples use placeholders only).
+    - The chart mounts that secret and sets `GOOGLE_APPLICATION_CREDENTIALS=/var/secrets/google/credentials.json`.
     - Override `secretKey` if your secret stores the JSON under a different key name.
     - Leave it unset to rely on ambient ADC / Workload Identity instead.
 
@@ -268,6 +272,34 @@ by default; if you set a global memory target and want one service to opt back o
 `""` on that service — deleting the per-service key instead falls back to the global value.
 Rendering fails if `maxReplicas < minReplicas` or if no metric is set. With a PDB also enabled, the
 HPA's `minReplicas` covers the "2+ replicas" floor check instead of `replicaCount`.
+
+### Rollout Strategy
+
+Each app deployment (`webserver`, `hub`, `admin`, `auth`, `router`, `ui`, `controller`, `identityBroker`)
+takes a Kubernetes Deployment `strategy`, rendered as is. Set the default under `global.strategy`, and
+override per service; a service-level `strategy` replaces the global one as a whole:
+
+```yaml
+global:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0         # no extra pod during a rollout
+      maxUnavailable: 1   # replace pods one at a time
+
+router:                   # no DB pool, so it can keep full capacity during a rollout
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+```
+
+Unset by default, which keeps the Kubernetes default (`maxSurge: 25%`, `maxUnavailable: 25%`). At 2
+replicas that starts a third pod during every rollout, and the HPA's `maxReplicas` does not cap it.
+`hub`, `webserver` and `auth` each hold their own DB pool (`db.connectionLimit`), so the extra pod
+adds a full pool's worth of Postgres connections; `maxSurge: 0` keeps a rollout within the steady-state
+count. With a single replica, `maxSurge: 0` means downtime while the pod is replaced.
 
 ### Admin DB Migration Jobs
 
@@ -443,6 +475,9 @@ identityBroker:
   enabled: true
   extraEnvFromSecrets:
     - identity-broker-db     # holds AI_GATEWAY_SHARED_DATABASE_URL (external Postgres only)
+  # Optional if using GCP workspace for OIDC — secretName is any secret you provide
+  # googleApplicationCredentials:
+  #   secretName: my-google-adc
   networkPolicy:
     extraFrom:               # callers besides auth-bff, standard NetworkPolicy `from` peers
       - namespaceSelector:
@@ -560,13 +595,13 @@ kubectl exec -it <release>-clickhouse-0 -n <namespace> -- clickhouse-client \
 
 Minimal deployment with embedded Postgresql and Redis
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.10.8 --set postgres.enabled=true --set redis.enabled=true
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.10.9 --set postgres.enabled=true --set redis.enabled=true
 ```
 
 Alternatively, you may work with a separate values file to handle values override just like any other Helm chart:
 
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.10.8  -f ./values-override.yaml
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.10.9  -f ./values-override.yaml
 ```
 
 ### MCPX runtime auth
