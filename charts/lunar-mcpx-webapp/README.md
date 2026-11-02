@@ -110,12 +110,16 @@ It is possible to supply this variables using several different techniques:
       extraEnvFromSecrets:
         - mcpx-webapp-oidc
       googleApplicationCredentials:
-        secretName: mcpx-webapp-oidc
+        secretName: my-google-adc   # any secret name that holds the SA key JSON
+
+    identityBroker:
+      googleApplicationCredentials:
+        secretName: my-google-adc   # same or a different secret — name is yours
     ```
 
-  - `auth.googleApplicationCredentials` is optional.
-    - Set `secretName` to mount a service account key as a file for `auth-bff`.
-    - The chart then sets `GOOGLE_APPLICATION_CREDENTIALS=/var/secrets/google/credentials.json`.
+  - `auth.googleApplicationCredentials` and `identityBroker.googleApplicationCredentials` are optional.
+    - Set `secretName` to any existing Kubernetes secret that holds a service account key JSON (the name is yours — examples use placeholders only).
+    - The chart mounts that secret and sets `GOOGLE_APPLICATION_CREDENTIALS=/var/secrets/google/credentials.json`.
     - Override `secretKey` if your secret stores the JSON under a different key name.
     - Leave it unset to rely on ambient ADC / Workload Identity instead.
 
@@ -443,6 +447,9 @@ identityBroker:
   enabled: true
   extraEnvFromSecrets:
     - identity-broker-db     # holds AI_GATEWAY_SHARED_DATABASE_URL (external Postgres only)
+  # Optional if using GCP workspace for OIDC — secretName is any secret you provide
+  # googleApplicationCredentials:
+  #   secretName: my-google-adc
   networkPolicy:
     extraFrom:               # callers besides auth-bff, standard NetworkPolicy `from` peers
       - namespaceSelector:
