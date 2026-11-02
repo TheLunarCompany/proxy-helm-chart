@@ -321,6 +321,20 @@
             }
           }
         },
+        "googleApplicationCredentials": {
+          "type": "object",
+          "description": "Optional secret-backed ADC file for identity-broker.",
+          "properties": {
+            "secretName": {
+              "type": "string",
+              "default": ""
+            },
+            "secretKey": {
+              "type": "string",
+              "default": "credentials.json"
+            }
+          }
+        },
         "products": {
           "type": "array",
           "items": {

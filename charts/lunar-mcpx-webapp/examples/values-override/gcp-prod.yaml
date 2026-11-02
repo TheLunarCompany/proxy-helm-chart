@@ -25,6 +25,12 @@ auth:
   # googleApplicationCredentials:
   #   secretName: mcpx-webapp-oidc
 
+# identityBroker:
+#   enabled: true
+#   # Optional if using GCP workspace for OIDC — any secret name that holds the SA key JSON
+#   googleApplicationCredentials:
+#     secretName: my-google-adc
+
 controller:
   replicaCount: 2
 

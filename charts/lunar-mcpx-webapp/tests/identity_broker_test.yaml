@@ -73,6 +73,43 @@ tests:
           path: spec.template.spec.initContainers[0].envFrom
           value: *envFrom
 
+  - it: should not render Google credential mounts by default
+    template: templates/lunar-identity-broker-deployment.yaml
+    asserts:
+      - isNull:
+          path: spec.template.spec.containers[0].volumeMounts
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: GOOGLE_APPLICATION_CREDENTIALS
+
+  - it: should render Google ADC secret mount when configured
+    set:
+      identityBroker.googleApplicationCredentials.secretName: my-google-adc
+      identityBroker.googleApplicationCredentials.secretKey: credentials.json
+    template: templates/lunar-identity-broker-deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /var/secrets/google/credentials.json
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: google-application-credentials
+            mountPath: /var/secrets/google
+            readOnly: true
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: google-application-credentials
+            secret:
+              secretName: my-google-adc
+              items:
+                - key: credentials.json
+                  path: credentials.json
+
   - it: puts the embedded Postgres URL with the public_auth schema in the embedded secret
     template: templates/lunar-common-secrets.yaml
     asserts:
