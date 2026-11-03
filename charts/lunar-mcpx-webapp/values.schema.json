@@ -78,6 +78,43 @@
           "default": 300
         }
       }
+    },
+    "podDnsConfig": {
+      "type": "object",
+      "description": "k8s PodDNSConfig, merged into the cluster DNS settings. Option values must be strings",
+      "additionalProperties": false,
+      "properties": {
+        "nameservers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "searches": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "properties": {
@@ -737,6 +774,9 @@
         "mcpxPriorityClassName": {
           "type": "string",
           "description": "priorityClassName applied to every MCPX instance pod created by the controller"
+        },
+        "mcpxDnsConfig": {
+          "$ref": "#/$defs/podDnsConfig"
         }
       }
     },
@@ -861,6 +901,9 @@
         },
         "hpa": {
           "$ref": "#/$defs/hpa"
+        },
+        "dnsConfig": {
+          "$ref": "#/$defs/podDnsConfig"
         }
       }
     },
