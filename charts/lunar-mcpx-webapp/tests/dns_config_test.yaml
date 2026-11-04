@@ -1,0 +1,71 @@
+suite: pod dnsConfig for MCPX instances and the router
+templates:
+  - templates/lunar-hive-controller-deployment.yaml
+  - templates/lunar-hive-router-deployment.yaml
+
+tests:
+  - it: controller passes controller.mcpxDnsConfig as MCPX_DNS_CONFIG
+    template: templates/lunar-hive-controller-deployment.yaml
+    set:
+      controller.mcpxDnsConfig:
+        options:
+          - name: ndots
+            value: "2"
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MCPX_DNS_CONFIG
+            value: '{"options":[{"name":"ndots","value":"2"}]}'
+
+  - it: controller omits MCPX_DNS_CONFIG by default
+    template: templates/lunar-hive-controller-deployment.yaml
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MCPX_DNS_CONFIG
+          any: true
+
+  - it: controller rejects an unquoted option value
+    template: templates/lunar-hive-controller-deployment.yaml
+    set:
+      controller.mcpxDnsConfig:
+        options:
+          - name: ndots
+            value: 2
+    asserts:
+      - failedTemplate:
+          errorPattern: mcpxDnsConfig
+
+  - it: router renders router.dnsConfig on its pod
+    template: templates/lunar-hive-router-deployment.yaml
+    set:
+      router.dnsConfig:
+        options:
+          - name: ndots
+            value: "2"
+    asserts:
+      - equal:
+          path: spec.template.spec.dnsConfig
+          value:
+            options:
+              - name: ndots
+                value: "2"
+
+  - it: router renders no dnsConfig by default
+    template: templates/lunar-hive-router-deployment.yaml
+    asserts:
+      - notExists:
+          path: spec.template.spec.dnsConfig
+
+  - it: router rejects a misspelled dnsConfig key
+    template: templates/lunar-hive-router-deployment.yaml
+    set:
+      router.dnsConfig:
+        option:
+          - name: ndots
+            value: "2"
+    asserts:
+      - failedTemplate:
+          errorPattern: dnsConfig

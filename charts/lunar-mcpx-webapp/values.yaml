@@ -905,6 +905,18 @@ controller:
   # mcpxPriorityClassName: "custom"
   mcpxPriorityClassName: ""
 
+  # -- mcpxDnsConfig DNS config applied to every MCPX instance pod created by the controller.
+  # Merged into the cluster DNS settings (dnsPolicy stays ClusterFirst). ndots "2" is the
+  # recommended value: external names such as api.example.com are then looked up directly
+  # instead of first against every cluster search domain. Option values must be quoted strings.
+  # Running instances pick up a change on their next wake or config update.
+  # https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-dns-config
+  # mcpxDnsConfig:
+  #   options:
+  #     - name: ndots
+  #       value: "2"
+  mcpxDnsConfig: {}
+
   # -- mcpxCRD configuration for CRD schema version checks
   mcpxCRD:
     # -- Enable strict schema version checking
@@ -1014,6 +1026,16 @@ router:
   # -- NodeSelector to pin pods in deployment to certain set of nodes.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
   nodeSelector: {}
+
+  # -- dnsConfig DNS config for the router pods, merged into the cluster DNS settings
+  # (dnsPolicy stays ClusterFirst). ndots "2" is the recommended value, same as
+  # controller.mcpxDnsConfig. Option values must be quoted strings.
+  # https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-dns-config
+  # dnsConfig:
+  #   options:
+  #     - name: ndots
+  #       value: "2"
+  dnsConfig: {}
 
   # -- tolerations allow the scheduler to schedule pods with matching taints.
   # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/

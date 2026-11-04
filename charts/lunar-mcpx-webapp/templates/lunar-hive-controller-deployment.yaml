@@ -181,6 +181,11 @@ spec:
             - name: MCPX_PRIORITY_CLASS_NAME
               value: {{ $mcpxPriorityClassName | quote }}
           {{- end }}
+          {{- $mcpxDnsConfig := .Values.controller.mcpxDnsConfig | default dict }}
+          {{- if $mcpxDnsConfig }}
+            - name: MCPX_DNS_CONFIG
+              value: {{ $mcpxDnsConfig | toJson | quote }}
+          {{- end }}
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}
