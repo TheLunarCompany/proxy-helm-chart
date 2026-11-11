@@ -1352,6 +1352,10 @@ hibernation:
   # Apart from 0, the effective minimum is 3: values of 1 or 2 are clamped up to 3.
   idleMinutes: 0
 
+# On webserver start, update every MCPX instance to this release's MCPX version.
+# Version only; per-instance settings are kept. Runs on every start, a no-op when aligned.
+autoUpdateInstances: false
+
 auditLog:
   # Cron schedule for the audit-log pruning job (e.g. "0 12 * * *").
   # Enabled by default (daily at noon). Leave empty to disable the CronJob.

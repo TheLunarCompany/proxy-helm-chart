@@ -1,0 +1,31 @@
+suite: webserver MCPX_AUTO_ALIGN_INSTANCES value
+templates:
+  - templates/lunar-webserver-deployment.yaml
+
+tests:
+  - it: omits MCPX_AUTO_ALIGN_INSTANCES by default
+    release:
+      name: my-release
+    asserts:
+      - notContains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MCPX_AUTO_ALIGN_INSTANCES
+          any: true
+
+  - it: sets MCPX_AUTO_ALIGN_INSTANCES when autoUpdateInstances is true
+    release:
+      name: my-release
+    set:
+      autoUpdateInstances: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MCPX_AUTO_ALIGN_INSTANCES
+            value: "true"
+      - notContains:
+          path: spec.template.spec.initContainers[0].env
+          content:
+            name: MCPX_AUTO_ALIGN_INSTANCES
+          any: true

@@ -670,6 +670,11 @@
         }
       }
     },
+    "autoUpdateInstances": {
+      "type": "boolean",
+      "description": "On webserver start, update every MCPX instance to this release's MCPX version. Version only; per-instance settings are kept. Runs on every start, a no-op when aligned. Sets MCPX_AUTO_ALIGN_INSTANCES on the webserver.",
+      "default": false
+    },
     "auditLog": {
       "type": "object",
       "properties": {

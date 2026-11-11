@@ -225,6 +225,10 @@ spec:
             - name: HIBERNATION_IDLE_MINUTES
               value: {{ .Values.hibernation.idleMinutes | quote }}
             {{- end }}
+            {{- if .Values.autoUpdateInstances }}
+            - name: MCPX_AUTO_ALIGN_INSTANCES
+              value: "true"
+            {{- end }}
             - name: WEBAPP_DEPLOYMENT_PREFIX
               value: {{ include "lunar-mcpx-webapp.fullname" . | quote }}
             {{- $webserverExtraEnvNames := list }}
