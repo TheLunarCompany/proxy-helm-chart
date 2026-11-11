@@ -1,0 +1,22 @@
+charts/lunar-mcpx-webapp/templates/lunar-webserver-deployment.yaml
+  s_ca561cbb1ebbac::t_061a892c7a877b 234-236
+  s_ca561cbb1ebbac::t_cf18fba0265618 237
+charts/lunar-mcpx-webapp/tests/webserver_auto_update_instances_test.yaml
+  s_ca561cbb1ebbac::t_87840da28558ea 32-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "ee5f1ed46baecc69a25c210a9b150f3cb9c7e5f2",
+  "prompts": {},
+  "sessions": {
+    "s_ca561cbb1ebbac": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fe1eccc-3204-4c40-8833-a456be9b1b1f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prashant Kumar <prashant.kumar@boomi.com>"
+    }
+  }
+}
