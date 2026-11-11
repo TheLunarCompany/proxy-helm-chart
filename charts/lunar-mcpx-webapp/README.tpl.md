@@ -434,6 +434,22 @@ kubectl create job prune-ch-logs-execute-$(date +%s) \
   --from=cronjob/<release>-prune-ch-logs-execute -n <namespace>
 ```
 
+### ClickHouse Hourly Rollup Rebuild
+
+The Agent Usage and Users dashboards read tool usage from an hourly rollup table (`tool_usage_hourly`), which ClickHouse fills on every new insert. Rows written before the upgrade that adds it are not in the rollup yet, so until this job runs, older hours show low counts. Run it **once after upgrading**. A single **suspended CronJob**, it never runs automatically.
+
+| CronJob | Purpose |
+|:--------|:--------|
+| `<release>-rebuild-ch-rollup` | Rebuilds the rollup from the raw `tool_usage` rows for every hour before the start of the hour 15 minutes ago |
+
+**Run the rebuild:**
+```bash
+kubectl create job rebuild-ch-rollup-$(date +%s) \
+  --from=cronjob/<release>-rebuild-ch-rollup -n <namespace>
+```
+
+> **Note:** Run it after the first full hour following the upgrade has passed. If it is too early, the job fails and its log says how many minutes to wait. It is safe to rerun.
+
 ### Migrate Tool Groups to Skills
 
 Turns each active setup's tool groups into skills before enabling the skills feature. Every tool group becomes one skill carrying the same capability group; tools on custom (non-catalog) servers are dropped, and a group left with nothing is skipped. The original tool groups are **not** deleted. The migrated skills are **not** enabled for any consumer/client, so after the migration users will need to re-enable them per subject. A single **suspended CronJob**, it never runs automatically. It is **idempotent**: rerunning skips groups already migrated, so no duplicates.

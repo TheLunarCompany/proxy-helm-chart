@@ -1,0 +1,10 @@
+{{- if .Values.clickhouse.enabled | default false }}
+---
+{{ include "lunar-mcpx-webapp.adminCronJob" (dict
+  "root" .
+  "jobName" "rebuild-ch-rollup"
+  "command" (list "node" "dist/index.js" "rebuild-clickhouse-hourly-rollup")
+  "clickhouse" true
+  "extraEnv" (list)
+) }}
+{{- end }}
