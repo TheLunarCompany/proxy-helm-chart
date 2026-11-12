@@ -1,0 +1,19 @@
+charts/lunar-mcpx-webapp/README.tpl.md
+  s_ca561cbb1ebbac::t_4872bd1007907f 558-559
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "433fd899498a954cdda5c8e747177d198d80d3af",
+  "prompts": {},
+  "sessions": {
+    "s_ca561cbb1ebbac": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fe1eccc-3204-4c40-8833-a456be9b1b1f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prashant Kumar <prashant.kumar@boomi.com>"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+charts/lunar-mcpx-webapp/tests/service_links_test.yaml
+  s_f921567018ecdc::t_e858eea23c5ce2 14,32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "25ddce21c5953632390b48de88372ea7a2ecb3b4",
+  "prompts": {},
+  "sessions": {
+    "s_f921567018ecdc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "89e893fb-fee6-4207-af1e-49a9227a619a",
+        "model": "unknown"
+      },
+      "human_author": "EliavLunar <eliavl@lunar.dev>"
+    }
+  }
+}

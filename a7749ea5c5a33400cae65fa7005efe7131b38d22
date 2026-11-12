@@ -1,0 +1,14 @@
+charts/lunar-mcpx-webapp/README.tpl.md
+  h_0105855dedd331 553-556
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "a7749ea5c5a33400cae65fa7005efe7131b38d22",
+  "prompts": {},
+  "humans": {
+    "h_0105855dedd331": {
+      "author": "Prashant Kumar <prashant.kumar@boomi.com>"
+    }
+  }
+}

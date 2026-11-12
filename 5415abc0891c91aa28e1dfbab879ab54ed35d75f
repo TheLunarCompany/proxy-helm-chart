@@ -1,0 +1,19 @@
+charts/lunar-mcpx-webapp/templates/lunar-webserver-deployment.yaml
+  s_7741ad9c7e0761::t_3129deb623e6de 231
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "5415abc0891c91aa28e1dfbab879ab54ed35d75f",
+  "prompts": {},
+  "sessions": {
+    "s_7741ad9c7e0761": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e3ab3577-b3ca-4afb-94c9-628ce65bb1b1",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "EliavLunar <eliavl@lunar.dev>"
+    }
+  }
+}

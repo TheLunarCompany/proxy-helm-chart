@@ -1,0 +1,45 @@
+charts/lunar-mcpx-webapp/templates/lunar-admin-catalog-fix-cronjob.yaml
+  s_a2e6fe224d3386::t_0f77e842331f77 2
+charts/lunar-mcpx-webapp/templates/lunar-admin-catalog-host-backfill-cronjob.yaml
+  s_a2e6fe224d3386::t_9fbd43f3beb92d 2
+charts/lunar-mcpx-webapp/templates/lunar-admin-catalog-list-cronjob.yaml
+  s_a2e6fe224d3386::t_819f38852f5f13 2
+charts/lunar-mcpx-webapp/templates/lunar-admin-catalog-populate-cronjob.yaml
+  s_a2e6fe224d3386::t_b863fc605ca604 2
+charts/lunar-mcpx-webapp/templates/lunar-admin-encrypt-initiations-cronjob.yaml
+  s_a2e6fe224d3386::t_1dfede3f890d44 2
+charts/lunar-mcpx-webapp/templates/lunar-admin-migrate-resolve-failed-cronjob.yaml
+  s_a2e6fe224d3386::t_1cbc5322d5ceef 2
+charts/lunar-mcpx-webapp/templates/lunar-admin-migrate-rollback-dry-cronjob.yaml
+  s_a2e6fe224d3386::t_dca4b50ecd6667 2
+charts/lunar-mcpx-webapp/templates/lunar-admin-migrate-rollback-execute-cronjob.yaml
+  s_a2e6fe224d3386::t_9d58ba96805508 2
+charts/lunar-mcpx-webapp/templates/lunar-admin-migrate-status-cronjob.yaml
+  s_a2e6fe224d3386::t_6d22dd4c597ad9 2
+charts/lunar-mcpx-webapp/templates/lunar-admin-migrate-tool-groups-to-skills-cronjob.yaml
+  s_a2e6fe224d3386::t_d502e16c74dfca 2
+charts/lunar-mcpx-webapp/templates/lunar-admin-prune-clickhouse-system-logs-dry-cronjob.yaml
+  s_a2e6fe224d3386::t_998722a9e132e7 3
+charts/lunar-mcpx-webapp/templates/lunar-admin-prune-clickhouse-system-logs-execute-cronjob.yaml
+  s_a2e6fe224d3386::t_22f8aca02026a9 3
+charts/lunar-mcpx-webapp/templates/lunar-admin-seed-system-config-dry-cronjob.yaml
+  s_a2e6fe224d3386::t_9fb1239f66abc1 2
+charts/lunar-mcpx-webapp/templates/lunar-admin-seed-system-config-execute-cronjob.yaml
+  s_a2e6fe224d3386::t_0eb5c1fd291cc7 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "67b73dbf289dea5f732ba37cf2d8ec36eadd8463",
+  "prompts": {},
+  "sessions": {
+    "s_a2e6fe224d3386": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0c063e7b-3b87-43cb-971c-f20524fd1abe",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "EliavLunar <eliavl@lunar.dev>"
+    }
+  }
+}

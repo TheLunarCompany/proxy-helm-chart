@@ -1,0 +1,19 @@
+charts/lunar-mcpx-webapp/README.md
+  s_a5f3534fe8ae34::t_5c9ba5f76b9e27 113,116-118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "59d0c9bf8c5238667c7dcfc87a73bf33a10b7695",
+  "prompts": {},
+  "sessions": {
+    "s_a5f3534fe8ae34": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "c90d5985-c572-4174-a642-f87f0cc9da0c",
+        "model": "default"
+      },
+      "human_author": "tamarp-lunar <tamarp@lunar.dev>"
+    }
+  }
+}

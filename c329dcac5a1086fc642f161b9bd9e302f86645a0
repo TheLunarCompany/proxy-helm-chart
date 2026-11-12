@@ -1,0 +1,23 @@
+charts/lunar-mcpx-webapp/templates/lunar-admin-rebuild-ch-rollup-cronjob.yaml
+  s_3ba2043b4dec59::t_dee543ddfcbb78 1-10
+charts/lunar-mcpx-webapp/tests/rebuild_ch_rollup_job_test.yaml
+  s_3ba2043b4dec59::t_39cb203f42413d 1-45
+charts/lunar-mcpx-webapp/README.tpl.md
+  s_3ba2043b4dec59::t_d12c5343c8d681 437-452
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "c329dcac5a1086fc642f161b9bd9e302f86645a0",
+  "prompts": {},
+  "sessions": {
+    "s_3ba2043b4dec59": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "04cb69fe-f53b-459f-bd78-aa5d55a02266",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "EliavLunar <eliavl@lunar.dev>"
+    }
+  }
+}

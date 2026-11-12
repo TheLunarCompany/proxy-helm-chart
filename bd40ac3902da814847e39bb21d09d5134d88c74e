@@ -1,0 +1,25 @@
+charts/lunar-mcpx-webapp/README.tpl.md
+  s_a779fd7c66a02d::t_6632f859946c88 443,445-447,450,456,459-462
+charts/lunar-mcpx-webapp/templates/lunar-auth-bff-deployment.yaml
+  s_a779fd7c66a02d::t_3b17c9ec104b83 182-185
+charts/lunar-mcpx-webapp/tests/auth_deployment_test.yaml
+  s_a779fd7c66a02d::t_ca557d68c12bc7 74-93
+charts/lunar-mcpx-webapp/values.yaml
+  s_a779fd7c66a02d::t_bfe8ffa94140f5 684-685
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "bd40ac3902da814847e39bb21d09d5134d88c74e",
+  "prompts": {},
+  "sessions": {
+    "s_a779fd7c66a02d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "65aff2b4-d7da-4a81-ac45-d1a9f88e14a7",
+        "model": "unknown"
+      },
+      "human_author": "EliavLunar <eliavl@lunar.dev>"
+    }
+  }
+}
