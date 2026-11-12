@@ -452,7 +452,7 @@ kubectl create job rebuild-ch-rollup-execute-$(date +%s) \
   --from=cronjob/<release>-rebuild-ch-rollup-execute -n <namespace>
 ```
 
-> **Note:** Run it after the first full hour following the upgrade has passed. If it is too early, the job fails and its log says how many minutes to wait. It is safe to rerun.
+> **Note:** Run it in a **maintenance window**: while it runs, older hours show low counts, because it clears the rollup before the cutoff and refills it day by day. It can only start once the first full hour after the upgrade has passed, plus 15 minutes, so keep the upgrade window open that long or run it at the start of the next one. If it is too early, the job fails without changing anything, and its log says how many minutes to wait. It is safe to rerun, including after a failed run.
 
 ### Migrate Tool Groups to Skills
 
