@@ -1,0 +1,70 @@
+suite: ClickHouse hourly rollup rebuild jobs
+templates:
+  - templates/lunar-admin-rebuild-ch-rollup-dry-cronjob.yaml
+  - templates/lunar-admin-rebuild-ch-rollup-execute-cronjob.yaml
+
+tests:
+  - it: should not render when ClickHouse is disabled
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should be suspended CronJobs
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+    asserts:
+      - isKind:
+          of: CronJob
+      - equal:
+          path: spec.suspend
+          value: true
+
+  - it: should run the rebuild-clickhouse-hourly-rollup command
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].command
+          value: ["node", "dist/index.js", "rebuild-clickhouse-hourly-rollup"]
+
+  - it: should get the ClickHouse URL and credentials
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          any: true
+          content:
+            name: CLICKHOUSE_URL
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].envFrom
+          content:
+            secretRef:
+              name: ch-creds
+
+  - it: dry job should set CLICKHOUSE_REBUILD_DRY_RUN=true
+    template: templates/lunar-admin-rebuild-ch-rollup-dry-cronjob.yaml
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: CLICKHOUSE_REBUILD_DRY_RUN
+            value: "true"
+
+  - it: execute job should set CLICKHOUSE_REBUILD_DRY_RUN=false
+    template: templates/lunar-admin-rebuild-ch-rollup-execute-cronjob.yaml
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: CLICKHOUSE_REBUILD_DRY_RUN
+            value: "false"
