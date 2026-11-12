@@ -1,0 +1,30 @@
+charts/lunar-mcpx-webapp/values.schema.json
+  s_ca561cbb1ebbac::t_f6ff030edc1b5b 673-677
+charts/lunar-mcpx-webapp/README.tpl.md
+  s_ca561cbb1ebbac::t_2d2d822304e2a2 538-550,553-563
+  s_ca561cbb1ebbac::t_4e9e2a4f2df3d2 551-552
+charts/lunar-mcpx-webapp/values.yaml
+  s_ca561cbb1ebbac::t_ceb64a177212b4 1355-1358
+charts/lunar-mcpx-webapp/tests/webserver_auto_update_instances_test.yaml
+  s_ca561cbb1ebbac::t_1ce844c0ce2904 1-31
+  s_ca561cbb1ebbac::t_87840da28558ea 32-51
+charts/lunar-mcpx-webapp/templates/lunar-webserver-deployment.yaml
+  s_ca561cbb1ebbac::t_061a892c7a877b 234-236
+  s_ca561cbb1ebbac::t_cf18fba0265618 237
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "b20e1c4cb1039fc4339193840bbfd8ff44a4ebf0",
+  "prompts": {},
+  "sessions": {
+    "s_ca561cbb1ebbac": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6fe1eccc-3204-4c40-8833-a456be9b1b1f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Prashant Kumar <prashant.kumar@boomi.com>"
+    }
+  }
+}
