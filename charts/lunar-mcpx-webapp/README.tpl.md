@@ -436,16 +436,20 @@ kubectl create job prune-ch-logs-execute-$(date +%s) \
 
 ### ClickHouse Hourly Rollup Rebuild
 
-The Agent Usage and Users dashboards read tool usage from an hourly rollup table (`tool_usage_hourly`), which ClickHouse fills on every new insert. Rows written before the upgrade that adds it are not in the rollup yet, so until this job runs, older hours show low counts. Run it **once after upgrading**. A single **suspended CronJob**, it never runs automatically.
+The Agent Usage and Users dashboards read tool usage from an hourly rollup table (`tool_usage_hourly`), which ClickHouse fills on every new insert. Rows written before the upgrade that adds it are not in the rollup yet, so until this job runs, older hours show low counts. Run it **once after upgrading**. Two **suspended CronJobs**, they never run automatically.
 
 | CronJob | Purpose |
 |:--------|:--------|
-| `<release>-rebuild-ch-rollup` | Rebuilds the rollup from the raw `tool_usage` rows for every hour before the start of the hour 15 minutes ago |
+| `<release>-rebuild-ch-rollup-dry` | Reports the cutoff and how many days and raw rows would be rebuilt (no changes) |
+| `<release>-rebuild-ch-rollup-execute` | **Rebuilds** the rollup from the raw `tool_usage` rows for every hour before the start of the hour 15 minutes ago |
 
-**Run the rebuild:**
+**Run a dry run, then execute:**
 ```bash
-kubectl create job rebuild-ch-rollup-$(date +%s) \
-  --from=cronjob/<release>-rebuild-ch-rollup -n <namespace>
+kubectl create job rebuild-ch-rollup-dry-$(date +%s) \
+  --from=cronjob/<release>-rebuild-ch-rollup-dry -n <namespace>
+
+kubectl create job rebuild-ch-rollup-execute-$(date +%s) \
+  --from=cronjob/<release>-rebuild-ch-rollup-execute -n <namespace>
 ```
 
 > **Note:** Run it after the first full hour following the upgrade has passed. If it is too early, the job fails and its log says how many minutes to wait. It is safe to rerun.

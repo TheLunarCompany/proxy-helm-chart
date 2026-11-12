@@ -1,6 +1,7 @@
-suite: ClickHouse hourly rollup rebuild job
+suite: ClickHouse hourly rollup rebuild jobs
 templates:
-  - templates/lunar-admin-rebuild-ch-rollup-cronjob.yaml
+  - templates/lunar-admin-rebuild-ch-rollup-dry-cronjob.yaml
+  - templates/lunar-admin-rebuild-ch-rollup-execute-cronjob.yaml
 
 tests:
   - it: should not render when ClickHouse is disabled
@@ -8,7 +9,7 @@ tests:
       - hasDocuments:
           count: 0
 
-  - it: should be a suspended CronJob
+  - it: should be suspended CronJobs
     set:
       clickhouse.enabled: true
       clickhouse.credentialsSecret: ch-creds
@@ -43,3 +44,27 @@ tests:
           content:
             secretRef:
               name: ch-creds
+
+  - it: dry job should set CLICKHOUSE_REBUILD_DRY_RUN=true
+    template: templates/lunar-admin-rebuild-ch-rollup-dry-cronjob.yaml
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: CLICKHOUSE_REBUILD_DRY_RUN
+            value: "true"
+
+  - it: execute job should set CLICKHOUSE_REBUILD_DRY_RUN=false
+    template: templates/lunar-admin-rebuild-ch-rollup-execute-cronjob.yaml
+    set:
+      clickhouse.enabled: true
+      clickhouse.credentialsSecret: ch-creds
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: CLICKHOUSE_REBUILD_DRY_RUN
+            value: "false"
