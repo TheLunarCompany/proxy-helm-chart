@@ -185,3 +185,22 @@ tests:
     asserts:
       - failedTemplate:
           errorMessage: "pdb is enabled for webserver but webserver.hpa.minReplicas < 2 (a PDB on a single replica blocks node drains); raise webserver.hpa.minReplicas or set webserver.pdb.enabled=false"
+
+  - it: names the identity broker's PDB and selector after its Deployment
+    release:
+      name: my-release
+    set:
+      identityBroker:
+        enabled: true
+        replicaCount: 3
+        pdb:
+          enabled: true
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: metadata.name
+          value: my-release-lunar-mcpx-webapp-identity-broker
+      - equal:
+          path: spec.selector.matchLabels.app
+          value: my-release-lunar-mcpx-webapp-identity-broker
