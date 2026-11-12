@@ -177,3 +177,21 @@ tests:
     asserts:
       - hasDocuments:
           count: 0
+
+  - it: names the identity broker's HPA after its Deployment
+    release:
+      name: my-release
+    set:
+      identityBroker:
+        enabled: true
+        hpa:
+          enabled: true
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: metadata.name
+          value: my-release-lunar-mcpx-webapp-identity-broker
+      - equal:
+          path: spec.scaleTargetRef.name
+          value: my-release-lunar-mcpx-webapp-identity-broker
