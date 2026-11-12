@@ -1,0 +1,25 @@
+charts/lunar-mcpx-webapp/templates/pdb.yaml
+  s_b0fb29c59305aa::t_b64b18f55a0336 6-7,29,31,44
+charts/lunar-mcpx-webapp/tests/hpa_test.yaml
+  s_b0fb29c59305aa::t_fe9d1ea36c6244 180-197
+charts/lunar-mcpx-webapp/templates/hpa.yaml
+  s_b0fb29c59305aa::t_b64b18f55a0336 6-7,31,33,42
+charts/lunar-mcpx-webapp/tests/pdb_test.yaml
+  s_b0fb29c59305aa::t_fe9d1ea36c6244 188-206
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "b24a8646f85f5e27fcfa3f396287ec2ec7f6deaa",
+  "prompts": {},
+  "sessions": {
+    "s_b0fb29c59305aa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9882e355-077a-491f-8ccb-395ab62fcc6e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Sid Kumar <siddhant.kumar@boomi.com>"
+    }
+  }
+}
