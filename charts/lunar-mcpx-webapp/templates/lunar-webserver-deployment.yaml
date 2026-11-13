@@ -231,6 +231,10 @@ spec:
             {{- range .Values.webserver.extraEnvVars }}
             {{- $webserverExtraEnvNames = append $webserverExtraEnvNames .name }}
             {{- end }}
+            {{- if and .Values.autoUpdateInstances (not (has "MCPX_AUTO_ALIGN_INSTANCES" $webserverExtraEnvNames)) }}
+            - name: MCPX_AUTO_ALIGN_INSTANCES
+              value: "true"
+            {{- end }}
             {{- if not (has "HIVE_DEFAULT_MCPX_IMAGE_REPO" $webserverExtraEnvNames) }}
             - name: HIVE_DEFAULT_MCPX_IMAGE_REPO
               value: '{{ include "lunar-mcpx-webapp.mcpxImage" (dict "repo" "us-central1-docker.pkg.dev/prj-common-442813/mcpx/mcpx-server" "context" .) }}'

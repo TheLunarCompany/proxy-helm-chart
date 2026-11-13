@@ -555,6 +555,30 @@ for that many minutes. The webserver runs an in-process reconciler; no CronJob i
     idleMinutes: 30
   ```
 
+### Auto-update instances
+
+Off by default. When on, every webserver start moves MCPX instances to this release's MCPX version,
+with no admin action. It runs the same update as the admin UI's "Update" prompt.
+
+```yaml
+autoUpdateInstances: true
+```
+
+- **Version only.** Admin-set log level and feature flags are kept.
+- **Every start.** No-op when instances are current or an update is running (if that one targets an
+  older version, use "Update" after it). A version set through the instances API is undone.
+- **Can run ahead of the upgrade**, while the hub or old webserver pods are still rolling.
+- **Scope:** the release's namespace; with `MULTI_TENANCY`, every tenant on the install.
+- **Hibernated instances** get the new version on their next wake.
+- **No retry.** On a hive controller error it only logs; use "Update" or restart the webserver.
+- For a chart that predates this value, set the env var directly:
+  ```yaml
+  webserver:
+    extraEnvVars:
+      - name: MCPX_AUTO_ALIGN_INSTANCES
+        value: "true"
+  ```
+
 ### Audit Log Pruning
 
 The `prune-audit-logs` CronJob periodically deletes old rows from the `audit_logs` table so it doesn't grow unbounded. It is **enabled by default**, running daily at noon and removing rows older than `auditLog.retentionDays` (60 by default).
