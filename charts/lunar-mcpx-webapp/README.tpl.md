@@ -537,36 +537,21 @@ for that many minutes. The webserver runs an in-process reconciler; no CronJob i
 
 ### Auto-update instances
 
-Off by default. When on, every webserver start updates all MCPX instances to this release's
-MCPX version, with no admin action. It runs the same update as the admin UI's "Update" prompt.
+Off by default. When on, every webserver start moves MCPX instances to this release's MCPX version,
+with no admin action. It runs the same update as the admin UI's "Update" prompt.
 
 ```yaml
 autoUpdateInstances: true
 ```
 
-- **Version only.** Only the MCPX image changes. Per-instance settings an admin changed (log
-  level, feature flags) are kept.
-- **Runs on every webserver start**, not only after an upgrade. When every instance is already on
-  the current version, it does nothing. When an update is already running (for example several
-  webserver replicas starting together), this start does nothing. If that running update targets
-  an older version, use the admin "Update" prompt after it finishes.
-- **A version set through the API is undone.** An instance moved to another version with the
-  instances API goes back to this release's version on the next webserver start.
-- **Instances can update before the rest of the upgrade.** During `helm upgrade`, instances may move
-  to the new version while other webapp pods (such as the hub) are still rolling. An old webserver
-  pod still rolling can also carry out some of these updates.
-- **Multi-tenant installs: every tenant at once.** The update isn't scoped to a tenant. With
-  `MULTI_TENANCY` on, each webserver start updates the instances of every tenant on the install.
-- **Hibernated instances are not woken.** They get the new version and run it on their next wake.
-- **No retry.** If the hive controller is unreachable when the webserver starts, the error is
-  logged and nothing is updated; use the admin "Update" prompt, or restart the webserver.
-- For a chart that predates this value, set the env var directly:
-  ```yaml
-  webserver:
-    extraEnvVars:
-      - name: MCPX_AUTO_ALIGN_INSTANCES
-        value: "true"
-  ```
+- **Version only.** Admin-set log level and feature flags are kept.
+- **Every start.** No-op when instances are current or an update is running (if that one targets an
+  older version, use "Update" after it). A version set through the instances API is undone.
+- **Can run ahead of the upgrade**, while the hub or old webserver pods are still rolling.
+- **Scope:** the release's namespace; with `MULTI_TENANCY`, every tenant on the install.
+- **Hibernated instances** get the new version on their next wake.
+- **No retry.** On a hive controller error it only logs; use "Update" or restart the webserver.
+- **Older chart:** add `MCPX_AUTO_ALIGN_INSTANCES: "true"` to `webserver.extraEnvVars`.
 
 ### Audit Log Pruning
 
