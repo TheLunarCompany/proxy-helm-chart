@@ -551,7 +551,13 @@ autoUpdateInstances: true
 - **Scope:** the release's namespace; with `MULTI_TENANCY`, every tenant on the install.
 - **Hibernated instances** get the new version on their next wake.
 - **No retry.** On a hive controller error it only logs; use "Update" or restart the webserver.
-- **Older chart:** add `MCPX_AUTO_ALIGN_INSTANCES: "true"` to `webserver.extraEnvVars`.
+- For a chart that predates this value, set the env var directly:
+  ```yaml
+  webserver:
+    extraEnvVars:
+      - name: MCPX_AUTO_ALIGN_INSTANCES
+        value: "true"
+  ```
 
 ### Audit Log Pruning
 
