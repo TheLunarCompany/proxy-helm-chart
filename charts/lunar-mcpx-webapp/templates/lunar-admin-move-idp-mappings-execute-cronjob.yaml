@@ -1,0 +1,11 @@
+{{- if .Values.identityBroker.enabled }}
+---
+{{ include "lunar-mcpx-webapp.adminCronJob" (dict
+  "root" .
+  "jobName" "move-idp-mappings-execute"
+  "command" (list "node" "dist/index.js" "move-runtime-idp-mappings")
+  "extraEnv" (list
+    (dict "name" "DRY_RUN" "value" "false")
+  )
+) }}
+{{- end }}
