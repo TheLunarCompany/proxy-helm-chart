@@ -1,0 +1,19 @@
+charts/lunar-mcpx-webapp/README.tpl.md
+  s_b5b5efd4d4119d::t_21eb9a76d99169 75-77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "45b55fd80e28e8a00199a214a89f6b01954312b1",
+  "prompts": {},
+  "sessions": {
+    "s_b5b5efd4d4119d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "81041c4e-a526-4862-b95d-c8262e1006fb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "EliavLunar <eliavl@lunar.dev>"
+    }
+  }
+}
