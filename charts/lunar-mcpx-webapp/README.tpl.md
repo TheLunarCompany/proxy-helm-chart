@@ -72,6 +72,9 @@ Note: Router `OIDC_JWKS_URI` defaults to in-cluster auth service (`http://<relea
 |     Variable     |                                           Value                                           |
 |:----------------:|:-----------------------------------------------------------------------------------------:|
 |    LOG_LEVEL     |                                           info|debug                                            |
+| CROSS_TENANT_DATABASE_URL | postgres://{{ USER }}:{{ PASS }}@{{ HOST }}:{{ PORT }}/{{ DATABASE }}?schema={{ SCHEMA }} |
+
+`CROSS_TENANT_DATABASE_URL` is for cross-tenant work (tenant lookup, sweeps), as a role row-level security doesn't filter, such as the tables' owner. Unset, it uses `DATABASE_URL`. Set it only when `DATABASE_URL` is a role that doesn't own the tables, and only for webserver, hub and auth: migrations and jobs keep a `DATABASE_URL` that owns the tables.
 
 
 It is possible to supply this variables using several different techniques:
