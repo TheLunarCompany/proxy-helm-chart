@@ -1,0 +1,50 @@
+suite: Move runtime IdP role mappings jobs
+templates:
+  - templates/lunar-admin-move-idp-mappings-dry-cronjob.yaml
+  - templates/lunar-admin-move-idp-mappings-execute-cronjob.yaml
+
+tests:
+  - it: should not render when the identity broker is disabled
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should be suspended CronJobs
+    set:
+      identityBroker.enabled: true
+    asserts:
+      - isKind:
+          of: CronJob
+      - equal:
+          path: spec.suspend
+          value: true
+
+  - it: should run the move-runtime-idp-mappings command
+    set:
+      identityBroker.enabled: true
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].command
+          value: ["node", "dist/index.js", "move-runtime-idp-mappings"]
+
+  - it: dry job should set DRY_RUN=true
+    template: templates/lunar-admin-move-idp-mappings-dry-cronjob.yaml
+    set:
+      identityBroker.enabled: true
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: DRY_RUN
+            value: "true"
+
+  - it: execute job should set DRY_RUN=false
+    template: templates/lunar-admin-move-idp-mappings-execute-cronjob.yaml
+    set:
+      identityBroker.enabled: true
+    asserts:
+      - contains:
+          path: spec.jobTemplate.spec.template.spec.containers[0].env
+          content:
+            name: DRY_RUN
+            value: "false"

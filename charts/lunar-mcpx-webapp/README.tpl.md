@@ -513,6 +513,28 @@ identityBroker:
 - `products` lists who may log in through it, with exact redirect and post-logout URIs. Left empty, it is mcpx alone, on auth-bff's callbacks under the origin of `OIDC_REDIRECT_URI` from `extraEnvVars`, else the first `ingress.domains.auth`. If you keep `OIDC_REDIRECT_URI` in a secret, set `products` too: the chart can't read it.
 - A NetworkPolicy lets only auth-bff pods reach it, plus `networkPolicy.extraFrom`. It has no other guard, so keep it on in clusters that enforce NetworkPolicies.
 
+### Move Runtime IdP Role Mappings
+
+With the identity broker on, the runtime IdP's role mappings move from the `RUNTIME_IDP_PROVIDER` system-config key to a per-tenant table. Installs that saved a runtime IdP before upgrading to an `appVersion` with that change keep their mappings in the key, which the new code no longer reads: until this job runs, their runtime logins get the design-time mappings, so a runtime admin comes in as a member. Run it **once after upgrading**. Two **suspended CronJobs**, rendered only with `identityBroker.enabled`; they never run automatically. It is **idempotent**: it never overwrites mappings saved after the upgrade, and a second run changes nothing.
+
+| CronJob | Purpose |
+|:--------|:--------|
+| `<release>-move-idp-mappings-dry` | Reports what it would do: nothing to move, copy the mappings, or keep the newer ones (no changes) |
+| `<release>-move-idp-mappings-execute` | **Copies** the mappings to the default tenant's row and deletes the `RUNTIME_IDP_PROVIDER` key |
+
+**Before running it**, check that the broker holds the runtime IdP: the Admin UI's runtime IdP settings show one. If they show none, skip the job on that install: the key is then the only copy of the IdP's settings and client secret, and the job would delete it.
+
+**Run a dry run, then execute:**
+```bash
+kubectl create job move-idp-mappings-dry-$(date +%s) \
+  --from=cronjob/<release>-move-idp-mappings-dry -n <namespace>
+
+kubectl create job move-idp-mappings-execute-$(date +%s) \
+  --from=cronjob/<release>-move-idp-mappings-execute -n <namespace>
+```
+
+> **Note:** Run it right after the upgrade, before anyone changes the runtime IdP settings. Clearing the runtime IdP leaves the key behind, so a clear before the run gets its mappings back from the job, for a tenant with no runtime IdP.
+
 ### Hibernation
 
 Two independent ways to hibernate idle MCPX instances. Either one (or both) turns
