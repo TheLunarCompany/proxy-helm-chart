@@ -2,7 +2,6 @@ suite: Repository resolution (global.env)
 templates:
   - templates/lunar-webserver-deployment.yaml
   - templates/lunar-hub-deployment.yaml
-  - templates/lunar-admin-ui-deployment.yaml
   - templates/lunar-auth-bff-deployment.yaml
   - templates/lunar-hive-controller-deployment.yaml
   - templates/lunar-hive-router-deployment.yaml
@@ -63,15 +62,6 @@ tests:
           path: spec.template.spec.containers[0].image
           pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-playground/mcpx-hub:.+$
 
-  - it: admin uses the dev registry base when global.webappRepository=dev
-    template: templates/lunar-admin-ui-deployment.yaml
-    set:
-      global.webappRepository: dev
-    asserts:
-      - matchRegex:
-          path: spec.template.spec.containers[0].image
-          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-playground/mcpx-admin-ui:.+$
-
   - it: auth uses the dev registry base when global.webappRepository=dev
     template: templates/lunar-auth-bff-deployment.yaml
     set:
@@ -127,15 +117,6 @@ tests:
       - matchRegex:
           path: spec.template.spec.containers[0].image
           pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-boomi-poc/mcpx-hub:.+$
-
-  - it: admin uses the boomipoc registry base when global.webappRepository=boomipoc
-    template: templates/lunar-admin-ui-deployment.yaml
-    set:
-      global.webappRepository: boomipoc
-    asserts:
-      - matchRegex:
-          path: spec.template.spec.containers[0].image
-          pattern: ^us-central1-docker\.pkg\.dev/prj-common-442813/lunar-boomi-poc/mcpx-admin-ui:.+$
 
   - it: auth uses the boomipoc registry base when global.webappRepository=boomipoc
     template: templates/lunar-auth-bff-deployment.yaml

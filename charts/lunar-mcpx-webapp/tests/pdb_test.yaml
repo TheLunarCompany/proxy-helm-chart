@@ -56,8 +56,8 @@ tests:
         replicaCount: 3
     asserts:
       - hasDocuments:
-          count: 7
-      - documentIndex: 6
+          count: 6
+      - documentIndex: 5
         equal:
           path: metadata.name
           value: my-release-lunar-mcpx-webapp-controller
@@ -155,7 +155,7 @@ tests:
           enabled: true
     asserts:
       - hasDocuments:
-          count: 7
+          count: 6
 
   - it: still fails on the replicaCount floor when hpa is not enabled for that service
     release:

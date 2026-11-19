@@ -97,7 +97,7 @@ spec:
         paths:
           - backend:
               service:
-                name: {{ $xfullname }}-{{ $key }}
+                name: {{ $xfullname }}-{{ if eq $key "admin" }}webserver{{ else }}{{ $key }}{{ end }}
                 port:
                   number: 80
             path: /
@@ -105,7 +105,7 @@ spec:
           {{- if eq $key "webserver" }}
           - backend:
               service:
-                name: {{ $xfullname }}-{{ $key }}
+                name: {{ $xfullname }}-{{ if eq $key "admin" }}webserver{{ else }}{{ $key }}{{ end }}
                 port:
                   number: 80
             path: /ui/v1

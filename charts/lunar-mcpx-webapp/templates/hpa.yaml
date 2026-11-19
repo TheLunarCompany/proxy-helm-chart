@@ -1,7 +1,7 @@
 {{- $root := . }}
 {{- $ghpa := .Values.global.hpa | default dict }}
 {{- /* the concerned services */}}
-{{- range $key := list "webserver" "hub" "admin" "auth" "identityBroker" "router" "ui" "controller" }}
+{{- range $key := list "webserver" "hub" "auth" "identityBroker" "router" "ui" "controller" }}
 {{- $svc := get $root.Values $key }}
 {{- /* named like its Deployment: identityBroker -> identity-broker */}}
 {{- $name := printf "%s-%s" (include "lunar-mcpx-webapp.fullname" $root) ($key | kebabcase) }}

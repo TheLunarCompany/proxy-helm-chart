@@ -13,7 +13,6 @@ set:
 tests:
   - it: disables service-link env injection on every deployment and statefulset
     templates:
-      - templates/lunar-admin-ui-deployment.yaml
       - templates/lunar-auth-bff-deployment.yaml
       - templates/lunar-hive-controller-deployment.yaml
       - templates/lunar-hive-router-deployment.yaml

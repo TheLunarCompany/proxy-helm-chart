@@ -181,8 +181,8 @@ spec:
                 name: {{ . }}
           {{- end }}
           {{- end }}
-          {{- with .Values.webserver.extraEnvFromSecrets }}
-          {{- range $.Values.webserver.extraEnvFromSecrets }}
+          {{- with concat (.Values.webserver.extraEnvFromSecrets | default (list)) (.Values.admin.extraEnvFromSecrets | default (list)) | uniq }}
+          {{- range concat ($.Values.webserver.extraEnvFromSecrets | default (list)) ($.Values.admin.extraEnvFromSecrets | default (list)) | uniq }}
             - secretRef:
                 name: {{ . }}
           {{- end }}
@@ -244,6 +244,14 @@ spec:
               value: {{ .Values.ui.image.tag | default (include "lunar-mcpx-webapp.mcpxVersion" .) | quote }}
             {{- end }}
           {{- if .Values.ingress.enabled }}
+            - name: ADMIN_UI_HOSTS
+              value: {{ join "," .Values.ingress.domains.admin | quote }}
+            - name: API_BASE_URL
+              value: "https://{{ first .Values.ingress.domains.webserver }}"
+            - name: AUTH_BFF_URL
+              value: "https://{{ first .Values.ingress.domains.auth }}"
+            - name: MCPX_UI_URL
+              value: "https://{{ first .Values.ingress.domains.ui }}"
             - name: CORS_ALLOWED_ORIGINS
               value: "https://{{ first .Values.ingress.domains.admin }},https://{{ first .Values.ingress.domains.ui }}"
             - name: PUBLIC_URL
@@ -266,6 +274,9 @@ spec:
           
           {{- if .Values.global.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.global.extraEnvVars "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.admin.extraEnvVars }}
+          {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.admin.extraEnvVars "context" $) | nindent 12 }}
           {{- end }}
           {{- if .Values.webserver.extraEnvVars }}
           {{- include "lunar-mcpx-webapp.tplvalues.render" (dict "value" .Values.webserver.extraEnvVars "context" $) | nindent 12 }}

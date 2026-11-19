@@ -88,8 +88,8 @@ tests:
           enabled: true
     asserts:
       - hasDocuments:
-          count: 7
-      - documentIndex: 6
+          count: 6
+      - documentIndex: 5
         equal:
           path: metadata.name
           value: my-release-lunar-mcpx-webapp-controller

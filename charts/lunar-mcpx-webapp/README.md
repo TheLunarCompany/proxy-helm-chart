@@ -733,3 +733,15 @@ hub:
 
 Supported `tokenAuthMethod` values: `client_secret_basic`, `client_secret_post`,
 `client_secret_jwt`, `private_key_jwt`, `tls_client_auth`, `self_signed_tls_client_auth`.
+
+### Admin UI serving
+
+The MCPX admin UI is built with Vite and served by the webserver image. Admin
+hostnames point to the webserver Service, which distinguishes UI requests from
+API requests by host. There is no separate admin Deployment or Service.
+
+`admin.extraEnvVars` and `admin.extraEnvFromSecrets` remain supported for public
+UI runtime configuration and are now injected into the webserver. Move any
+admin resource, replica, HPA, PDB, scheduling or rollout settings to `webserver`.
+The matching application version must include the Vite assets in its webserver
+image; deploy this chart together with the RND-1219 application change.

@@ -1,0 +1,62 @@
+suite: Admin UI served by webserver
+templates:
+  - templates/lunar-common-ingress.yaml
+  - templates/lunar-webserver-deployment.yaml
+tests:
+  - it: sends the admin hostname to the existing webserver Service
+    template: templates/lunar-common-ingress.yaml
+    documentSelector:
+      path: kind
+      value: Ingress
+    set:
+      ingress.domains.admin: ["admin.example.test"]
+    asserts:
+      - equal:
+          path: spec.rules[0].host
+          value: admin.example.test
+      - equal:
+          path: spec.rules[0].http.paths[0].backend.service.name
+          value: RELEASE-NAME-lunar-mcpx-webapp-webserver
+  - it: supplies public runtime config and existing admin overrides to webserver
+    template: templates/lunar-webserver-deployment.yaml
+    set:
+      ingress.domains.admin: ["admin.example.test", "admin-alias.example.test"]
+      ingress.domains.webserver: ["app.example.test"]
+      ingress.domains.auth: ["auth.example.test"]
+      ingress.domains.ui: ["ui.example.test"]
+      admin.extraEnvVars:
+        - name: SHOW_USAGE_METRICS
+          value: "true"
+      admin.extraEnvFromSecrets: ["existing-ui-settings"]
+      postgres.enabled: true
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: ADMIN_UI_HOSTS
+            value: admin.example.test,admin-alias.example.test
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: API_BASE_URL
+            value: https://app.example.test
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: AUTH_BFF_URL
+            value: https://auth.example.test
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: SHOW_USAGE_METRICS
+            value: "true"
+      - contains:
+          path: spec.template.spec.containers[0].envFrom
+          content:
+            secretRef:
+              name: existing-ui-settings
+      - notContains:
+          path: spec.template.spec.initContainers[0].envFrom
+          content:
+            secretRef:
+              name: existing-ui-settings

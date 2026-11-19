@@ -1,6 +1,5 @@
 suite: deployment rollout strategy
 templates:
-  - templates/lunar-admin-ui-deployment.yaml
   - templates/lunar-auth-bff-deployment.yaml
   - templates/lunar-hive-controller-deployment.yaml
   - templates/lunar-hive-router-deployment.yaml

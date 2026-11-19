@@ -469,114 +469,11 @@ hub:
   # priorityClassName: "custom"
   priorityClassName: ""
 
+# Admin assets are served by webserver. These values retain the existing
+# runtime-config and secret inputs; deployment/scaling use webserver settings.
 admin:
-  image:
-    # -- Lunar mcpx-webserver image repository
-    repository: us-central1-docker.pkg.dev/prj-common-442813/lunar-private/mcpx-admin-ui
-    # -- Lunar mcpx-webserver image pull policy
-    pullPolicy: IfNotPresent
-    # -- Lunar mcpx-webserver image tag
-    # Overrides the image tag whose default is the chart appVersion.
-    tag: ""
-
-  # -- NodeSelector to pin pods in deployment to certain set of nodes.
-  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
-  nodeSelector: {}
-
-  # -- tolerations allow the scheduler to schedule pods with matching taints.
-  # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
-  # tolerations:
-  #   - key: "example-key"
-  #     operator: "Exists"
-  #     effect: "NoSchedule"
-  tolerations: []
-
-  # -- affinity is a scheduling feature that lets influence which nodes or which pods a pod should be placed near (or away from).
-  # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
-  # affinity:
-  #   podAntiAffinity:
-  #     requiredDuringSchedulingIgnoredDuringExecution:
-  #       - topologyKey: kubernetes.io/hostname
-  #         labelSelector:
-  #           matchLabels:
-  #             example: lunar-mcpx-webapp
-  affinity: {}
-
-  # -- topologySpreadConstraints if specified, the pod's topology spread constraints.
-  # https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
-  # topologySpreadConstraints:
-  #   - maxSkew: 1
-  #     topologyKey: topology.kubernetes.io/zone
-  #     whenUnsatisfiable: ScheduleAnyway
-  #     labelSelector:
-  #       matchLabels:
-  #         example: lunar-mcpx-webapp
-  topologySpreadConstraints: []
-
-  # -- number of replicas to run
-  replicaCount: 1
-
-  # -- pdb overrides global.pdb for this deployment.
-  # Same fields as global (enabled, maxUnavailable, minAvailable).
-  pdb: {}
-
-  # -- hpa overrides global.hpa for this deployment. Same fields as global.
-  hpa: {}
-
-  # -- strategy overrides global.strategy for this deployment (the whole object, not field by field).
-  strategy: {}
-
-  # -- Set pod resource requests & limits
-  resources:
-    limits:
-      cpu: "500m"
-      memory: 512Mi
-    requests:
-      cpu: "500m"
-      memory: 512Mi
-
-  # -- extraEnvVars An array to add extra env vars
-  # e.g:
-  # extraEnvVars:
-  #   - name: FOO
-  #     value: "bar"
-  #   - name: FOO2
-  #     valueFrom:
-  #       secretKeyRef:
-  #         name: SECRET_NAME
-  #         key: KEY
   extraEnvVars: []
-
-  # -- extraEnvFromSecrets An array of secret names to add as extra env vars
-  # extraEnvFromSecrets:
-  #   - secret_1
-  #   - secret_2
   extraEnvFromSecrets: []
-
-  # Labels for all application related resources
-  # labels:
-  #   label_1: value_1
-  #   label_2: value_2
-  labels: {}
-
-  # Pod Labels
-  # labels:
-  #   label_1: value_1
-  #   label_2: value_2
-  podLabels: {}
-
-  # -- extraInitContainers Additional init containers configuration
-  # Value of this extraInitContainers will be appended to spec.template.spec.initContainers of the deployment
-  extraInitContainers: []
-
-  # -- extraContainers Additional sidecars configuration
-  # Value of this extraContainers will be appended to spec.template.spec.containers of the deployment
-  extraContainers: []
-
-  # -- priorityClassName determines a pod's scheduling priority relative to other pods.
-  # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
-  # priorityClassName: "custom"
-  priorityClassName: ""
 
 auth:
   image:
