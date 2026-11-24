@@ -72,6 +72,9 @@ Note: Router `OIDC_JWKS_URI` defaults to in-cluster auth service (`http://<relea
 |     Variable     |                                           Value                                           |
 |:----------------:|:-----------------------------------------------------------------------------------------:|
 |    LOG_LEVEL     |                                           info|debug                                            |
+| CROSS_TENANT_DATABASE_URL | postgres://{{ USER }}:{{ PASS }}@{{ HOST }}:{{ PORT }}/{{ DATABASE }}?schema={{ SCHEMA }} |
+
+`CROSS_TENANT_DATABASE_URL` is for cross-tenant work (tenant lookup, sweeps), as a role row-level security doesn't filter, such as the tables' owner. Unset, it uses `DATABASE_URL`. Set it only when `DATABASE_URL` is a role that doesn't own the tables, and only for webserver, hub and auth: migrations and jobs keep a `DATABASE_URL` that owns the tables.
 
 
 It is possible to supply this variables using several different techniques:
@@ -434,6 +437,26 @@ kubectl create job prune-ch-logs-execute-$(date +%s) \
   --from=cronjob/<release>-prune-ch-logs-execute -n <namespace>
 ```
 
+### ClickHouse Hourly Rollup Rebuild
+
+The Agent Usage and Users dashboards read tool usage from an hourly rollup table (`tool_usage_hourly`), which ClickHouse fills on every new insert. Rows written before the upgrade that adds it are not in the rollup yet, so until this job runs, older hours show low counts. Run it **once after upgrading**. Two **suspended CronJobs**, they never run automatically.
+
+| CronJob | Purpose |
+|:--------|:--------|
+| `<release>-rebuild-ch-rollup-dry` | Reports the cutoff and how many days and raw rows would be rebuilt (no changes) |
+| `<release>-rebuild-ch-rollup-execute` | **Rebuilds** the rollup from the raw `tool_usage` rows for every hour before the start of the hour 15 minutes ago |
+
+**Run a dry run, then execute:**
+```bash
+kubectl create job rebuild-ch-rollup-dry-$(date +%s) \
+  --from=cronjob/<release>-rebuild-ch-rollup-dry -n <namespace>
+
+kubectl create job rebuild-ch-rollup-execute-$(date +%s) \
+  --from=cronjob/<release>-rebuild-ch-rollup-execute -n <namespace>
+```
+
+> **Note:** Run it in a **maintenance window**: while it runs, older hours show low counts, because it clears the rollup before the cutoff and refills it day by day. It can only start once the first full hour after the upgrade has passed, plus 15 minutes, so keep the upgrade window open that long or run it at the start of the next one. If it is too early, the job fails without changing anything, and its log says how many minutes to wait. It is safe to rerun, including after a failed run.
+
 ### Migrate Tool Groups to Skills
 
 Turns each active setup's tool groups into skills before enabling the skills feature. Every tool group becomes one skill carrying the same capability group; tools on custom (non-catalog) servers are dropped, and a group left with nothing is skipped. The original tool groups are **not** deleted. The migrated skills are **not** enabled for any consumer/client, so after the migration users will need to re-enable them per subject. A single **suspended CronJob**, it never runs automatically. It is **idempotent**: rerunning skips groups already migrated, so no duplicates.
@@ -493,6 +516,28 @@ identityBroker:
 - `products` lists who may log in through it, with exact redirect and post-logout URIs. Left empty, it is mcpx alone, on auth-bff's callbacks under the origin of `OIDC_REDIRECT_URI` from `extraEnvVars`, else the first `ingress.domains.auth`. If you keep `OIDC_REDIRECT_URI` in a secret, set `products` too: the chart can't read it.
 - A NetworkPolicy lets only auth-bff pods reach it, plus `networkPolicy.extraFrom`. It has no other guard, so keep it on in clusters that enforce NetworkPolicies.
 
+### Move Runtime IdP Role Mappings
+
+With the identity broker on, the runtime IdP's role mappings move from the `RUNTIME_IDP_PROVIDER` system-config key to a per-tenant table. Installs that saved a runtime IdP before upgrading to an `appVersion` with that change keep their mappings in the key, which the new code no longer reads: until this job runs, their runtime logins get the design-time mappings, so a runtime admin comes in as a member. Run it **once after upgrading**. Two **suspended CronJobs**, rendered only with `identityBroker.enabled`; they never run automatically. It is **idempotent**: it never overwrites mappings saved after the upgrade, and a second run changes nothing.
+
+| CronJob | Purpose |
+|:--------|:--------|
+| `<release>-move-idp-mappings-dry` | Reports what it would do: nothing to move, copy the mappings, or keep the newer ones (no changes) |
+| `<release>-move-idp-mappings-execute` | **Copies** the mappings to the default tenant's row and deletes the `RUNTIME_IDP_PROVIDER` key |
+
+**Before running it**, check that the broker holds the runtime IdP: the Admin UI's runtime IdP settings show one. If they show none, skip the job on that install: the key is then the only copy of the IdP's settings and client secret, and the job would delete it.
+
+**Run a dry run, then execute:**
+```bash
+kubectl create job move-idp-mappings-dry-$(date +%s) \
+  --from=cronjob/<release>-move-idp-mappings-dry -n <namespace>
+
+kubectl create job move-idp-mappings-execute-$(date +%s) \
+  --from=cronjob/<release>-move-idp-mappings-execute -n <namespace>
+```
+
+> **Note:** Run it right after the upgrade, before anyone changes the runtime IdP settings. Clearing the runtime IdP leaves the key behind, so a clear before the run gets its mappings back from the job, for a tenant with no runtime IdP.
+
 ### Hibernation
 
 Two independent ways to hibernate idle MCPX instances. Either one (or both) turns
@@ -533,6 +578,30 @@ for that many minutes. The webserver runs an in-process reconciler; no CronJob i
   hibernation:
     cronSchedule: "0 22 * * *"
     idleMinutes: 30
+  ```
+
+### Auto-update instances
+
+Off by default. When on, every webserver start moves MCPX instances to this release's MCPX version,
+with no admin action. It runs the same update as the admin UI's "Update" prompt.
+
+```yaml
+autoUpdateInstances: true
+```
+
+- **Version only.** Admin-set log level and feature flags are kept.
+- **Every start.** No-op when instances are current or an update is running (if that one targets an
+  older version, use "Update" after it). A version set through the instances API is undone.
+- **Can run ahead of the upgrade**, while the hub or old webserver pods are still rolling.
+- **Scope:** the release's namespace; with `MULTI_TENANCY`, every tenant on the install.
+- **Hibernated instances** get the new version on their next wake.
+- **No retry.** On a hive controller error it only logs; use "Update" or restart the webserver.
+- For a chart that predates this value, set the env var directly:
+  ```yaml
+  webserver:
+    extraEnvVars:
+      - name: MCPX_AUTO_ALIGN_INSTANCES
+        value: "true"
   ```
 
 ### Audit Log Pruning
@@ -595,13 +664,13 @@ kubectl exec -it <release>-clickhouse-0 -n <namespace> -- clickhouse-client \
 
 Minimal deployment with embedded Postgresql and Redis
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.10.11 --set postgres.enabled=true --set redis.enabled=true
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.10.12 --set postgres.enabled=true --set redis.enabled=true
 ```
 
 Alternatively, you may work with a separate values file to handle values override just like any other Helm chart:
 
 ```bash
-helm install mcpx lunar/lunar-mcpx-webapp --version 0.10.11  -f ./values-override.yaml
+helm install mcpx lunar/lunar-mcpx-webapp --version 0.10.12  -f ./values-override.yaml
 ```
 
 ### MCPX runtime auth
